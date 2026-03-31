@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Psychoacoustics & Loudness Engineering</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; max-width: 900px; margin: 0 auto; padding: 30px; background-color: #eceff1; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; border-top: 5px solid #2c3e50; }
+        h1 { color: #1a237e; text-align: center; }
+        h2 { color: #0d47a1; border-bottom: 1px solid #cfd8dc; padding-bottom: 10px; }
+        .question-box { margin-bottom: 25px; padding: 15px; background: #fdfdfd; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+        .opt { padding: 12px; border: 1.5px solid #cfd8dc; border-radius: 6px; cursor: pointer; transition: all 0.2s; background: white; }
+        .opt:hover { border-color: #2196f3; background: #e3f2fd; }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50 !important; color: #1b5e20; font-weight: 600; }
+        .incorrect { background: #ffcdd2 !important; border-color: #f44336 !important; color: #b71c1c; }
+        .explanation { display: none; margin-top: 10px; font-size: 0.9em; font-style: italic; color: #546e7a; }
+        .solution-panel { display: none; margin-top: 15px; padding: 15px; background: #fff9c4; border-left: 5px solid #fbc02d; border-radius: 4px; }
+        .btn-sol { background: #1a237e; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .graph-placeholder { background: #f5f5f5; border: 2px dashed #90a4ae; padding: 20px; text-align: center; margin: 15px 0; font-weight: bold; color: #455a64; }
+    </style>
+</head>
+<body>
+
+    <h1>Advanced Loudness Analysis</h1>
+    <p style="text-align: center;"><em>Level: Engineering Professional / Academic</em></p>
+
+    <div class="card">
+        <h2>Section 1: Critical Analysis (Multiple Choice)</h2>
+        <div id="mc-advanced"></div>
+    </div>
+
+    <div class="card">
+        <h2>Section 2: Engineering Problems (Open Response)</h2>
+        <div id="open-advanced"></div>
+    </div>
+
+    <script>
+        const mcAdvanced = [
+            { q: "If a listener perceives a 100 Hz tone and a 1 kHz tone as equally loud at 40 Phons, which statement is true about their physical SPL?", options: ["The 100 Hz tone has a higher dB SPL than the 1 kHz tone", "The 1 kHz tone has a higher dB SPL than the 100 Hz tone", "Both have exactly 40 dB SPL", "The 100 Hz tone has higher Phons than the 1 kHz tone"], correct: 0, why: "At 40 Phons, the ear is significantly less sensitive to 100 Hz, requiring more physical pressure (dB SPL) to match the 1 kHz reference." },
+            { q: "As the monitoring level in a studio increases from 60 dB to 90 dB, how does the perception of the 'spectral balance' change?", options: ["The bass appears to disappear", "The bass and treble appear more prominent relative to the mids", "The response becomes more peaky at 3 kHz", "There is no change in relative spectral balance"], correct: 1, why: "Equal loudness curves flatten at higher intensities; thus, low and high frequencies require less relative boost to be heard clearly." },
+            { q: "A sound source increases from 70 dB SPL to 73 dB SPL. What is the most likely subjective reaction from a human listener?", options: ["It sounds twice as loud", "It sounds four times as loud", "It is a just-noticeable or slight increase in volume", "It is an inaudible change"], correct: 2, why: "3 dB is a doubling of power, but only a ~1.23x increase in subjective loudness. It's noticeable but not dramatic." },
+            { q: "Why is dBA weighting often criticized when measuring very loud industrial noise (above 90 dB)?", options: ["It over-attenuates the bass relative to how the ear works at high levels", "It is too sensitive to infrasonics", "It ignores frequencies above 5 kHz", "It is only valid for vacuum tubes"], correct: 0, why: "dBA is based on the 40-Phon curve. At 90+ dB, the ear's response is flatter (more like dBC), so dBA underestimates the impact of low-frequency noise." },
+            { q: "In the context of ISO 226, the 'Dip' in the curve near 3-4 kHz represents:", options: ["An area of hearing loss", "The resonant frequency of the auditory canal (maximum sensitivity)", "The crossover point of the inner ear", "A measurement error in the original 1930s study"], correct: 1, why: "The dip in the curve means *less* SPL is needed to reach a Phon level, indicating maximum sensitivity due to ear canal resonance." },
+            { q: "If you have a 40 Phon curve and an 80 Phon curve, which one shows a steeper slope in the low-frequency region (20Hz - 100Hz)?", options: ["The 40 Phon curve", "The 80 Phon curve", "They have identical slopes", "Neither; they are both flat below 100Hz"], correct: 0, why: "The ear is much 'deafer' to bass at low volumes, resulting in a steeper curve to compensate." },
+            { q: "Which weighting curve would be most appropriate for measuring the 'thump' of a subwoofer in a high-power PA system?", options: ["A-Weighting", "B-Weighting", "C-Weighting", "Z-Weighting (Flat)"], correct: 2, why: "C-Weighting is flatter in the bass, matching the ear's response at high SPL levels." },
+            { q: "A complex signal has high energy at 50 Hz and 1 kHz. If measured with dBA, which component will be significantly reduced in the final reading?", options: ["The 1 kHz component", "The 50 Hz component", "Both equally", "Neither"], correct: 1, why: "A-Weighting acts as a high-pass filter, rolling off 50 Hz by approximately 30 dB." },
+            { q: "If a person has a JND of 3 dB at a specific frequency, what does this suggest about their hearing or the environment?", options: ["They have exceptional hearing", "The sound is likely in a low-sensitivity region (extreme bass/treble) or the background noise is high", "They are listening to a 1 kHz tone at 80 dB", "The measurement was taken in an anechoic chamber"], correct: 1, why: "A high JND (3dB vs the standard 1dB) indicates reduced sensitivity or high masking noise." },
+            { q: "When following an equal loudness contour from 1 kHz to 10 kHz, the dB SPL level generally:", options: ["Increases steadily", "Decreases steadily", "Stays perfectly flat", "Decreases until 4 kHz, then increases"], correct: 3, why: "The curve dips at the point of highest sensitivity (approx 3-4kHz) and then rises as sensitivity drops at very high frequencies." },
+            { q: "To increase loudness from 50 Phons to 60 Phons at 1 kHz, the voltage output of an amplifier must increase by a factor of approximately:", options: ["2", "3.16", "10", "1.41"], correct: 1, why: "10 dB increase (50 to 60 Phons at 1kHz) is a 10x power increase, which is a sqrt(10) ≈ 3.16x voltage increase." },
+            { q: "Why might a 'Loudness' button on a 1980s hi-fi amplifier boost the bass and treble when the volume is turned DOWN?", options: ["To prevent speaker damage", "To compensate for the ear's loss of sensitivity to extremes at low volumes", "To make the amplifier work harder", "To filter out line noise"], correct: 1, why: "This is a Fletcher-Munson compensator, making music sound 'full' even when played quietly." },
+            { q: "Which measurement will always be higher for a sound with heavy 30 Hz content: 80 dB (Flat) or 80 dBA?", options: ["80 dB (Flat)", "80 dBA", "They will be equal", "It depends on the 1 kHz content"], correct: 0, why: "The Flat (Z) measurement includes all bass energy, while dBA heavily filters it." },
+            { q: "If the human ear worked with a perfectly linear 'flat' response, what would the equal-loudness contours look like?", options: ["Vertical lines", "Horizontal lines", "Exponential curves", "Sine waves"], correct: 1, why: "A flat response means every frequency requires the same SPL to sound equally loud." },
+            { q: "A signal is measured at 100 dB SPL (C-weighted). If the frequency is 1 kHz, what is the loudness in Phons?", options: ["100 Phons", "80 Phons", "120 Phons", "50 Phons"], correct: 0, why: "At 1 kHz, Phons = dB SPL, and C-weighting has 0 dB gain at 1 kHz." }
+        ];
+
+        const openAdvanced = [
+            { q: "Calculate the required amplifier power: You have a 50W amplifier playing at a comfortable level. You want to make it sound 'twice as loud.' Scientifically, what power rating should your new amplifier have?", sol: "Subjective doubling requires a ~10 dB increase. 10 dB is a 10x increase in power. Therefore, you need a 500W amplifier (50W * 10)." },
+            { q: "Graph Interpretation: Looking at an ISO 226 chart, you notice that the curves are closer together in the bass region (20Hz-100Hz) than at 1kHz. What does this 'compression' of curves imply about our perception of bass volume changes?", sol: "It implies that in the bass region, a small change in physical dB SPL results in a larger change in perceived Phons. Our perception of bass 'grows' more rapidly once it becomes audible." },
+            { q: "The 'Mix Translation' Problem: Why might a music mix created at very high volumes (100 dB) sound 'thin' or 'weak' when played back at a normal conversation level (60 dB)?", sol: "When mixing at 100 dB, the ear hears bass and treble more easily (flatter curves). If you balance the mix there, you will likely include less bass boost. When played at 60 dB, the ear's sensitivity to bass drops significantly, making that same mix sound thin." },
+            { q: "Weighting Logic: In a legal dispute over noise from a nightclub's subwoofers, the club owner argues the dBA level is within limits. Why might the neighbors still be legitimately annoyed?", sol: "dBA filters out low-frequency 'thump.' The neighbors are likely hearing low-frequency energy that the dBA meter is ignoring, but which is physically vibrating their home and is clearly audible if the SPL is high enough." },
+            { q: "The 3-4 kHz Resonance: How does the physical anatomy of the human ear relate to the shape of the equal loudness contours?", sol: "The ear canal acts as an open-ended pipe resonator with a primary resonant frequency around 3-4 kHz. This physical resonance boosts sound pressure at the eardrum, making us most sensitive to those frequencies (the 'dip' in the curves)." }
+        ];
+
+        // MC Logic
+        const mcCont = document.getElementById('mc-advanced');
+        mcAdvanced.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'question-box';
+            div.innerHTML = `<strong>Q${i+1}:</strong> ${item.q}<div class="options-grid"></div><div class="explanation">${item.why}</div>`;
+            const grid = div.querySelector('.options-grid');
+            item.options.forEach((o, oi) => {
+                const b = document.createElement('div');
+                b.className = 'opt';
+                b.innerText = o;
+                b.onclick = function() {
+                    const opts = grid.querySelectorAll('.opt');
+                    opts.forEach(btn => btn.className = 'opt');
+                    if(oi === item.correct) {
+                        b.classList.add('correct');
+                        div.querySelector('.explanation').style.display = 'block';
+                    } else {
+                        b.classList.add('incorrect');
+                    }
+                };
+                grid.appendChild(b);
+            });
+            mcCont.appendChild(div);
+        });
+
+        // Open Logic
+        const openCont = document.getElementById('open-advanced');
+        openAdvanced.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <div class="question-box">
+                    <strong>Advanced Problem ${i+1}:</strong> ${item.q}
+                    <br><br><button class="btn-sol" onclick="this.nextElementSibling.style.display='block'">Check Engineering Logic</button>
+                    <div class="solution-panel">${item.sol}</div>
+                </div>
+            `;
+            openCont.appendChild(div);
+        });
+    </script>
+</body>
+</html>

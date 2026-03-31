@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychoacoustics Mastery: Mathematics & DSP Logic</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 950px; margin: 0 auto; padding: 40px; background-color: #f0f2f5; }
+        .workbook-page { background: white; padding: 40px; border-radius: 2px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #d1d9e6; }
+        h1 { color: #003366; border-bottom: 3px solid #003366; display: inline-block; margin-bottom: 30px; }
+        .q-card { border-left: 5px solid #003366; background: #f8f9fa; padding: 20px; margin-bottom: 25px; transition: transform 0.2s; }
+        .q-card:hover { transform: translateX(5px); }
+        .options-list { list-style: none; padding: 0; margin-top: 15px; }
+        .opt-item { background: white; border: 1px solid #ced4da; padding: 12px; margin-bottom: 8px; cursor: pointer; border-radius: 4px; }
+        .opt-item:hover { background: #e9ecef; }
+        .correct { background: #28a745 !important; color: white; border-color: #1e7e34; }
+        .incorrect { background: #dc3545 !important; color: white; border-color: #bd2130; }
+        .feedback { display: none; margin-top: 10px; font-weight: bold; font-size: 0.9em; color: #495057; }
+        .sol-box { display: none; background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; margin-top: 15px; border-radius: 4px; color: #856404; }
+        button.reveal-btn { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="workbook-page">
+    <h1>Module 3: DSP & Mathematical Foundations</h1>
+    <p><em>Focus: Decibel scaling, filter weighting, and non-linear thresholds.</em></p>
+
+    <h2>Section 1: Technical Multiple Choice</h2>
+    <div id="mc-v3"></div>
+
+    <h2>Section 2: Synthesis & Calculation</h2>
+    <div id="open-v3"></div>
+</div>
+
+<script>
+    const mcDataV3 = [
+        { q: "If you increase a signal's power by a factor of 100, how many decibels have you added?", options: ["10 dB", "20 dB", "40 dB", "100 dB"], correct: 1, info: "P_dB = 10 * log10(100) = 20 dB." },
+        { q: "A 40-phon curve requires roughly 50 dB SPL at 200 Hz. If the frequency stays at 200 Hz but the loudness increases to 80 phons, the required SPL will be:", options: ["Exactly 80 dB SPL", "Roughly 85-90 dB SPL", "Exactly 40 dB SPL", "Lower than 50 dB SPL"], correct: 1, info: "Equal loudness curves are non-linear; higher phons usually require a more-than-proportional increase in SPL at low frequencies." },
+        { q: "Which of the following best describes the 'A-weighting' filter's transfer function?", options: ["Low-pass filter", "High-pass filter", "Band-pass filter approximating the inverse of the 40-phon curve", "All-pass filter"], correct: 2, info: "dBA is essentially a band-pass filter that rolls off lows and extreme highs." },
+        { q: "Why does Professor Fiore recommend using headphones instead of speakers for an equal loudness experiment?", options: ["Speakers are too quiet", "Room resonant modes create frequency peaks/dips that bias the results", "Headphones are cheaper", "Headphones have higher distortion"], correct: 1, info: "Room acoustics interfere with the 'flat' reference required for the experiment." },
+        { q: "A sound at 3 kHz is measured at 55 dB SPL. Its loudness in Phons is likely:", options: ["Higher than 55 Phons", "Exactly 55 Phons", "Lower than 55 Phons", "0 Phons"], correct: 0, info: "The ear is extra sensitive at 3kHz; therefore, it sounds louder than the 1kHz reference at the same SPL." },
+        { q: "In DSP, an A-weighting filter is typically implemented using:", options: ["A simple 1st-order RC circuit", "A series of cascaded second-order sections (Biquads)", "A single FFT bin", "A moving average filter"], correct: 1, info: "The complex slope of the A-weighting curve requires higher-order filtering, often SOS/Biquads." },
+        { q: "If a listener cannot distinguish between 70 dB and 70.4 dB, their JND at that frequency is:", options: ["Less than 0.4 dB", "Greater than 0.4 dB", "Exactly 1 dB", "Incalculable"], correct: 1, info: "If they can't hear the difference, the Just Noticeable Difference must be larger than the change applied." },
+        { q: "What is the primary reason the 10 dB 'doubling' rule is considered a 'rule of thumb'?", options: ["Because humans have different ear shapes", "Because the relationship changes based on frequency and baseline intensity", "Because power and intensity are the same thing", "Because the ISO standard was updated in 2024"], correct: 1, info: "The 10dB rule is an average; the actual value varies across the audio spectrum." },
+        { q: "When measuring a high-gain guitar amplifier's 'hiss' (white noise), which weighting provides the most realistic 'annoyance' factor?", options: ["Z-Weighting (Flat)", "A-Weighting", "Phon-Weighting", "Watt-Weighting"], correct: 1, info: "A-weighting is the standard for quantifying noise as humans perceive it." },
+        { q: "A doubling of sound pressure (voltage) results in a ___ dB increase, whereas a doubling of power results in a ___ dB increase.", options: ["3, 6", "6, 3", "10, 3", "3, 10"], correct: 1, info: "20*log10(2) = 6dB (Pressure/Voltage); 10*log10(2) = 3dB (Power)." },
+        { q: "At 10 kHz, a listener needs 70 dB SPL to match a 60 dB SPL tone at 1 kHz. The loudness is:", options: ["70 Phons", "60 Phons", "130 Phons", "10 Phons"], correct: 1, info: "The Phon level is always defined by the 1kHz reference it matches." },
+        { q: "If you normalize two audio tracks to the same Peak dB level, but one is a bass synth and one is a vocal, why does the vocal sound louder?", options: ["Vocals have more DC offset", "The ear is naturally more sensitive to the vocal frequency range (1-4kHz)", "Bass waves are physically larger", "Vocals are always recorded in mono"], correct: 1, info: "Equal loudness contours show higher sensitivity in the mid-range." },
+        { q: "The 'Loudness War' in music production involves reducing dynamic range to increase:", options: ["Peak SPL", "RMS (Average) level and perceived loudness", "Frequency response", "Phase coherence"], correct: 1, info: "Higher average power leads to higher perceived Phons." },
+        { q: "A 'C-Weighting' filter is 'down' by 3 dB at approximately:", options: ["31.5 Hz and 8 kHz", "100 Hz and 5 kHz", "20 Hz and 20 kHz", "It is never down by 3 dB"], correct: 0, info: "dBC is wider than dBA, but still rolls off at the extremes of human hearing." },
+        { q: "If a system is 'Bit-Perfect' but the output sounds different on two different devices at the same dB setting, what is the most likely cause?", options: ["Quantization error", "Different transducer frequency responses (headphones/speakers)", "Dithering algorithms", "TCP/IP jitter"], correct: 1, info: "Even if the bits are the same, the physical conversion to sound pressure depends on the hardware's response curve." }
+    ];
+
+    const openDataV3 = [
+        { q: "A PA system is producing 100 dB SPL of pure 40 Hz sub-bass. A second PA system is producing 85 dB SPL of 1 kHz tone. Based on the lecture, which one might sound louder to a human, and why?", sol: "The 1 kHz tone at 85 dB (85 Phons) would likely sound louder. At 40 Hz, the ear is roughly 20-30 dB less sensitive, so 100 dB SPL might only translate to 70-80 Phons. The mid-range tone has a higher Phon value despite lower physical SPL." },
+        { q: "You are designing a 'Night Mode' for a TV. When the user lowers the volume, what frequencies should your DSP algorithm ideally boost to maintain a 'balanced' sound?", sol: "According to the Fletcher-Munson curves, as volume decreases, our sensitivity to bass and extreme treble drops faster than our sensitivity to mids. Therefore, your DSP should apply a 'loudness contour'—a boost to low and high frequencies as the master volume is attenuated." },
+        { q: "Explain the mathematical difference between dBA and dB SPL.", sol: "dB SPL is a raw logarithmic measure of pressure ($20 \log_{10}(P/P_0)$). dBA is that same value passed through a specific weighting filter (transfer function) that attenuates frequencies humans don't hear well. dBA = dB SPL + Weighting Factor (f)." },
+        { q: "Why is 1 kHz used as the universal reference frequency for loudness instead of 20 Hz or 20 kHz?", sol: "1 kHz is in the center of our most sensitive hearing range, it is easily reproducible, and it avoids the extreme non-linearities found at the edges of the frequency spectrum where hearing thresholds vary wildly between individuals." },
+        { q: "Calculate the power increase: If a 10W amplifier needs to sound 'twice as loud,' and we assume a 10 dB increase is required, what is the new power required? Show the log logic.", sol: "A 10 dB increase represents a factor of 10 in power ($10 \log_{10}(P_2/P_1) = 10 \rightarrow P_2/P_1 = 10$). So, $10W \times 10 = 100W$." }
+    ];
+
+    // Render MC
+    const mcDiv = document.getElementById('mc-v3');
+    mcDataV3.forEach((d, i) => {
+        const card = document.createElement('div');
+        card.className = 'q-card';
+        card.innerHTML = `<strong>Q${i+1}: ${d.q}</strong><div class="options-list"></div><div class="feedback">${d.info}</div>`;
+        const list = card.querySelector('.options-list');
+        d.options.forEach((opt, oi) => {
+            const item = document.createElement('div');
+            item.className = 'opt-item';
+            item.innerText = opt;
+            item.onclick = function() {
+                const siblings = list.querySelectorAll('.opt-item');
+                siblings.forEach(s => s.className = 'opt-item');
+                if(oi === d.correct) {
+                    item.classList.add('correct');
+                    card.querySelector('.feedback').style.display = 'block';
+                } else {
+                    item.classList.add('incorrect');
+                }
+            };
+            list.appendChild(item);
+        });
+        mcDiv.appendChild(card);
+    });
+
+    // Render Open
+    const openDiv = document.getElementById('open-v3');
+    openDataV3.forEach((d, i) => {
+        const card = document.createElement('div');
+        card.className = 'q-card';
+        card.innerHTML = `
+            <strong>Problem ${i+1}:</strong> ${d.q}<br><br>
+            <button class="reveal-btn" onclick="this.nextElementSibling.style.display='block'">Show Solution</button>
+            <div class="sol-box">${d.sol}</div>
+        `;
+        openDiv.appendChild(card);
+    });
+</script>
+
+</body>
+</html>

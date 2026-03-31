@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trego Prep: Bit-Level & Hardware Workbook</title>
+    <style>
+        body { font-family: 'Consolas', 'Monaco', monospace; line-height: 1.5; color: #dcdcdc; max-width: 1000px; margin: auto; padding: 30px; background: #1e1e1e; }
+        h1 { color: #569cd6; border-bottom: 1px solid #3e3e3e; padding-bottom: 10px; }
+        h2 { color: #4ec9b0; margin-top: 40px; border-left: 4px solid #4ec9b0; padding-left: 15px; }
+        .workbook { background: #252526; padding: 25px; margin-bottom: 30px; border-radius: 4px; border: 1px solid #333; }
+        .exercise { margin-bottom: 20px; padding: 15px; background: #2d2d30; border-radius: 4px; }
+        .exercise span { font-weight: bold; color: #ce9178; display: block; margin-bottom: 8px; }
+        code { background: #3c3c3c; color: #d7ba7d; padding: 2px 5px; border-radius: 3px; }
+        .solution-block { background: #000; color: #b5cea8; padding: 20px; border-radius: 5px; overflow-x: auto; display: none; margin-top: 15px; border: 1px solid #444; }
+        button { background: #0e639c; color: white; border: none; padding: 10px 20px; cursor: pointer; font-family: inherit; transition: 0.2s; }
+        button:hover { background: #1177bb; }
+        .pro-tip { font-style: italic; color: #6a9955; margin-top: 5px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <h1>Workbook 6: Hardware Mastery (Bit-Level)</h1>
+    <p>// Goal: Master registers, endianness, and branchless logic.</p>
+
+    <div class="workbook">
+        <h2>1. Register Operations</h2>
+        <div class="exercise">
+            <span>Ex 6.1: The Mask & Clear.</span>
+            Write a C statement to clear bits [4:6] of a 32-bit register <code>REG_A</code> and then set them to the value <code>0b101</code> without changing any other bits.
+        </div>
+        <div class="exercise">
+            <span>Ex 6.2: Status Polling.</span>
+            A hardware flag <code>READY_BIT</code> is the 7th bit of <code>SR_REG</code>. Write a <code>while</code> loop that blocks until that bit becomes 1. Ensure the compiler doesn't optimize the read away.
+        </div>
+        <button onclick="toggleSol('sol61')">View Solution</button>
+        <div id="sol61" class="solution-block">
+// 6.1: Clear bits 4,5,6 (mask 0x70) then OR with 0x50
+REG_A &= ~(0x7 << 4); 
+REG_A |= (0x5 << 4);
+
+// 6.2: Must use volatile to prevent optimization
+while (!( *((volatile uint32_t*)SR_REG_ADDR) & (1 << 7) )) {
+    // Wait for hardware
+}
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>2. Data Packing & Endianness</h2>
+        <div class="exercise">
+            <span>Ex 6.3: 24-bit Sensor Data.</span>
+            A high-end ADC returns data as 3 bytes (High, Mid, Low). Combine them into a single <code>int32_t</code> while preserving the sign (Sign extension).
+            <p class="pro-tip">Hint: If the 24th bit is 1, the result must be negative.</p>
+        </div>
+        
+        <div class="exercise">
+            <span>Ex 6.4: Bit-Fields vs Manual Shifting.</span>
+            Define a <code>struct</code> using bit-fields that represents an 8-bit Control Register: 
+            2 bits for Mode, 1 bit for Enable, 5 bits for Address.
+        </div>
+        <button onclick="toggleSol('sol62')">View Solution</button>
+        <div id="sol62" class="solution-block">
+// 6.3:
+int32_t val = (h << 16) | (m << 8) | l;
+if (val & 0x800000) val |= 0xFF000000; // Sign extend
+
+// 6.4:
+struct ControlReg {
+    uint8_t mode   : 2;
+    uint8_t enable : 1;
+    uint8_t addr   : 5;
+} __attribute__((packed));
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>3. High-Performance Optimization</h2>
+        <div class="exercise">
+            <span>Ex 6.5: Power of Two.</span>
+            Write a function <code>bool isPowerOfTwo(uint32_t n)</code> that uses exactly one bitwise operation and no loops/if statements.
+        </div>
+        <div class="exercise">
+            <span>Ex 6.6: Branchless Absolute Value.</span>
+            Implement <code>int abs_val(int n)</code> without using <code>if</code>, <code>?</code>, or <code>math.h</code>.
+        </div>
+        <button onclick="toggleSol('sol63')">View Solution</button>
+        <div id="sol63" class="solution-block">
+// 6.5:
+return n && !(n & (n - 1));
+
+// 6.6:
+int mask = n >> 31; // 0xFFFFFFFF if negative, 0 if positive
+return (n + mask) ^ mask;
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>4. Memory & Architecture</h2>
+        <div class="exercise">
+            <span>Ex 6.7: Stack vs Heap.</span>
+            In a system with only 2KB of RAM, why is <code>malloc()</code> generally forbidden? List 2 reasons.
+        </div>
+        <div class="exercise">
+            <span>Ex 6.8: Fixed-Point Math.</span>
+            You need to multiply a sensor value by 1.5, but your CPU has no FPU (Floating Point Unit). How do you do this using only integers?
+        </div>
+        <button onclick="toggleSol('sol64')">View Solution</button>
+        <div id="sol64" class="solution-block">
+// 6.7: 
+// 1. Fragmentation (can't guarantee a block is available). 
+// 2. Determinism (malloc time is unpredictable).
+
+// 6.8: Fixed-point scaling
+// 1.5 is 3/2. 
+int result = (sensor_val * 3) >> 1;
+        </div>
+    </div>
+
+    <script>
+        function toggleSol(id) {
+            var x = document.getElementById(id);
+            x.style.display = (x.style.display === "none" || x.style.display === "") ? "block" : "none";
+        }
+    </script>
+</body>
+</html>

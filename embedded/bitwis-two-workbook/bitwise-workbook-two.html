@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trego Prep: Bitwise Essentials</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: auto; padding: 20px; background: #fdfdfd; }
+        .essential-box { border: 2px solid #27ae60; background: #f0fff4; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        h2 { color: #27ae60; border-bottom: 2px solid #27ae60; }
+        .code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .code-card { background: #2d3436; color: #fab1a0; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; }
+        .exercise { background: white; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-left: 5px solid #27ae60; }
+        .sol { display: none; color: #2c3e50; font-weight: bold; margin-top: 10px; background: #ecf0f1; padding: 10px; }
+        button { background: #27ae60; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <h1>Workbook 7: Bitwise Essentials (The "Must-Knows")</h1>
+
+    <div class="essential-box">
+        <h3>The Cheat Sheet</h3>
+        <ul>
+            <li><strong>SET:</strong> <code>REG |= (1 << BIT)</code> (Force a bit to 1)</li>
+            <li><strong>CLEAR:</strong> <code>REG &= ~(1 << BIT)</code> (Force a bit to 0)</li>
+            <li><strong>TOGGLE:</strong> <code>REG ^= (1 << BIT)</code> (Flip the bit)</li>
+            <li><strong>CHECK:</strong> <code>if (REG & (1 << BIT))</code> (Is bit 1?)</li>
+        </ul>
+    </div>
+
+    <h2>Coding Exercises</h2>
+
+    <div class="exercise">
+        <span><strong>Ex 7.1: Multi-Bit Masking (C)</strong></span>
+        <p>You have an 8-bit variable <code>data</code>. You need to extract bits [2, 3, 4] and shift them to the right so they represent a number from 0-7. (Example: 0b10110100 -> extract 101 -> result 5).</p>
+        <button onclick="this.nextElementSibling.style.display='block'">Show Solution</button>
+        <div class="sol">
+            uint8_t result = (data & 0x1C) >> 2; <br>
+            // 0x1C is binary 00011100
+        </div>
+    </div>
+
+    
+
+    <div class="exercise">
+        <span><strong>Ex 7.2: Power Efficient Toggle (C++)</strong></span>
+        <p>In C++, use a template function to toggle a specific bit in any integer type (uint8, uint16, uint32).</p>
+        <button onclick="this.nextElementSibling.style.display='block'">Show Solution</button>
+        <div class="sol">
+            template &lt;typename T&gt;<br>
+            void toggleBit(T &reg, int bit) {<br>
+            &nbsp;&nbsp;reg ^= (static_cast&lt;T&gt;(1) << bit);<br>
+            }
+        </div>
+    </div>
+
+    <div class="exercise">
+        <span><strong>Ex 7.3: The "In-Place" Swap</strong></span>
+        <p>Swap two integers <code>a</code> and <code>b</code> without using a temporary third variable.</p>
+        <button onclick="this.nextElementSibling.style.display='block'">Show Solution</button>
+        <div class="sol">
+            a ^= b;<br>
+            b ^= a;<br>
+            a ^= b;
+        </div>
+    </div>
+
+    <div class="exercise">
+        <span><strong>Ex 7.4: Counting Set Bits (The Hacker Way)</strong></span>
+        <p>Write a function that counts how many bits are set to '1' in a byte. This is called the "Hamming Weight".</p>
+        <button onclick="this.nextElementSibling.style.display='block'">Show Solution</button>
+        <div class="sol">
+            int count = 0;<br>
+            while (n) {<br>
+            &nbsp;&nbsp;n &= (n - 1); // Clears the least significant bit set<br>
+            &nbsp;&nbsp;count++;<br>
+            }
+        </div>
+    </div>
+
+    
+
+    <h2>Embedded "Tricks" Reference</h2>
+    <div class="code-grid">
+        <div class="code-card">
+            // Check if Even/Odd<br>
+            bool isOdd = (val & 1);
+        </div>
+        <div class="code-card">
+            // Fast Multiply by 2<br>
+            val = val << 1;
+        </div>
+        <div class="code-card">
+            // Fast Divide by 2<br>
+            val = val >> 1;
+        </div>
+        <div class="code-card">
+            // Clear all bits except LSB<br>
+            lsb = val & -val;
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trego Junior Embedded Engineer Preparation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: auto; padding: 20px; background: #f4f4f9; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; }
+        h2 { color: #2980b9; margin-top: 40px; background: #fff; padding: 10px; border-left: 5px solid #2980b9; }
+        .workbook { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .exercise { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ccc; }
+        .exercise span { font-weight: bold; color: #e67e22; }
+        .solution-block { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; display: none; margin-top: 10px; }
+        button { background: #2980b9; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        button:hover { background: #3498db; }
+        .tag { font-size: 0.8em; background: #ecf0f1; padding: 3px 8px; border-radius: 10px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Trego Embedded Roadmap: Junior to Expert</h1>
+    <p>Prepare for Trego's "Hacker/Maker" culture by mastering these five levels of Embedded C/C++ development.</p>
+
+    <div class="workbook">
+        <h2>Workbook 1: The Tinkerer <span class="tag">Basics</span></h2>
+        <div class="exercise">
+            <span>Ex 1.1: Bitwise Toggle.</span> Write a macro <code>TOGGLE_BIT(reg, bit)</code> that flips a specific bit in an 8-bit register without affecting others.
+        </div>
+        <div class="exercise">
+            <span>Ex 1.2: Byte Swapping.</span> You received a 16-bit sensor value in Little Endian but your system is Big Endian. Write a function to swap the bytes.
+        </div>
+        <div class="exercise">
+            <span>Ex 1.3: Frequency Check.</span> Write a function that returns <code>true</code> if a given <code>uint32_t frequency</code> is within the human audible range (20Hz - 20kHz).
+        </div>
+        <div class="exercise">
+            <span>Ex 1.4: LED Sequence.</span> Create a loop that generates a binary counter pattern for 4 LEDs (0 to 15).
+        </div>
+        <button onclick="toggleSol('sol1')">Show/Hide Solutions</button>
+        <div id="sol1" class="solution-block">
+// 1.1
+#define TOGGLE_BIT(reg, bit) ((reg) ^= (1U << (bit)))
+
+// 1.2
+uint16_t swapBytes(uint16_t val) { return (val << 8) | (val >> 8); }
+
+// 1.3
+bool isAudible(uint32_t f) { return (f >= 20 && f <= 20000); }
+
+// 1.4
+for(int i=0; i<16; i++) { set_led_bits(i); }
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>Workbook 2: The Maker <span class="tag">Arduino/Pi Level</span></h2>
+        <div class="exercise">
+            <span>Ex 2.1: Non-blocking Delay.</span> Explain why <code>delay(1000)</code> is bad for a Trego-grade system and write a logic snippet using <code>millis()</code> to blink an LED every second without stopping code execution.
+        </div>
+        <div class="exercise">
+            <span>Ex 2.2: Simple State Machine.</span> Design an <code>enum</code> and a <code>switch</code> case for a microwave: IDLE, HEATING, PAUSED.
+        </div>
+        <div class="exercise">
+            <span>Ex 2.3: Debouncing.</span> A button is noisy. Write a pseudo-function that only registers a "press" if the signal is stable for 50ms.
+        </div>
+        <div class="exercise">
+            <span>Ex 2.4: Circular Buffer.</span> Implement a 4-element integer array that overwrites the oldest data when a 5th element is added (useful for sensor averaging).
+        </div>
+        <button onclick="toggleSol('sol2')">Show/Hide Solutions</button>
+        <div id="sol2" class="solution-block">
+// 2.1: Check (current_time - last_time >= interval) inside loop.
+// 2.2: enum State {IDLE, HEATING, PAUSED};
+// 2.4: Use an index: buffer[count % 4] = val; count++;
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>Workbook 3: The Developer <span class="tag">Core C/C++</span></h2>
+        <div class="exercise">
+            <span>Ex 3.1: Pointer Arithmetic.</span> Given <code>uint32_t *p = 0x1000;</code>, what is the address of <code>p + 2</code>?
+        </div>
+        <div class="exercise">
+            <span>Ex 3.2: Function Pointers.</span> Write a function <code>executeAction</code> that takes a pointer to a function with no arguments and returns nothing.
+        </div>
+        <div class="exercise">
+            <span>Ex 3.3: Volatile Keyword.</span> Why must a status register updated by hardware be marked <code>volatile</code>?
+        </div>
+        <div class="exercise">
+            <span>Ex 3.4: Struct Alignment.</span> How many bytes does <code>struct { char a; int b; }</code> take on a 32-bit system? How can you minimize it?
+        </div>
+        <button onclick="toggleSol('sol3')">Show/Hide Solutions</button>
+        <div id="sol3" class="solution-block">
+// 3.1: 0x1008 (32-bit int is 4 bytes, so 2 * 4 = 8).
+// 3.2: void executeAction(void (*func_ptr)()) { func_ptr(); }
+// 3.3: Prevents compiler from optimizing away "redundant" reads to memory that hardware can change.
+// 3.4: Usually 8 bytes due to padding. Use __attribute__((packed)) to get 5 bytes.
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>Workbook 4: The Specialist <span class="tag">RT Embedded</span></h2>
+        <div class="exercise">
+            <span>Ex 4.1: ISR Constraints.</span> List three things you should NEVER do inside an Interrupt Service Routine (e.g., <code>printf</code>).
+        </div>
+        <div class="exercise">
+            <span>Ex 4.2: Mutex vs Semaphore.</span> When would you use a Mutex over a Binary Semaphore? (Hint: Priority Inversion).
+        </div>
+        <div class="exercise">
+            <span>Ex 4.3: Watchdog Timer.</span> Write a function to "kick the dog" and explain what happens if your main loop hangs.
+        </div>
+        <div class="exercise">
+            <span>Ex 4.4: Task Priorities.</span> If Task A (High) and Task B (Low) share a CPU, how do you ensure Task B doesn't starve?
+        </div>
+        <button onclick="toggleSol('sol4')">Show/Hide Solutions</button>
+        <div id="sol4" class="solution-block">
+// 4.1: 1. No long delays. 2. No dynamic memory (malloc). 3. No blocking I/O (printf).
+// 4.2: Mutex has ownership and priority inheritance; Semaphores are for signaling.
+// 4.3: WDT_Reset(); If loop hangs, system reboots to safety.
+        </div>
+    </div>
+
+    <div class="workbook">
+        <h2>Workbook 5: The Expert <span class="tag">Trego Level</span></h2>
+        <div class="exercise">
+            <span>Ex 5.1: Memory Mapping.</span> In Linux, how do you access a physical hardware address (e.g., 0x40001000) from User Space?
+        </div>
+        <div class="exercise">
+            <span>Ex 5.2: Kernel vs User.</span> What is a "System Call"? Give an example used in embedded systems.
+        </div>
+        <div class="exercise">
+            <span>Ex 5.3: Race Conditions.</span> Two threads increment a global counter 1 million times. The result is 1,240,000. Why? Fix it.
+        </div>
+        <div class="exercise">
+            <span>Ex 5.4: Optimization.</span> Replace a division by 8 (<code>x / 8</code>) with a bitwise operation for a compiler that isn't smart.
+        </div>
+        <button onclick="toggleSol('sol5')">Show/Hide Solutions</button>
+        <div id="sol5" class="solution-block">
+// 5.1: mmap() /dev/mem.
+// 5.2: Interface between app and kernel. Example: ioctl() for hardware control.
+// 5.3: Use std::atomic&lt;int&gt; or a Mutex to protect the increment.
+// 5.4: x >> 3;
+        </div>
+    </div>
+
+    <script>
+        function toggleSol(id) {
+            var x = document.getElementById(id);
+            if (x.style.display === "none") { x.style.display = "block"; } 
+            else { x.style.display = "none"; }
+        }
+    </script>
+</body>
+</html>
