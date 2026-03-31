@@ -1,0 +1,23 @@
+#include <print>
+#include <iostream>
+#include <type_traits>
+
+template <typename T>
+constexpr bool is_integral_type_v = std::is_integral_v<T>;
+
+template <typename T>
+requires is_integral_type_v<T>
+T increment_v(T v){
+    return (v + 1);
+};
+
+int main()
+{
+    int x = 1;
+    
+    std::cout << "x before = " << x << std::endl;
+    x = increment_v(x);
+    std::cout << "x after  = " << x << std::endl;
+    
+    return 0;
+}

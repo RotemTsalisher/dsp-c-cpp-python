@@ -1,0 +1,76 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <concepts>
+#include <type_traits>
+
+template <std::integral T>
+T multiply(T a, T b){
+  return (a * b);  
+};
+
+template <std::floating_point T>
+T divide(T a, T b){
+    return (a / b);
+};
+
+template <typename T, typename U>
+requires std::same_as<T,U>
+void swap(T &a, U &b){
+    T tmp;
+    
+    tmp = a;
+    a = b;
+    b = tmp;
+};
+
+template <typename T, typename U>
+requires std::convertible_to<T,U>
+U convert(T a){
+    return static_cast<U>(a);
+};
+
+template <typename T>
+concept arithmetic = std::is_arithmetic_v<T>;
+
+template <arithmetic T>
+T add(T a, T b){
+    return (a + b);
+};
+
+int main()
+{
+    int a = 1, b = 2;
+    char a_ = 1, b_ = 2;
+    
+    std::cout << "integers: (a * b) = " << multiply(a,b) << std::endl;
+    std::cout << "chars:    (a * b) = " << static_cast<unsigned char>('0' + multiply(a_,b_)) << std::endl;
+    
+    float f1 = 1.0f, f2 = 2.0f;
+    double d1 = 1.0, d2 = 2.0;
+    
+    std::cout << "float:   (f1 / f2) = " << divide(f1,f2) << std::endl;
+    std::cout << "double:  (d1 / d2) = " << divide(d1,d2) << std::endl;
+    
+    int *p1 = &a, *p2 = &b;
+    
+    swap(a,b);
+    std::cout << "after swap: a = " << a << ", b = " << b << std::endl;
+    
+    swap(p1, p2);
+    std::cout << "after swap: *p1 = " << *p1 << ", *p2 = " << *p2 << std::endl;
+    
+    swap(d1,d2);
+    std::cout << "after swap: d1 = " << d1 << ", d2 = " << d2 << std::endl;
+    
+    bool res = convert<int,bool>(b);
+    std::cout << "after conversion: res = " << res << std::endl;
+    
+    return 0;
+}

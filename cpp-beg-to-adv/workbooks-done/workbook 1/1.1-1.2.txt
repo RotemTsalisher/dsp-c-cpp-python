@@ -1,0 +1,35 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+constexpr double sqrt_two = 1.41421356237;
+double calculateOctave(double center_frequency)
+{
+    return sqrt_two*center_frequency;
+};
+
+void logSignal(double psd_val)
+{
+    std::cout << psd_val << std::endl;
+};
+void logSignal(double psd_val, int band_idx) {
+    std::cout << "Band [" << band_idx << "]: " << psd_val << std::endl;
+};
+
+int main()
+{
+    // Test EX 1.1
+    double upper = calculateOctave(1000.0);
+    std::cout << "Upper limit: " << upper << " [hz]" << std::endl;
+
+    // Test EX 1.2 (Overloading)
+    logSignal(-5.0);           // Calls version 1
+    logSignal(-5.0, 1);        // Calls version 2
+
+    return 0;
+}

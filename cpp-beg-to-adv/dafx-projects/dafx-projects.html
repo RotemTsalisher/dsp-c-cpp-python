@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAFX Project Roadmap</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+h1 { text-align: center; color: #2A3F54; }
+h2 { color: #254E70; }
+ul { margin-bottom: 30px; }
+.project { border: 1px solid #DDD; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.stage { margin-left: 20px; }
+.code { font-family: Consolas, monospace; color: #A31515; background: #F9F9F9; padding: 2px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>DAFX-inspired Project Roadmap</h1>
+<p>Each project includes 3 implementation stages:</p>
+<ul>
+  <li>🔧 <strong>Proof of Concept</strong> (MATLAB or Pure Data)</li>
+  <li>💿 <strong>VST Plugin</strong> (for PC)</li>
+  <li>⚙️ <strong>Embedded Target</strong> (e.g., ARM Cortex-M, Bela, Raspberry Pi)</li>
+</ul>
+
+<!-- Project 1 -->
+<div class="project">
+  <h2>1) Frequency Modulation Reverb</h2>
+  <p>Extend classical reverberation with FM modulation for evolving decay character (inspired by modulation effects + reverberation chapters).</p>
+  <div class="stage"><strong>Proof of Concept</strong></div>
+  <ul>
+    <li>Implement Schroeder reverberator in MATLAB.</li>
+    <li>Add an LFO-controlled FM segment to one of the comb filters.</li>
+    <li>Visualize frequency response and decay envelope.</li>
+  </ul>
+
+  <div class="stage"><strong>VST Plugin</strong></div>
+  <ul>
+    <li>Use <code>JUCE</code> to wrap algorithm into a cross-platform VST3.</li>
+    <li>Add GUI sliders for FM depth/rate + reverb time/damping.</li>
+    <li>Test in DAWs like Reaper and Ableton.</li>
+  </ul>
+
+  <div class="stage"><strong>Embedded Target</strong></div>
+  <ul>
+    <li>Port optimized C++ to an ARM Cortex-M4 (FPU) board.</li>
+    <li>Use DMA audio + I2S codec (e.g., on a Teensy Audio Shield).</li>
+    <li>Physical knobs for depth/rate/time controls.</li>
+  </ul>
+</div>
+
+<!-- Project 2 -->
+<div class="project">
+  <h2>2) Real-Time Pitch Shifting with Granular Synthesis</h2>
+  <p>Create a pitch shifter based on overlapping granules and windowing.</p>
+  <div class="stage"><strong>Proof of Concept</strong></div>
+  <ul>
+    <li>Write granular pitch shifter in MATLAB (buffer + Hanning windows).</li>
+    <li>Test on sine sweeps and real audio.</li>
+    <li>Plot time-frequency representation.</li>
+  </ul>
+
+  <div class="stage"><strong>VST Plugin</strong></div>
+  <ul>
+    <li>Implement real-time circular buffer with grain scheduler in JUCE.</li>
+    <li>Expose parameters: grain size, overlap, pitch factor.</li>
+    <li>Include CPU usage meter and oversampling.</li>
+  </ul>
+
+  <div class="stage"><strong>Embedded Target</strong></div>
+  <ul>
+    <li>Run granular engine on Raspberry Pi with ALSA or PortAudio.</li>
+    <li>UI via small touchscreen or rotary encoders.</li>
+    <li>Optimize with NEON/FFT SIMD.</li>
+  </ul>
+</div>
+
+<!-- Project 3 -->
+<div class="project">
+  <h2>3) Wave-Digital Filter Bank Synthesizer</h2>
+  <p>Use wave-digital filters to create a multi-band resonator synth.</p>
+  <div class="stage"><strong>Proof of Concept</strong></div>
+  <ul>
+    <li>Implement scattering junctions for filters in MATLAB.</li>
+    <li>Create a bank of tuned resonators.</li>
+    <li>Explore stability with different terminations.</li>
+  </ul>
+
+  <div class="stage"><strong>VST Plugin</strong></div>
+  <ul>
+    <li>Wrap filter bank engine in a JUCE synth plugin (VST3/AU). </li>
+    <li>Add envelopes / LFO control.</li>
+    <li>Preset manager for timbre variations.</li>
+  </ul>
+
+  <div class="stage"><strong>Embedded Target</strong></div>
+  <ul>
+    <li>Bela or Teensy 4 with audio shield.</li>
+    <li>Physical keyboard or MIDI input.</li>
+    <li>Realtime UI for filter tuning.</li>
+  </ul>
+</div>
+
+<!-- Project 4 -->
+<div class="project">
+  <h2>4) Adaptive Noise Reduction (Spectral Subtraction)</h2>
+  <p>Design and implement a spectral noise reducer with adaptive noise estimation.</p>
+  <div class="stage"><strong>Proof of Concept</strong></div>
+  <ul>
+    <li>Implement STFT / ISTFT in MATLAB.</li>
+    <li>Compute noise estimate and subtract spectrum.</li>
+    <li>Evaluate on noisy speech.</li>
+  </ul>
+
+  <div class="stage"><strong>VST Plugin</strong></div>
+  <ul>
+    <li>Optimized FFT implementation in real time.</li>
+    <li>Controls for attack/release and floor.</li>
+    <li>Plot spectral estimate in GUI.</li>
+  </ul>
+
+  <div class="stage"><strong>Embedded Target</strong></div>
+  <ul>
+    <li>DSP board with high memory (e.g., ADAU1452 or ARM Cortex-A).</li>
+    <li>Real-time FFT library (KissFFT / CMSIS-DSP).</li>
+    <li>Footswitch bypass + LED status.</li>
+  </ul>
+</div>
+
+<!-- Project 5 -->
+<div class="project">
+  <h2>5) Binaural Spatializer with HRTF Interpolation</h2>
+  <p>Implement spatial audio using HRTF datasets with smooth interpolation between directions.</p>
+  <div class="stage"><strong>Proof of Concept</strong></div>
+  <ul>
+    <li>Load HRTF dataset in MATLAB.</li>
+    <li>Implement interpolation on sphere (slerp / VBAP).</li>
+    <li>Test with headphone convolution.</li>
+  </ul>
+
+  <div class="stage"><strong>VST Plugin</strong></div>
+  <ul>
+    <li>Create real-time convolution engine in JUCE using FFT convolution.</li>
+    <li>Control azimuth/elevation UI.</li>
+    <li>Use presets for common listening scenarios.</li>
+  </ul>
+
+  <div class="stage"><strong>Embedded Target</strong></div>
+  <ul>
+    <li>Raspberry Pi + USB audio + headphone jack.</li>
+    <li>Efficient FFT convolution (overlap-save).</li>
+    <li>Physical joystick to control spatial position.</li>
+  </ul>
+</div>
+
+</body>
+</html>

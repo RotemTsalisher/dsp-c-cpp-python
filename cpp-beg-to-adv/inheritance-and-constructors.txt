@@ -1,0 +1,71 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+class Base {
+    private:
+        int private_int;
+    protected:
+        int protected_int;
+    public:
+        int public_int;
+        
+        Base() : private_int(-1), protected_int(-1), public_int(-1) {};
+        Base(int a, int b, int c) : private_int(a), protected_int(b), public_int(c) {};
+        
+        void print_info() {
+            std::cout << " --- Base:" << std::endl;
+            std::cout << "private: " << private_int << std::endl;
+            std::cout << "protected: " << protected_int << std::endl;
+            std::cout << "public: " << public_int << std::endl << std::endl;
+        };
+};
+
+class Derived : public Base {
+    
+    private:
+        int private_int;
+    protected:
+        int protected_int;
+    public:
+        int public_int;
+        
+    Derived() : Base(), private_int(0), protected_int(0), public_int(0) {};
+    Derived(int a, int b, int c) : Base(), private_int(a), protected_int(b), public_int(c) {};
+    Derived(int a, int b, int c, int d, int e, int f) : Base(a,b,c), private_int(d), protected_int(e), public_int(f) {};
+    
+    void print_info() {
+            Base::print_info();
+            std::cout << " --- Derived:" << std::endl;
+            std::cout << "private: " << private_int << std::endl;
+            std::cout << "protected: " << protected_int << std::endl;
+            std::cout << "public: " << public_int << std::endl << std::endl;
+        };
+};
+
+int main()
+{
+    /*
+    Base b0;
+    Base b1(1,2,3);
+    
+    b0.print_info();
+    b1.print_info();
+    */
+    
+    Derived d0;
+    Derived d1(10,20,30);
+    Derived d2(1,2,3,4,5,6);
+    
+    d0.print_info();
+    d1.print_info();
+    d2.print_info();
+    
+    return 0;
+}

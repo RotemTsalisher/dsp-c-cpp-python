@@ -1,0 +1,40 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+
+class Point {
+    private:
+        int x,y;
+    
+    public:
+        Point() = default;
+        Point(int x_, int y_) : x(x_), y(y_) {};
+        Point(const Point& p) : x(p.x), y(p.y) {};
+        
+        Point* set_x(int x_) {x = x_; return this;};
+        Point* set_y(int y_) {y = y_; return this;};
+        
+        int get_x() {return x;};
+        int get_y() {return y;};
+        
+        friend std::ostream& operator<<(std::ostream& os, const Point p) {
+            std::cout << "Point:" << std::endl;
+            std::cout << "x = " << p.x << ", y = " << p.y << std::endl;
+            return os;
+        };
+};
+
+int main()
+{
+    Point p(3,7);
+    std::cout << p << std::endl;
+
+    return 0;
+}

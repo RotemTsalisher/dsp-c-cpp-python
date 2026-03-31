@@ -1,0 +1,60 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <concepts>
+#include <string>
+/*
+template <typename T>
+requires std::integral<T>
+void printIntegral(T a)
+{
+    std::cout << "Value: " << a << std::endl;
+}; */
+
+template <typename T>
+concept demand = std::unsigned_integral<T>;
+void print_(demand auto a){
+    std::cout << "== Unsigned ==" << std::endl;
+    std::cout << "Value: " << a << std::endl;
+};
+
+template <typename T>
+concept demand_ = std::integral<T> || std::floating_point<T>;
+void print_(demand_ auto a){
+    
+    std::cout << "== EITHER INTEGRAL OR FLOATING POINT ==" << std::endl;
+    std::cout << "Value: " << a << std::endl;
+}
+
+template <typename T>
+concept demand_str = std::same_as<T, std::string>;
+void print_(demand_str auto a){
+    std::cout << "== STR ONLY ==" << std::endl;
+    std::cout << "Messege: " << a << std::endl;
+};
+
+int main()
+{
+    /*
+    int a{1};
+    long long b = 2L;
+    unsigned char c = 0x03;
+    
+    print_(a);
+    print_(b);
+    print_(static_cast<unsigned char>(c + '0'));
+    
+    print_(static_cast<unsigned char>(c + '0'));
+    print_(static_cast<unsigned int>(a));
+    */
+    std::string messege = "Hello C++!";
+    print_(messege);
+
+    return 0;
+}

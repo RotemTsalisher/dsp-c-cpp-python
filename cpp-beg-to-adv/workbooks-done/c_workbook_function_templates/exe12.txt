@@ -1,0 +1,33 @@
+#include <iostream>
+
+template <typename T>
+struct is_pointer {
+    static constexpr bool value = false;
+};
+
+
+template <typename T>
+struct is_pointer<T*> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+constexpr bool is_pointer_value = is_pointer<T>::value;
+
+int main()
+{
+    int a_val = 3;
+    int *a_ptr = &a_val;
+    std::cout << "is_pointer<int>::value = " << is_pointer<int>::value << std::endl;
+    std::cout << "is_pointer<int*>::value = " << is_pointer<int*>::value << std::endl;
+    
+    std::cout << "is_pointer<decltype(a_val)>::value = " << is_pointer<decltype(a_val)>::value << std::endl;
+    std::cout << "is_pointer<decltype(a_ptr)>::value = " << is_pointer<decltype(a_ptr)>::value << std::endl;
+    
+    std::cout << "is_pointer_value<int> = " << is_pointer_value<int> << std::endl;
+    std::cout << "is_pointer_value<int*> = " << is_pointer_value<int*> << std::endl;
+    
+    std::cout << "is_pointer_value<decltype(a_val)> = " << is_pointer_value<decltype(a_val)> << std::endl;
+    std::cout << "is_pointer_value<decltype(a_ptr)> = " << is_pointer_value<decltype(a_ptr)> << std::endl;
+    
+}

@@ -1,0 +1,62 @@
+EXERCISE 5: Advanced Integration - All Concepts Combined
+Difficulty: Expert
+
+Objective:
+Combine all concepts: function overloading, templates, template specialization, lambda functions, requires clauses, function pointers, and passing functions as arguments—without requiring knowledge of containers.
+
+Requirements:
+1. Create three regular functions with function overloading:
+   - `apply()` that takes two integers and a function pointer: `int(*op)(int, int)`
+   - Overload `apply()` to take two doubles and a function pointer: `double(*op)(double, double)`
+   - Overload `apply()` to take a plain array (pointer + size, or iterators) and a function-like object, applying it to all elements (no `std::vector` required; you can also return count instead of a container)
+
+2. Create template functions with `requires` clauses:
+   - `process()` template function with a `requires` clause ensuring the template parameter is an arithmetic type
+   - A specialization of `process()` for `std::string` that handles string concatenation
+   - The general template should handle numeric operations
+
+3. Implement a higher-order function template `compose()` that:
+   - Takes two function-like objects as template parameters
+   - Returns a lambda that applies both functions in sequence (composition: f(g(x)))
+   - Use templates to make it work with any callable types (function pointers, lambdas, etc.)
+
+4. Create a function template `createFactory()` that:
+   - Takes a numeric value to capture
+   - Returns a lambda (with capture) that multiplies any number by the captured value
+   - Demonstrate creating different "factory" functions with different multipliers
+
+5. Create a function template `filter()` that:
+   - Takes a plain array (pointer + size, or iterators) and a predicate function (lambda or function pointer)
+   - Writes filtered elements into an output array you provide (or returns count)
+   - Use `requires` clause if needed to constrain the predicate return type to bool
+
+6. In your `main()` function:
+   - Create regular functions: `add()`, `multiply()`, `subtract()` for integers
+   - Create function pointers to these functions
+   - Test `apply()` with different function pointers and values (10, 5)
+   - Use `process()` with integers, doubles, and strings to show template specialization
+   - Create a composition: add(5) then multiply by 2, test it
+   - Use `createFactory()` to create multipliers (by 2, by 3, by 5) and test them
+   - Create a C-style array of integers and use `filter()` with different lambda predicates (even, >10, etc.), storing results in another array you provide
+   - Demonstrate passing lambdas with different capture modes to various functions
+
+7. Use `requires` clauses where appropriate to constrain templates to numeric types or specific interfaces.
+
+Example Output:
+Apply add(10, 5) = 15
+Apply multiply(10, 5) = 50
+Process integer: 42 -> Arithmetic result
+Process string: Hello -> String concatenation result
+Composed(add(5) then *2)(10) = 30
+Factory(2): 2 * 7 = 14
+Factory(3): 3 * 7 = 21
+Filtered even numbers: [2, 4, 6, 8]
+
+Note: This is an advanced exercise. Focus on:
+- Function overloading with different signatures
+- Template constraints with `requires`
+- Function composition patterns
+- Mixing function pointers, lambdas, and regular functions seamlessly
+- Lambda capture modes and factory patterns
+
+Make your code clean, well-commented, and demonstrate understanding of all covered concepts WITHOUT using classes or structs.

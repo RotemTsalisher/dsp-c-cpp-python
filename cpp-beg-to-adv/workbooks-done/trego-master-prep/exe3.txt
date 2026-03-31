@@ -1,0 +1,39 @@
+#include <iostream>
+#include <type_traits>
+#include <concepts>
+
+void applyProcessing(double* arr, size_t N, auto lambda_){
+  
+  for (size_t i = 0; i<N; lambda_(arr[i]), i++);
+  
+};
+
+template <typename T>
+requires std::is_arithmetic_v<std::remove_pointer_t<T>>
+void add_signals() {
+  // not really important right now  
+};
+
+int main() {
+    
+    const double thresh = 1.1;
+    double vec[5] = {1.1,2.2,3.3,2.0,1.0};
+    double max_psd = 3.3;
+    
+    auto is_over = [thresh](double a) -> bool {return (a >= thresh);}; 
+    auto subtract_max_psd = [max_psd](double& ele) {ele -= max_psd;};
+    
+    applyProcessing(vec, 5, subtract_max_psd);
+    
+    std::cout << "After processing: " <<std::endl;
+    
+    for(size_t i =0; i< 5; i++){
+        std::cout << "[" << vec[i] << "], ";
+    }
+    std::cout << std::endl;
+    /*
+    std::cout << "2.2 > 1.1 = " << is_over(2.2) << std::endl;
+    std::cout << "0.2 > 1.1 = " << is_over(0.2) << std::endl;
+    */
+    return 0;
+}

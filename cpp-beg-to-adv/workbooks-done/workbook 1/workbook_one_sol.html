@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>C++ Workbook - Solutions</title>
+    <style>
+        body { font-family: 'Consolas', monospace; background: #282c34; color: #abb2bf; padding: 40px; }
+        .sol-card { background: #21252b; border: 1px solid #3e4451; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
+        h2 { color: #61afef; border-bottom: 1px solid #61afef; }
+        pre { color: #98c379; overflow-x: auto; }
+        .comment { color: #5c6370; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Solutions Reference</h1>
+
+    <div class="sol-card">
+        <h2>1. Functions & Overloading</h2>
+        <pre>
+double calculateOctave(double freq) { return freq * 1.414; }
+
+void logSignal(double val) { /* print val */ }
+void logSignal(double val, int band) { /* print band and val */ }
+        </pre>
+    </div>
+
+    <div class="sol-card">
+        <h2>3. Lambdas & Signal Logic</h2>
+        <pre>
+<span class="comment">// Subtracting max PSD using lambda</span>
+auto subtractor = [](double current, double maxPsd) {
+    return current - maxPsd;
+};
+
+void process(double signal, auto func) {
+    double result = func(signal, 100.0); // 100.0 is max PSD
+}
+        </pre>
+    </div>
+
+    <div class="sol-card">
+        <h2>6. Fold Expressions (Variadic)</h2>
+        <pre>
+template&lt;typename... Args&gt;
+auto averageSignal(Args... args) {
+    double sum = (... + args);
+    return sum / sizeof...(args);
+}
+        </pre>
+    </div>
+
+    <div class="sol-card">
+        <h2>7. Constexpr & Type Constraints</h2>
+        <pre>
+template&lt;typename T&gt;
+requires std::is_arithmetic_v&lt;T&gt;
+constexpr T computeStaticGain(T input) {
+    return input * 0.5;
+}
+        </pre>
+    </div>
+</body>
+</html>

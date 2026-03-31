@@ -1,0 +1,80 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+#include <string>
+
+class Dog {
+    private:
+        std::string name, breed;
+        int *p_age;
+    
+    public:
+        Dog() {
+            std::cout << "-- Empty Constructor for Dog --" << std::endl;
+            name = "NULL"; 
+            breed = "NULL"; 
+            p_age = new int; 
+            *p_age = 0;
+            
+        };
+        Dog(std::string name_, std::string breed_, int age){
+            std::cout << "-- Parametric Constructor for Dog --" << std::endl; 
+            name = name_;
+            breed = breed_;
+            p_age = new int;
+            *p_age = age;
+        };
+        ~Dog() {
+            std::cout << "-- Destructor for Dog --" << std::endl;
+            delete p_age;
+        };
+        
+        Dog* set_name(std::string name_) {
+            name = name_;
+            return this;
+        };
+        
+        Dog* set_breed(std::string breed_){
+            breed = breed_;
+            return this;
+        };
+        
+        Dog* set_age(int age){
+            if(!p_age) {
+                p_age = new int;
+            }
+            *p_age = age;
+            return this;
+        };
+        
+        void print_address(){
+            std::cout << "Object Address: " << this << std::endl;
+        };
+        
+        void print_info() {
+            std::cout << "Name: " << this->name << ", Breed = " << this->breed << ", Age = " << *(this->p_age) << std::endl;
+        };
+};
+
+int main()
+{
+    Dog dog0;
+    Dog dog1("Fluffy", "Sheppered", 2);
+    
+    dog0.print_address();
+    dog0.print_info();
+    
+    dog1.print_address();
+    dog1.print_info();
+    
+    dog0.set_name("Lucky")->set_breed("Chaw-Chaw")->set_age(3);
+    dog0.print_info();
+    return 0;
+}

@@ -1,0 +1,30 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+template <typename T, size_t N>
+void printArray(T (&arr)[N]){
+    std::cout << "printing an array of size " << N << std::endl;
+    
+    for(size_t i = 0; i < N; std::cout<<"[" << arr[i++] << "] ");
+    std::cout << std::endl << std::endl;
+    
+    for(auto x : arr){
+        std::cout << "Range Based loop ele: " << x << std::endl;
+    }
+};
+
+int main()
+{
+    double arr[] = {0.2, 1.1, 2.7, 3.6};
+    printArray(arr);
+    return 0;
+}

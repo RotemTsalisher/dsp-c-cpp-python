@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workout 02</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 40px;
+    line-height: 1.6;
+}
+
+.exercise {
+    margin-bottom: 60px;
+    padding: 20px;
+    border: 2px solid #222;
+    border-radius: 8px;
+}
+
+button {
+    padding: 8px 16px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.solution {
+    display: none;
+    margin-top: 20px;
+    background-color: #f0f0f0;
+    padding: 15px;
+    white-space: pre-wrap;
+    border-radius: 6px;
+}
+</style>
+
+<script>
+function toggleSolution(id) {
+    var x = document.getElementById(id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+</head>
+
+<body>
+
+<h1>C++ Workout 02</h1>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 1 – Namespaces + Overloading</h2>
+
+<p>
+Create two namespaces:
+logicA and logicB.
+
+Each namespace must implement two overloaded functions:
+</p>
+
+<pre>
+int transform(int);
+double transform(double);
+</pre>
+
+<p>
+logicA multiplies by 10.  
+logicB divides by 10.
+
+Demonstrate calls to all four overloads.
+</p>
+
+<button onclick="toggleSolution('sol1')">Reveal Solution</button>
+<div id="sol1" class="solution">
+
+#include &lt;iostream&gt;
+
+namespace logicA {
+    int transform(int x) { return x * 10; }
+    double transform(double x) { return x * 10; }
+}
+
+namespace logicB {
+    int transform(int x) { return x / 10; }
+    double transform(double x) { return x / 10; }
+}
+
+int main() {
+    std::cout &lt;&lt; logicA::transform(5) &lt;&lt; "\n";
+    std::cout &lt;&lt; logicA::transform(5.5) &lt;&lt; "\n";
+    std::cout &lt;&lt; logicB::transform(50) &lt;&lt; "\n";
+    std::cout &lt;&lt; logicB::transform(50.0) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 2 – constexpr + Function Pointer</h2>
+
+<p>
+Create a constexpr function:
+</p>
+
+<pre>
+constexpr int cube(int);
+</pre>
+
+<p>
+Create a function pointer to cube.
+Call it at runtime and also use it in a constexpr variable.
+</p>
+
+<button onclick="toggleSolution('sol2')">Reveal Solution</button>
+<div id="sol2" class="solution">
+
+#include &lt;iostream&gt;
+
+constexpr int cube(int x) {
+    return x * x * x;
+}
+
+int main() {
+
+    constexpr int val = cube(3);
+
+    int (*func)(int) = cube;
+
+    std::cout &lt;&lt; val &lt;&lt; "\n";
+    std::cout &lt;&lt; func(4) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 3 – Variable Template Trait + requires</h2>
+
+<p>
+Create a variable template trait:
+</p>
+
+<pre>
+is_integral_type_v&lt;T&gt;
+</pre>
+
+<p>
+It should evaluate to true only for integral types.
+
+Then create a function template:
+</p>
+
+<pre>
+increment(T value)
+</pre>
+
+<p>
+It must only accept integral types using requires.
+</p>
+
+<button onclick="toggleSolution('sol3')">Reveal Solution</button>
+<div id="sol3" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+constexpr bool is_integral_type_v = std::is_integral_v&lt;T&gt;;
+
+template &lt;typename T&gt;
+requires is_integral_type_v&lt;T&gt;
+T increment(T value) {
+    return value + 1;
+}
+
+int main() {
+    std::cout &lt;&lt; increment(5) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 4 – Struct Trait + Specialization + constexpr</h2>
+
+<p>
+Create a struct-based trait:
+</p>
+
+<pre>
+type_multiplier&lt;T&gt;
+</pre>
+
+<p>
+Default multiplier = 1  
+Specialize for double so multiplier = 2  
+
+Create a constexpr function:
+</p>
+
+<pre>
+apply_multiplier(T value)
+</pre>
+
+<p>
+Return value * type_multiplier&lt;T&gt;::value
+</p>
+
+<button onclick="toggleSolution('sol4')">Reveal Solution</button>
+<div id="sol4" class="solution">
+
+#include &lt;iostream&gt;
+
+template &lt;typename T&gt;
+struct type_multiplier {
+    static constexpr int value = 1;
+};
+
+template &lt;&gt;
+struct type_multiplier&lt;double&gt; {
+    static constexpr int value = 2;
+};
+
+template &lt;typename T&gt;
+constexpr T apply_multiplier(T value) {
+    return value * type_multiplier&lt;T&gt;::value;
+}
+
+int main() {
+    constexpr int a = apply_multiplier(5);
+    constexpr double b = apply_multiplier(3.0);
+
+    std::cout &lt;&lt; a &lt;&lt; "\n";
+    std::cout &lt;&lt; b &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 5 – Fold Expression + requires</h2>
+
+<p>
+Create a variadic template function:
+</p>
+
+<pre>
+multiply_all(...)
+</pre>
+
+<p>
+- Use a fold expression  
+- Accept only arithmetic types using requires  
+</p>
+
+<button onclick="toggleSolution('sol5')">Reveal Solution</button>
+<div id="sol5" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename... Args&gt;
+requires (std::is_arithmetic_v&lt;Args&gt; && ...)
+auto multiply_all(Args... args) {
+    return (args * ...);
+}
+
+int main() {
+    std::cout &lt;&lt; multiply_all(2,3,4) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 6 – Passing Lambda as Argument</h2>
+
+<p>
+Create a function:
+</p>
+
+<pre>
+apply_operation(int a, int b, function pointer)
+</pre>
+
+<p>
+Pass a lambda to it.
+The lambda should subtract b from a.
+</p>
+
+<button onclick="toggleSolution('sol6')">Reveal Solution</button>
+<div id="sol6" class="solution">
+
+#include &lt;iostream&gt;
+
+int apply_operation(int a, int b, int (*op)(int,int)) {
+    return op(a,b);
+}
+
+int main() {
+
+    auto lambda = [](int x, int y) {
+        return x - y;
+    };
+
+    std::cout &lt;&lt; apply_operation(10,5,lambda) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 7 – Threads + Variadic Template Mix</h2>
+
+<p>
+Create a variadic template function:
+</p>
+
+<pre>
+print_sum(...)
+</pre>
+
+<p>
+It must:
+- Use fold expression to sum arguments  
+- Launch a thread that prints the result  
+- Join the thread  
+</p>
+
+<button onclick="toggleSolution('sol7')">Reveal Solution</button>
+<div id="sol7" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+
+template &lt;typename... Args&gt;
+auto compute_sum(Args... args) {
+    return (args + ...);
+}
+
+template &lt;typename... Args&gt;
+void print_sum(Args... args) {
+
+    auto result = compute_sum(args...);
+
+    std::thread t([result]() {
+        std::cout &lt;&lt; result &lt;&lt; "\n";
+    });
+
+    t.join();
+}
+
+int main() {
+    print_sum(1,2,3,4);
+}
+
+</div>
+</div>
+
+</body>
+</html>

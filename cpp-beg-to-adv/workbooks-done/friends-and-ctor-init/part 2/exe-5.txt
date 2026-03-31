@@ -1,0 +1,32 @@
+#include <iostream>
+
+class Logger {
+    private:
+        std::ostream& output;
+        int level;
+    
+    public:
+        Logger() = default;
+        Logger(std::ostream& os, int level_) : output(os), level(level_) {};
+        Logger(const Logger& logger_) : output(logger_.output), level(logger_.level) {};
+        
+        int get_level() {return level;};
+        std::ostream& get_stream() {return output;};
+        
+        Logger& set_level(int level_) {level = level_; return *this;};
+};
+
+int main() {
+
+    Logger log1(std::cout, 1);
+
+    std::cout << "level = " << log1.get_level() << std::endl;
+
+    log1.get_stream() << "Logging message from log1\n";
+
+    Logger log2(log1);   // test copy constructor
+
+    log2.get_stream() << "Logging message from log2\n";
+
+    return 0;
+}

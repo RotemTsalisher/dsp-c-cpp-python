@@ -1,0 +1,17 @@
+#include <iostream>
+
+int return_int(void){
+    return 1;
+};
+
+auto call_func(auto (*f)(void)){
+    return f();
+};
+int main()
+{
+    int (*foo)(void) = &return_int;
+    
+    std::cout << "return_int returned: " << call_func(foo) << std::endl;
+
+    return 0;
+}

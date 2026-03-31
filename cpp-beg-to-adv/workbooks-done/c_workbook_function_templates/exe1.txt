@@ -1,0 +1,16 @@
+#include <iostream>
+
+auto square_(auto x){
+    decltype(auto) res = x*x;
+    return res;
+}
+
+int main()
+{
+    int a = 2;
+    float b = 1.5;
+    
+    std::cout << "a*a = " << square_(a) << std::endl;
+    std::cout << "b*b = " << square_(b) << std::endl;
+    return 0;
+}

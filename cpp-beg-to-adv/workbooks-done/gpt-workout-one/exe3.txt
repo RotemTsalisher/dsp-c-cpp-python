@@ -1,0 +1,38 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+T add(T a, T b)
+{
+    return a + b;
+}
+
+template <typename T>
+struct is_pointer{
+    static const bool v = false;
+};
+
+template <typename T>
+struct is_pointer<T*>{
+    static const bool v = true;
+};
+
+template <typename S>
+inline constexpr bool is_pointer_v = is_pointer<S>::v;
+
+
+int main()
+{
+    
+    static_assert(is_pointer_v<int*>, "not a pointer !");
+    static_assert(is_pointer_v<int>, "not a pointer !");
+    return 0;
+}

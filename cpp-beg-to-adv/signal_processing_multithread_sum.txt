@@ -1,0 +1,24 @@
+#include <iostream>
+#include <thread>
+#include <functional>
+
+static uint16_t v[8] = {1,2,3,4,5,6,7,8};
+static uint16_t res = 0;
+
+void partial_sum(const uint16_t *v, size_t start, size_t end, uint16_t& res)
+{
+    std::cout << "PARTIAL SUM! {" << start << ", " << end << ", " << res << "}" << std::endl; 
+    for (size_t i = start; i < end; i++)
+        res += v[i];
+}
+
+int main()
+{
+    std::thread thread1(partial_sum, v, 0, std::size(v)/2, std::ref(res));
+    std::thread thread2(partial_sum, v, std::size(v)/2, std::size(v), std::ref(res));
+
+    thread1.join();
+    thread2.join();
+
+    std::cout << "res = " << res << std::endl;
+}

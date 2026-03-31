@@ -1,0 +1,14 @@
+#include <iostream>
+#include <string>
+
+template <int... Ns>
+struct Subtract{
+    static constexpr int sub = (100 - ... - Ns);
+};
+
+int main()
+{
+    std::cout << "Sub<10,20,30> = " << Subtract<10,20,30>::sub << std::endl;  
+    
+    return 0;
+}

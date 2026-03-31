@@ -1,0 +1,55 @@
+#include <iostream>
+#include <string>
+
+class OpRunner {
+    private:
+        std::string serial;
+        int (*op)(int, int);
+    
+    public:
+        
+        OpRunner() { serial = "NULL";};
+        OpRunner(std::string serial_) {serial = serial_;};
+        OpRunner(std::string serial_, int(*op_)(int, int)){
+            serial = serial_;
+            op = op_;
+            std::cout << "Constructor set serial and operation" << std::endl;
+        };
+        
+        void set_serial(std::string serial_) {serial = serial_;};
+        void set_op(int(*op_)(int,int)) {this->op = op_;};
+        std::string get_serial() {return serial;};
+        
+        int run_op(int a, int b) {
+            std::cout << "Using inner operation!" << std::endl;
+            return this->op(a,b);
+        };
+            
+        int run_op(int a, int b, int(*op)(int, int)) {
+            std::cout << "Using outer operation!" << std::endl;
+            return op(a,b);
+        };
+        
+};
+
+int main(){
+    int a = 1, b = 2;
+    
+    auto add_ = [](int a, int b) {return a + b;};
+    auto mul_ = [](int a, int b) {return a * b;};
+    OpRunner or0("AE123", add_);
+    
+    int res = or0.run_op(a,b);
+    std::cout << "res = " << res << std::endl;
+    
+    OpRunner or1("AE124");
+    or1.set_op(mul_);
+    res = or1.run_op(a,b);
+    
+    std::cout << "res = " << res << std::endl;
+    
+    OpRunner or2("AE125");
+    res = or2.run_op(a,b,mul_);
+    
+    std::cout << "res = " << res << std::endl;
+};

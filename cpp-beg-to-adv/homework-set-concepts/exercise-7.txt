@@ -1,0 +1,94 @@
+EXERCISE 7: Expert-Level Requires Expressions
+Difficulty: Expert
+
+Objective:
+Master complex requires expressions, variadic concepts, nested requirements, and advanced constraint combinations.
+
+Requirements:
+1. Create a variadic concept `AllSame` that checks if all template arguments are the same type:
+   - `AllSame<int, int, int>` should be true
+   - `AllSame<int, double, int>` should be false
+   - Use fold expressions: `template<typename T, typename... Ts> concept AllSame = (std::same_as<T, Ts> && ...);`
+   - Test with 2, 3, and 4 type parameters
+
+2. Create a variadic concept `AllArithmetic` that checks if all types are arithmetic:
+   - Use fold expression with `std::arithmetic`
+   - Syntax: `template<typename... Ts> concept AllArithmetic = (std::arithmetic<Ts> && ...);`
+
+3. Create a concept `CallableWithReturn` that checks:
+   - A type is callable with specific arguments
+   - Returns a specific type (or convertible to it)
+   - Use: `template<typename F, typename R, typename... Args> concept CallableWithReturn = std::is_invocable_r_v<R, F, Args...>;`
+   - Or use requires: `requires(F f, Args... args) { { f(args...) } -> std::convertible_to<R>; }`
+
+4. Create a function template `applyWithCheck()` that:
+   - Takes a callable and arguments
+   - Uses `CallableWithReturn` to ensure callable returns a specific type
+   - Applies the callable and returns the result
+   - Works with function pointers, lambdas, and function objects
+
+5. Create a concept `SameSizeArrays` that checks if two array types have the same size:
+   - Use `std::extent_v<T>` to get array extent
+   - Check: `template<typename T, typename U> concept SameSizeArrays = std::extent_v<T> == std::extent_v<U>;`
+   - Handle both arrays and pointers (where extent might be 0)
+
+6. Create a concept `PointerToArithmetic` that checks:
+   - Type is a pointer
+   - Points to an arithmetic type
+   - Use nested requires: `template<typename T> concept PointerToArithmetic = std::is_pointer_v<T> && requires { requires std::arithmetic<std::remove_pointer_t<T>>; };`
+   - Note the `requires requires` - outer requires is clause, inner is expression
+
+7. Create a function template `pointerMath()` that:
+   - Takes a pointer and an integral offset
+   - Uses `PointerToArithmetic` concept
+   - Performs pointer arithmetic safely
+   - Returns the offset pointer
+
+8. Create a concept `ArrayOfArithmetic` that checks:
+   - Type is an array
+   - Element type is arithmetic
+   - Use: `template<typename T> concept ArrayOfArithmetic = std::is_array_v<T> && std::arithmetic<std::remove_extent_t<T>>;`
+
+9. Create a variadic function template `sumAll()` that:
+   - Takes any number of arithmetic arguments
+   - Uses `AllArithmetic` concept
+   - Returns the sum of all arguments
+   - Works with mixed types (int, double, etc.) if you use `auto` return type
+
+10. Create a concept `FunctionPointerMatching` that checks:
+    - Type is a function pointer
+    - Function signature matches specific return and argument types
+    - Use requires with type traits
+
+11. In your `main()`, create a comprehensive test suite:
+    - Test `AllSame` with various type combinations
+    - Test `AllArithmetic` with arithmetic and non-arithmetic types
+    - Test `CallableWithReturn` with functions, lambdas, and function pointers
+    - Test `PointerToArithmetic` with various pointer types
+    - Test `sumAll()` with different numbers and types of arguments
+    - Create arrays and test array concepts
+    - Show concept-based error messages (intentionally fail some to see better errors)
+    - Compare compilation behavior with and without concepts
+
+Example Output:
+AllSame check: true
+AllArithmetic check: true
+Callable returned correct type: 42
+Pointer arithmetic: offset successful
+Array of arithmetic: passed
+Sum of 1, 2.5, 3, 4.7: 11.2
+
+Note:
+- Master variadic concepts with fold expressions: `(Concept<Ts> && ...)` for AND, `(Concept<Ts> || ...)` for OR
+- Understand `requires requires` syntax: first `requires` is the clause keyword, second starts the expression
+- Learn nested requirements: `requires { requires condition; }` for logical conditions inside requires
+- Practice with `std::remove_pointer_t`, `std::remove_extent_t`, `std::decay_t` for type manipulation
+- Use `std::declval<T>()` in requires expressions when you need to create temporary values without constructors
+- Understand how concepts enable better generic programming than old SFINAE patterns
+- Experiment with complex requires expressions combining multiple constraints
+- Learn to read and write complex nested requires expressions fluently
+
+Challenge (Optional):
+- Create a concept that checks if a function pointer takes N arguments of arithmetic types
+- Create a variadic concept that checks if a callable can be called with a variable number of arguments
+- Combine multiple variadic concepts in a single function template

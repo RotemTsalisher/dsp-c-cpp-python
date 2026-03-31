@@ -1,0 +1,69 @@
+EXERCISE 5: Requires with Arrays and Function Pointers
+Difficulty: Advanced
+
+Objective:
+Use requires expressions with C-style arrays and function pointers, combining concepts with what you know about lambdas and function pointers.
+
+Requirements:
+1. Create a concept `ArrayType` that checks if a type is an array:
+   - Use `std::is_array_v<T>` from `<type_traits>`
+   - Or check if it can be subscripted and has size
+
+2. Create a concept `FunctionPointer` that checks if a type is a function pointer:
+   - Use `std::is_pointer_v<T>` and check if it's callable
+   - Use requires to verify: `requires(T f) { f(); }` or `f(args...);`
+
+3. Create a concept `CallableWith` that checks if a type can be called with specific argument types:
+   - Template: `template<typename F, typename... Args> concept CallableWith = ...`
+   - Use `std::is_invocable_v<F, Args...>` from `<type_traits>`
+   - Or use requires: `requires(F f, Args... args) { f(args...); }`
+
+4. Create a function template `applyToArray()` that:
+   - Takes a C-style array and a function/lambda
+   - Uses requires to ensure:
+     a) First parameter is an array (or pointer + size)
+     b) Second parameter is callable with the array's element type
+     c) Callable returns void or the element type
+   - Applies the function to each element
+   - Works with both function pointers and lambdas
+
+5. Create a concept `Predicate` that checks if a type:
+   - Is callable with one argument
+   - Returns something convertible to bool
+   - Use compound requirement: `{ f(arg) } -> std::convertible_to<bool>`
+
+6. Create a function template `countIf()` that:
+   - Takes a C-style array, array size, and a predicate function
+   - Uses requires with `Predicate` concept
+   - Returns count of elements where predicate returns true
+   - Works with function pointers, lambdas, and function objects
+
+7. Create a concept `TransformFunction` that checks if a type:
+   - Is callable with one argument of type `T`
+   - Returns a type `U` (possibly different from `T`)
+   - Use: `template<typename F, typename T, typename U> concept TransformFunction = ...`
+
+8. Create a function template `transformArray()` that:
+   - Takes input array, output array, size, and transform function
+   - Uses `TransformFunction` concept
+   - Applies transform to each element and stores in output array
+
+9. In your `main()` function:
+   - Create C-style arrays of integers and doubles
+   - Define regular functions and function pointers
+   - Use lambdas with your concept-constrained templates
+   - Test `applyToArray()`, `countIf()`, and `transformArray()`
+   - Show how concepts provide better error messages
+
+Example Output:
+Applied function to array: [2, 4, 6, 8, 10]
+Count of elements > 5: 3
+Transformed array: [2, 4, 6, 8, 10]
+Predicate check passed
+
+Note:
+- Combine your knowledge of function pointers and lambdas with concepts
+- Use `std::decay_t` or `std::remove_reference_t` if needed for type matching
+- Practice with `std::is_invocable_v` vs. requires expressions for callability
+- Understand how concepts work with function templates that take callables
+- Learn to constrain both the array type and the function type in the same template

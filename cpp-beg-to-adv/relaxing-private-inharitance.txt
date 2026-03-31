@@ -1,0 +1,57 @@
+#include <print>
+#include <iostream>
+
+class Base {
+    private:
+        int base_private;
+    protected:
+        int base_protected;
+    public:
+        int base_public;
+    
+        Base() : base_private(-1), base_protected(-1), base_public(-1) {};
+        
+        friend std::ostream& operator<<(std::ostream& os, const Base& b) {
+            os << "Base:" << std::endl;
+            os << "base_private: "    << b.base_private   << std::endl;
+            os << "base_protected: "  << b.base_protected << std::endl;
+            os << "base_public: "     << b.base_public    << std::endl;
+            return os;
+        };
+};
+
+class Derived : private Base {
+    private:
+        int derived_private;
+    protected:
+        int derived_protected;
+    public:
+        int derived_public;
+        
+        using Base::base_protected; // turn protected from base to public in derived
+        using Base::base_public; //  relaxing private inheritance
+        
+        Derived() : Base(), derived_private(0), derived_protected(0), derived_public(0) {};
+        
+        friend std::ostream& operator<<(std::ostream& os, const Derived& d) {
+            
+            os << static_cast<const Base&>(d);
+            os << "Derived:" << std::endl;
+            os << "derived_private: "   << d.derived_private   << std::endl;
+            os << "derived_protected: " << d.derived_protected << std::endl;
+            os << "derived_public: "    << d.derived_public    << std::endl;
+            return os;
+        };
+};
+
+int main()
+{
+    Derived d0;
+    
+    d0.base_protected = 100;
+    d0.base_public = 200;
+    
+    std::cout << d0;
+    std::cout << "Hello World!" << std::endl;
+    return 0;
+}

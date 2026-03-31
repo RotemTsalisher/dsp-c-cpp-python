@@ -1,0 +1,68 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+#include <string>
+
+class Dog {
+    private:
+        std::string name, breed;
+        int *p_age;
+    public:
+        Dog(){
+            std::cout << "-- Empty Constructor --" << std::endl;
+            name = "NULL";
+            breed = "NULL";
+            p_age = new int;
+            *p_age = 0;
+        };
+        
+        Dog(std::string name_, std::string breed_, int age) {
+            std::cout << "-- Parameters Constructor --" << std::endl;
+            name = name_;
+            breed = breed_;
+            p_age = new int;
+            *p_age = age;
+        };
+        
+        Dog(const Dog& d){
+            std::cout << "-- COPY CONSTRUCTOR --" << std::endl;
+            this->name = d.name;
+            this->breed = d.breed;
+            this->p_age = new int;
+            *(this->p_age) = *(d.p_age);
+        };
+        
+        ~Dog(){
+            std::cout << "-- Destructor for Dog: {" << name << ", " << breed << ", " << *p_age << "}" << std::endl;
+            delete p_age;
+        };
+};
+
+void vanishing_dog(){
+    Dog dog0("Snoopy", "Border Collie", 4);
+    std::cout << "-- END OF VANISHING_DOG() --" << std::endl;
+};
+
+void copy_of_dog(Dog d) {
+    
+    std::cout << "-- END OF COPY_OF_DOG() --" << std::endl;
+};
+
+
+int main()
+{
+    Dog dog0;
+    Dog dog1("Fluffy", "Shepered", 2);
+    vanishing_dog();
+    copy_of_dog(dog1);
+    
+    std::cout << "-- END OF MAIN --" << std::endl;
+    return 0;
+}

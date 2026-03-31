@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workbook 2: Tinker Level</title>
+    <style>
+        body { font-family: 'Consolas', monospace; line-height: 1.6; color: #444; max-width: 950px; margin: auto; padding: 20px; background-color: #f0f2f5; }
+        .subject-group { background: #fff; border: 1px solid #d1d9e6; padding: 20px; margin-bottom: 30px; border-radius: 8px; }
+        h2 { color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 5px; }
+        .ex { border-left: 4px solid #f39c12; padding-left: 15px; margin: 15px 0; }
+        .goal { color: #d35400; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Workbook 2: Tinker Level</h1>
+
+    <div class="subject-group">
+        <h2>1. Functions & Overloading</h2>
+        <div class="ex">
+            <p><span class="goal">Ex 1.1:</span> Write three overloads of <code>process</code>: one for <code>int</code>, <code>float</code>, and <code>double</code>. Tinker: Call <code>process(1.5)</code>. Does it call the float or double version? Why?</p>
+        </div>
+        <div class="ex">
+            <p><span class="goal">Ex 1.2:</span> Try to overload a function by changing <b>only</b> the return type. Does the compiler allow it? Document the error.</p>
+        </div>
+    </div>
+
+    <div class="subject-group">
+        <h2>2. Templates & Specialization</h2>
+        <div class="ex">
+            <p><span class="goal">Ex 2.1:</span> Create a template <code>is_small&lt;T&gt;</code> that returns true if <code>sizeof(T) <= 4</code>. Specialization: Make it return <code>false</code> specifically for <code>int</code> even though it is usually 4 bytes.</p>
+        </div>
+        <div class="ex">
+            <p><span class="goal">Ex 2.2:</span> Create a template that takes two different types <code>T</code> and <code>U</code> and returns their sum. Tinker: What happens if you sum a <code>char</code> and an <code>int</code>?</p>
+        </div>
+    </div>
+
+    <div class="subject-group">
+        <h2>3. Lambdas & Requires</h2>
+        <div class="ex">
+            <p><span class="goal">Ex 3.1:</span> Write a lambda that captures a local variable by reference. Modify the variable inside the lambda. Check the variable's value outside. Tinker: Now capture it by value and try to modify it—what keyword do you need?</p>
+        </div>
+        <div class="ex">
+            <p><span class="goal">Ex 3.2:</span> Write a template with <code>requires std::is_integral_v&lt;T&gt;</code>. Tinker: Try passing a <code>bool</code>. Is a boolean considered an integral type in C++?</p>
+        </div>
+    </div>
+
+    <div class="subject-group">
+        <h2>4. Function Pointers</h2>
+        <div class="ex">
+            <p><span class="goal">Ex 4.1:</span> Create a pointer to a function that takes two doubles. Assign a lambda to it. Tinker: Can you assign a lambda that has a <b>capture</b> to a raw function pointer?</p>
+        </div>
+    </div>
+
+    <div class="subject-group">
+        <h2>5. Fold Expressions & constexpr</h2>
+        <div class="ex">
+            <p><span class="goal">Ex 5.1:</span> Use a <b>unary left fold</b> to subtract a pack of numbers from 100. Tinker: Does the order of the pack change the result compared to a right fold?</p>
+        </div>
+        <div class="ex">
+            <p><span class="goal">Ex 5.2:</span> Write a <code>constexpr</code> function. Try to put a <code>std::cout</code> inside it. Does it still compile? Why or why not?</p>
+        </div>
+    </div>
+</body>
+</html>

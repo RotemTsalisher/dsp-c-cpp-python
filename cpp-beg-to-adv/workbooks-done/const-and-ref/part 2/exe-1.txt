@@ -1,0 +1,32 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+class Modifier {
+    private:
+        int& val;
+    
+    public:
+        Modifier(int& v) : val(v) {};
+        Modifier(const Modifier& m) : val(m.val) {};
+        
+        Modifier& increment_value() {val++ ; return *this;};
+        Modifier& print_value() {std::cout << "Value: " << val << std::endl; return *this;};
+        int get_value() {return val; };
+};
+
+int main()
+{
+    int a = 3;
+    Modifier m(a);
+    
+    m.increment_value().print_value();
+    std::cout << "a = " << a << std::endl;
+    return 0;
+}

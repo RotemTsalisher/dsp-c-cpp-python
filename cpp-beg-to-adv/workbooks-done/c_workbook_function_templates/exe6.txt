@@ -1,0 +1,23 @@
+#include <iostream>
+#include <cstring>
+
+template <typename T>
+T maxVal(T a, T b) {
+    return (a > b) ? a : b;
+}
+template <>
+const char* maxVal(const char* a, const char* b){
+    return (std::strcmp(a,b) > 0) ? a : b;   
+}
+int main()
+{
+    int (*cube_explicit)(int) = [](int a) {return a * a * a;};
+    auto cube_lambda = [](int a) {return a * a * a;};
+    
+    std::cout << "cube_explicit:" << std::endl;
+    std::cout << "3 cube = " << cube_explicit(3) << std::endl;
+    std::cout << "cube_lambda:" << std::endl;
+    std::cout << "3 cube = " << cube_lambda(3) << std::endl;
+
+    return 0;
+}

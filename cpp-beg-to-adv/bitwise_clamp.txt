@@ -1,0 +1,33 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+  GDB online is an online compiler and debugger tool for C, C++, Python, PHP, Ruby, 
+  C#, OCaml, VB, Perl, Swift, Prolog, Javascript, Pascal, COBOL, HTML, CSS, JS
+  Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <stdio.h>
+#include <iostream>
+#include <cstdint>
+
+struct INT {
+    static constexpr int32_t upper_limit = (1 << 15) - 1;
+    static constexpr int32_t lower_limit = -(1 << 15);
+};
+
+int16_t clamp_overflow(int16_t a , int16_t b){
+    
+    int32_t res = a + b;
+    uint16_t upper_part = static_cast<uint16_t>(res >> 16);
+    uint16_t neg_bit = (upper_part >> 15) & 1;
+    
+    neg_bit = (res & neg_bit) >> 15;
+    res = (!neg_bit)*res | (neg_bit)
+}
+int main()
+{
+    std::cout << "upper limit = " << INT::upper_limit << std::endl;
+    std::cout << "lower_limit = " << INT::lower_limit << std::endl;
+
+    return 0;
+}

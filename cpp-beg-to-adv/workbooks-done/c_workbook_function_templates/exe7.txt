@@ -1,0 +1,17 @@
+#include <iostream>
+#include <cstring>
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+void print(T a){
+    std::cout << "Hello, I am arithmetic type T: " << "a = " << a <<std::endl;
+}
+int main()
+{
+    int a = 3;
+    void* tmp;
+    
+    print(a);
+
+    return 0;
+}

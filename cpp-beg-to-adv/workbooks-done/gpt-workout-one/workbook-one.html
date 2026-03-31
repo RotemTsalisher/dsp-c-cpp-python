@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workout 01</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 40px;
+    line-height: 1.6;
+}
+
+.exercise {
+    margin-bottom: 60px;
+    padding: 20px;
+    border: 2px solid #444;
+    border-radius: 8px;
+}
+
+button {
+    padding: 8px 16px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.solution {
+    display: none;
+    margin-top: 20px;
+    background-color: #f4f4f4;
+    padding: 15px;
+    white-space: pre-wrap;
+    border-radius: 6px;
+}
+</style>
+
+<script>
+function toggleSolution(id) {
+    var x = document.getElementById(id);
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+</script>
+</head>
+
+<body>
+
+<h1>C++ Workout 01</h1>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 1 – Namespace + Basic Functions</h2>
+
+<p>
+Create two namespaces:
+mathA and mathB.
+Each namespace must implement a function:
+</p>
+
+<pre>
+int compute(int x);
+</pre>
+
+<p>
+mathA::compute returns x * 2  
+mathB::compute returns x * 3  
+
+In main(), demonstrate that naming collisions are prevented.
+</p>
+
+<button onclick="toggleSolution('sol1')">Reveal Solution</button>
+<div id="sol1" class="solution">
+
+#include &lt;iostream&gt;
+
+namespace mathA {
+    int compute(int x) {
+        return x * 2;
+    }
+}
+
+namespace mathB {
+    int compute(int x) {
+        return x * 3;
+    }
+}
+
+int main() {
+    std::cout << mathA::compute(5) << "\n";
+    std::cout << mathB::compute(5) << "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 2 – Overloading + constexpr</h2>
+
+<p>
+Create two overloaded functions named square:
+</p>
+
+<pre>
+int square(int);
+double square(double);
+</pre>
+
+<p>
+Both must be constexpr.
+Demonstrate compile-time evaluation using a constexpr variable.
+</p>
+
+<button onclick="toggleSolution('sol2')">Reveal Solution</button>
+<div id="sol2" class="solution">
+
+#include &lt;iostream&gt;
+
+constexpr int square(int x) {
+    return x * x;
+}
+
+constexpr double square(double x) {
+    return x * x;
+}
+
+int main() {
+    constexpr int a = square(5);
+    constexpr double b = square(3.0);
+
+    std::cout << a << "\n";
+    std::cout << b << "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 3 – Templates + requires</h2>
+
+<p>
+Create a function template:
+</p>
+
+<pre>
+add(T a, T b)
+</pre>
+
+<p>
+It must:
+- Only accept arithmetic types
+- Use requires
+</p>
+
+<button onclick="toggleSolution('sol3')">Reveal Solution</button>
+<div id="sol3" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_arithmetic_v&lt;T&gt;
+T add(T a, T b) {
+    return a + b;
+}
+
+int main() {
+    std::cout &lt;&lt; add(3, 4) &lt;&lt; "\n";
+    std::cout &lt;&lt; add(3.5, 2.1) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 4 – Traits + Specialization</h2>
+
+<p>
+Create a trait struct:
+</p>
+
+<pre>
+is_pointer_type&lt;T&gt;
+</pre>
+
+<p>
+Default value = false  
+Specialize for T* so value = true  
+
+Demonstrate usage with static_assert.
+</p>
+
+<button onclick="toggleSolution('sol4')">Reveal Solution</button>
+<div id="sol4" class="solution">
+
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+struct is_pointer_type {
+    static constexpr bool value = false;
+};
+
+template &lt;typename T&gt;
+struct is_pointer_type&lt;T*&gt; {
+    static constexpr bool value = true;
+};
+
+static_assert(is_pointer_type&lt;int*&gt;::value);
+static_assert(!is_pointer_type&lt;int&gt;::value);
+
+int main() {}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 5 – Fold Expressions + Function Pointers</h2>
+
+<p>
+Create a variadic template function:
+</p>
+
+<pre>
+sum_all(...)
+</pre>
+
+<p>
+Use a fold expression to sum arguments.
+
+Then:
+Create a function pointer to this function and invoke it.
+</p>
+
+<button onclick="toggleSolution('sol5')">Reveal Solution</button>
+<div id="sol5" class="solution">
+
+#include &lt;iostream&gt;
+
+template &lt;typename... Args&gt;
+auto sum_all(Args... args) {
+    return (args + ...);
+}
+
+int main() {
+
+    int (*func)(int, int, int) = nullptr;
+
+    auto wrapper = [](int a, int b, int c) {
+        return sum_all(a, b, c);
+    };
+
+    func = wrapper;
+
+    std::cout &lt;&lt; func(1,2,3) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ======================================================= -->
+<div class="exercise">
+<h2>Exercise 6 – Threads + Passing Functions as Arguments</h2>
+
+<p>
+Create a function:
+</p>
+
+<pre>
+void print_times(int value, int times);
+</pre>
+
+<p>
+Launch two threads calling this function with different values.
+Join the threads.
+</p>
+
+<button onclick="toggleSolution('sol6')">Reveal Solution</button>
+<div id="sol6" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+
+void print_times(int value, int times) {
+    for(int i = 0; i &lt; times; ++i) {
+        std::cout &lt;&lt; value &lt;&lt; "\n";
+    }
+}
+
+int main() {
+
+    std::thread t1(print_times, 1, 5);
+    std::thread t2(print_times, 2, 5);
+
+    t1.join();
+    t2.join();
+}
+
+</div>
+</div>
+
+</body>
+</html>

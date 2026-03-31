@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C++ Workbook – Functions & Templates</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
+h1, h2 { color: #333; }
+.exercise { background: white; padding: 15px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.solution { display: none; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 6px; }
+button { margin-top: 10px; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; background: #333; color: white; }
+code { background: #eee; padding: 2px 4px; border-radius: 4px; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+<h1>C++ Workbook – Functions & Templates</h1>
+<p>Solve each exercise before revealing the solution.</p>
+
+<h2>1. Functions</h2>
+<div class="exercise">
+<p><b>Exercise 1:</b> Write a function <code>square</code> that returns the square of a number.</p>
+<button onclick="toggleSolution('sol1')">Show Solution</button>
+<div class="solution" id="sol1">
+<pre>int square(int x) {
+    return x * x;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<p><b>Exercise 2:</b> Write a function that swaps two integers using references.</p>
+<button onclick="toggleSolution('sol2')">Show Solution</button>
+<div class="solution" id="sol2">
+<pre>void swap(int &a, int &b) {
+    int tmp = a;
+    a = b;
+    b = tmp;
+}</pre>
+</div>
+</div>
+
+<h2>2. Function Overloading</h2>
+<div class="exercise">
+<p><b>Exercise 3:</b> Overload <code>print</code> for <code>int</code> and <code>double</code>.</p>
+<button onclick="toggleSolution('sol3')">Show Solution</button>
+<div class="solution" id="sol3">
+<pre>void print(int x) { std::cout << x; }
+void print(double x) { std::cout << x; }</pre>
+</div>
+</div>
+
+<h2>3. Function Templates</h2>
+<div class="exercise">
+<p><b>Exercise 4:</b> Write a template function <code>maxVal</code>.</p>
+<button onclick="toggleSolution('sol4')">Show Solution</button>
+<div class="solution" id="sol4">
+<pre>template<typename T>
+T maxVal(T a, T b) {
+    return (a > b) ? a : b;
+}</pre>
+</div>
+</div>
+
+<h2>4. Template Specialization</h2>
+<div class="exercise">
+<p><b>Exercise 5:</b> Specialize <code>maxVal</code> for <code>const char*</code>.</p>
+<button onclick="toggleSolution('sol5')">Show Solution</button>
+<div class="solution" id="sol5">
+<pre>template<>
+const char* maxVal(const char* a, const char* b) {
+    return (std::strcmp(a,b) > 0) ? a : b;
+}</pre>
+</div>
+</div>
+
+<h2>5. Lambda Functions</h2>
+<div class="exercise">
+<p><b>Exercise 6:</b> Write a lambda that computes cube.</p>
+<button onclick="toggleSolution('sol6')">Show Solution</button>
+<div class="solution" id="sol6">
+<pre>auto cube = [](int x){ return x*x*x; };</pre>
+</div>
+</div>
+
+<h2>6. Requires</h2>
+<div class="exercise">
+<p><b>Exercise 7:</b> Constrain template to arithmetic types.</p>
+<button onclick="toggleSolution('sol7')">Show Solution</button>
+<div class="solution" id="sol7">
+<pre>template<typename T>
+requires std::is_arithmetic_v<T>
+T add(T a, T b) { return a + b; }</pre>
+</div>
+</div>
+
+<h2>7. Function Pointers</h2>
+<div class="exercise">
+<p><b>Exercise 8:</b> Declare pointer to function returning int.</p>
+<button onclick="toggleSolution('sol8')">Show Solution</button>
+<div class="solution" id="sol8">
+<pre>int (*funcPtr)(int, int);</pre>
+</div>
+</div>
+
+<h2>8. Passing Functions as Arguments</h2>
+<div class="exercise">
+<p><b>Exercise 9:</b> Function taking callable.</p>
+<button onclick="toggleSolution('sol9')">Show Solution</button>
+<div class="solution" id="sol9">
+<pre>template<typename F>
+void execute(F f) { f(); }</pre>
+</div>
+</div>
+
+<h2>9. Fold Expressions & Parameter Packs</h2>
+<div class="exercise">
+<p><b>Exercise 10:</b> Sum variadic args.</p>
+<button onclick="toggleSolution('sol10')">Show Solution</button>
+<div class="solution" id="sol10">
+<pre>template<typename... T>
+auto sum(T... args) { return (... + args); }</pre>
+</div>
+</div>
+
+<h2>10. Constexpr</h2>
+<div class="exercise">
+<p><b>Exercise 11:</b> Constexpr factorial.</p>
+<button onclick="toggleSolution('sol11')">Show Solution</button>
+<div class="solution" id="sol11">
+<pre>constexpr int fact(int n) {
+    return (n <= 1) ? 1 : n * fact(n-1);
+}</pre>
+</div>
+</div>
+
+<h2>11. Traits (Variable / Struct Templates)</h2>
+<div class="exercise">
+<p><b>Exercise 12:</b> Implement <code>is_pointer</code> trait.</p>
+<button onclick="toggleSolution('sol12')">Show Solution</button>
+<div class="solution" id="sol12">
+<pre>template<typename T>
+struct is_pointer { static constexpr bool value = false; };
+
+template<typename T>
+struct is_pointer<T*> { static constexpr bool value = true; };</pre>
+</div>
+</div>
+
+<h2>Combined Exercises</h2>
+<div class="exercise">
+<p><b>Exercise 13:</b> Variadic constexpr sum with requires.</p>
+<button onclick="toggleSolution('sol13')">Show Solution</button>
+<div class="solution" id="sol13">
+<pre>template<typename... T>
+requires (std::conjunction_v<std::is_arithmetic<T>...>)
+constexpr auto sum(T... args) {
+    return (... + args);
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<p><b>Exercise 14:</b> Lambda passed to template function.</p>
+<button onclick="toggleSolution('sol14')">Show Solution</button>
+<div class="solution" id="sol14">
+<pre>template<typename F>
+void apply(F f) { f(5); }
+
+apply([](int x){ std::cout << x; });</pre>
+</div>
+</div>
+
+<div class="exercise">
+<p><b>Exercise 15:</b> Specialized trait + requires.</p>
+<button onclick="toggleSolution('sol15')">Show Solution</button>
+<div class="solution" id="sol15">
+<pre>template<typename T>
+requires is_pointer<T>::value
+void foo(T) { std::cout << "pointer"; }</pre>
+</div>
+</div>
+
+</body>
+</html>

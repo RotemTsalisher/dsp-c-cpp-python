@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signal Processing & Embedded Systems Interview Workbook</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background:#f7f7f7; }
+h1, h2 { color:#222; }
+.exercise { background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+.preview { font-weight:bold; margin-bottom:8px; }
+.solution { display:none; margin-top:10px; padding:10px; background:#eef5ff; border-radius:6px; }
+button { margin-top:10px; padding:6px 12px; border:none; border-radius:6px; background:#222; color:white; cursor:pointer; }
+button:hover { background:#444; }
+.level { margin-top:40px; }
+</style>
+<script>
+function toggleSolution(id) {
+  var x = document.getElementById(id);
+  if (x.style.display === "none") x.style.display = "block";
+  else x.style.display = "none";
+}
+</script>
+</head>
+<body>
+<h1>Signal Processing & Embedded Systems Interview Workbook</h1>
+<p>This workbook progresses from fundamentals to expert-level interview challenges. Exercises combine DSP, fixed-point design, ML, embedded systems, control, and system-level reasoning.</p>
+
+<div class="level">
+<h2>🟢 Easy Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 1 – Sampling & Aliasing</div>
+<div>Explain what aliasing is. A 30 kHz sine wave is sampled at 48 kHz. What frequency appears in the discrete signal?</div>
+<button onclick="toggleSolution('sol1')">Show Solution</button>
+<div class="solution" id="sol1">Aliasing occurs when sampling below Nyquist. Alias = |f - kFs| → |30 - 48| = 18 kHz.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 2 – FIR vs IIR</div>
+<div>List two advantages and two disadvantages of FIR filters compared to IIR filters.</div>
+<button onclick="toggleSolution('sol2')">Show Solution</button>
+<div class="solution" id="sol2">FIR: always stable, linear phase possible. Disadvantages: higher order, more computation.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 3 – Fixed Point Basics</div>
+<div>What is quantization noise? How does word length affect it?</div>
+<button onclick="toggleSolution('sol3')">Show Solution</button>
+<div class="solution" id="sol3">Quantization noise = rounding error. Longer word → smaller noise.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 4 – FFT Interpretation</div>
+<div>You compute an FFT and see spectral leakage. Why does this happen?</div>
+<button onclick="toggleSolution('sol4')">Show Solution</button>
+<div class="solution" id="sol4">Non-integer cycles in window → discontinuity → leakage.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 5 – MATLAB vs Python</div>
+<div>Name typical use cases where Python is preferred over MATLAB and vice versa.</div>
+<button onclick="toggleSolution('sol5')">Show Solution</button>
+<div class="solution" id="sol5">Python: production/ML/integration. MATLAB: rapid DSP prototyping & analysis.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 6 – Clock Recovery Concept</div>
+<div>What problem does clock recovery solve in communication systems?</div>
+<button onclick="toggleSolution('sol6')">Show Solution</button>
+<div class="solution" id="sol6">Aligns sampling instants with symbol timing.</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🟡 Intermediate Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 7 – Equalization Intuition</div>
+<div>Why is equalization needed in communication channels?</div>
+<button onclick="toggleSolution('sol7')">Show Solution</button>
+<div class="solution" id="sol7">Compensates channel distortion / ISI.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 8 – Phase Noise</div>
+<div>How does phase noise affect demodulation?</div>
+<button onclick="toggleSolution('sol8')">Show Solution</button>
+<div class="solution" id="sol8">Rotates constellation → detection errors.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 9 – Fixed‑Point Scaling</div>
+<div>Describe how you would prevent overflow in fixed‑point DSP.</div>
+<button onclick="toggleSolution('sol9')">Show Solution</button>
+<div class="solution" id="sol9">Proper scaling, saturation, headroom analysis.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 10 – Multithreading</div>
+<div>When would multithreading improve DSP performance? When might it hurt?</div>
+<button onclick="toggleSolution('sol10')">Show Solution</button>
+<div class="solution" id="sol10">Helps parallel workloads; hurts with overhead/sync costs.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 11 – Feature Extraction</div>
+<div>Name common speech features used in ML pipelines.</div>
+<button onclick="toggleSolution('sol11')">Show Solution</button>
+<div class="solution" id="sol11">MFCC, spectrogram, mel features, pitch.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 12 – SIMD / Vectorization</div>
+<div>Why does SIMD accelerate DSP algorithms?</div>
+<button onclick="toggleSolution('sol12')">Show Solution</button>
+<div class="solution" id="sol12">Parallel arithmetic on multiple samples per instruction.</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🔵 Advanced Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 13 – Timing Error Detector</div>
+<div>Explain the role of a Timing Error Detector (TED).</div>
+<button onclick="toggleSolution('sol13')">Show Solution</button>
+<div class="solution" id="sol13">Estimates sampling phase error for clock recovery loop.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 14 – System Constraints</div>
+<div>List practical differences when moving MATLAB algorithms to RTL.</div>
+<button onclick="toggleSolution('sol14')">Show Solution</button>
+<div class="solution" id="sol14">Latency, fixed-point limits, memory, pipelining.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 15 – ML vs Classical DSP</div>
+<div>When would classical DSP outperform deep learning?</div>
+<button onclick="toggleSolution('sol15')">Show Solution</button>
+<div class="solution" id="sol15">Low-data, interpretable, deterministic systems.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 16 – Control Stability</div>
+<div>What defines stability in a feedback control loop?</div>
+<button onclick="toggleSolution('sol16')">Show Solution</button>
+<div class="solution" id="sol16">Bounded output for bounded input (poles inside unit circle / left half-plane).</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 17 – Real‑Time Constraints</div>
+<div>Difference between real‑time and fast execution?</div>
+<button onclick="toggleSolution('sol17')">Show Solution</button>
+<div class="solution" id="sol17">Real‑time = deterministic deadlines, not just speed.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 18 – Lab Debugging</div>
+<div>Signal looks distorted on scope but OK in simulation. Possible causes?</div>
+<button onclick="toggleSolution('sol18')">Show Solution</button>
+<div class="solution" id="sol18">Clocking, noise, quantization, analog effects, measurement setup.</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🔴 Expert Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 19 – Carrier Recovery Loop</div>
+<div>Explain interaction between phase recovery and equalization loops.</div>
+<button onclick="toggleSolution('sol19')">Show Solution</button>
+<div class="solution" id="sol19">Coupled loops; errors in one affect convergence of the other.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 20 – Numerical Precision</div>
+<div>Describe fixed‑point noise propagation in cascaded DSP blocks.</div>
+<button onclick="toggleSolution('sol20')">Show Solution</button>
+<div class="solution" id="sol20">Noise accumulates; scaling & word-length planning required.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 21 – Embedded System Design</div>
+<div>Design trade‑offs: latency vs throughput vs power.</div>
+<button onclick="toggleSolution('sol21')">Show Solution</button>
+<div class="solution" id="sol21">Lower latency → less buffering; higher throughput → parallelism; power impacted by compute/memory.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 22 – ML Deployment</div>
+<div>Key challenges deploying DL models on edge devices?</div>
+<button onclick="toggleSolution('sol22')">Show Solution</button>
+<div class="solution" id="sol22">Quantization, memory, compute, latency, robustness.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 23 – System‑Level Thinking</div>
+<div>Why can optimizing a block degrade overall system performance?</div>
+<button onclick="toggleSolution('sol23')">Show Solution</button>
+<div class="solution" id="sol23">Local optimum ≠ global optimum; interactions & bottlenecks.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 24 – Open‑Ended Design Question</div>
+<div>Design a robust modem receiver for a noisy optical channel. Outline major blocks and risks.</div>
+<button onclick="toggleSolution('sol24')">Show Solution</button>
+<div class="solution" id="sol24">Blocks: synchronization, equalization, phase recovery, FEC. Risks: noise, nonlinearity, loop coupling, quantization.</div>
+</div>
+
+</div>
+</body>
+</html>

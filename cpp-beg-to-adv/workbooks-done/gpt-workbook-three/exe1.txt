@@ -1,0 +1,37 @@
+#include <iostream>
+
+namespace nsA {
+    
+    template <typename T>
+    requires std::is_arithmetic_v<T>
+    T transform(T a){ 
+        
+        std::cout << "nsA::transform" << std::endl;
+        return a * 5;
+    };
+}
+
+namespace nsB {
+    
+    template <typename T>
+    requires std::is_arithmetic_v<T>
+    T transform(T a){
+        
+        std::cout << "nsB::transform" << std::endl;
+        return a * 2;
+    };
+}
+
+int main()
+{
+    int a = 5;
+    int b = 5;
+    
+    
+    std::cout << "a = " << a << ", b = " << b << std::endl;
+    a = nsA::transform(a);
+    b = nsB::transform(b);
+    std::cout << "a = " << a << ", b = " << b << std::endl;
+
+    return 0;
+}

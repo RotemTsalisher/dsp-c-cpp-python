@@ -1,0 +1,32 @@
+#include <iostream>
+
+template <typename T>
+class Point {
+    private:
+        T x,y;
+    
+    public:
+        
+        T get_x() {return x;};
+        T get_y() {return y;};
+        void set_x(T x_) {x = x_;};
+        void set_y(T y_) {y = y_;};
+        
+        Point() = default;
+        Point(const Point& p) {
+            this->x = p.x;
+            this->y = p.y;
+        };
+};
+
+int main()
+{
+    Point<int> p0;
+    p0.set_x(1);
+    p0.set_y(1);
+    
+    Point<int> p1 = p0;
+    std::cout << "p0: x = " << p0.get_x() << ", y = " << p0.get_y() << std::endl;
+    std::cout << "p1: x = " << p1.get_x() << ", y = " << p1.get_y() << std::endl;
+    
+}

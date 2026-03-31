@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Embedded C++ Lecture: Array Decay & Reference Deduction</title>
+    <style>
+        :root { --cobalt: #2c3e50; --emerald: #27ae60; --crimson: #c0392b; --amber: #f39c12; --light-bg: #f9f9f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: #333; max-width: 900px; margin: auto; padding: 40px; background: #fff; }
+        .lecture-header { border-bottom: 5px solid var(--cobalt); padding-bottom: 20px; margin-bottom: 40px; }
+        h1 { color: var(--cobalt); margin: 0; font-size: 2.2em; }
+        .subtitle { color: #666; font-style: italic; font-size: 1.1em; }
+        
+        h2 { color: var(--cobalt); background: #ecf0f1; padding: 10px 15px; border-left: 10px solid var(--cobalt); margin-top: 40px; }
+        h3 { color: var(--emerald); border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        .theory-box { background: #f0f7ff; border: 1px solid #d0e0f0; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .danger-box { background: #fff5f5; border-left: 5px solid var(--crimson); padding: 15px; margin: 20px 0; }
+        .tinker-note { background: #fff9db; border-left: 5px solid var(--amber); padding: 15px; margin: 20px 0; font-size: 0.95em; }
+        
+        pre { background: #1e1e1e; color: #dcdcdc; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace; line-height: 1.4; }
+        code { font-family: 'Consolas', monospace; color: var(--crimson); font-weight: bold; background: #eee; padding: 2px 4px; border-radius: 3px; }
+        pre code { color: #dcdcdc; background: none; padding: 0; }
+
+        .exercise-card { border: 2px solid #eee; border-radius: 10px; padding: 20px; margin: 20px 0; background: #fafafa; }
+        .exercise-tag { background: var(--amber); color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
+        
+        .visual-aid { text-align: center; font-style: italic; color: #7f8c8d; margin: 20px 0; padding: 10px; border: 1px dashed #ccc; }
+        button { background: var(--cobalt); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .solution { display: none; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+<div class="lecture-header">
+    <h1>Advanced C++: Array Decay & Template Reference Deduction</h1>
+    <div class="subtitle">Engineering Curriculum - Module 4: High-Reliability Embedded Code</div>
+</div>
+
+<section>
+    <h2>1. The Problem: What is "Array Decay"?</h2>
+    <p>In 2nd-year EE studies, you've likely used C-style arrays frequently. However, C-style arrays have a hidden "identity crisis" when passed into functions.</p>
+    
+    <div class="theory-box">
+        <h3>Theory: Pointer Decay</h3>
+        When you pass an array (e.g., <code>double sig[10]</code>) into a function, it does not pass the array object. Instead, it "decays" into a <strong>pointer to its first element</strong>.
+    </div>
+
+    <div class="danger-box">
+        <strong>The Trap:</strong> Inside a function that receives an array, the <code>sizeof()</code> operator will return the size of the <em>pointer</em> (usually 4 or 8 bytes), NOT the size of the <em>array</em>.
+    </div>
+
+    <pre><code>void processSignal(double sig[]) {
+    // sig is now just a double*
+    // We have lost the knowledge that there were 10 elements!
+    size_t size = sizeof(sig); // Returns 8 on 64-bit systems
+}</code></pre>
+
+    <div class="visual-aid">
+        
+    </div>
+</section>
+
+<section>
+    <h2>2. The Junior Level: Manual Size Passing</h2>
+    <p>The standard "Tinker Level" fix is to pass a second argument for size. This is what you see in most Arduino or Legacy C code.</p>
+    
+    <pre><code>void processSignal(double* sig, size_t n) {
+    for(size_t i = 0; i < n; ++i) {
+        // Safe, but requires the programmer to never make a mistake
+    }
+}</code></pre>
+    <div class="tinker-note">
+        <strong>Tinker Warning:</strong> This relies on the human to pass the correct size. If you pass an array of size 5 but tell the function it's size 10, the system will read "garbage" memory or crash.
+    </div>
+</section>
+
+<section>
+    <h2>3. The Expert Level: Reference to Array Deduction</h2>
+    <p>In Modern C++, we can use <strong>Templates</strong> to force the compiler to count the array for us. This is the "Turn-Key Solution" standard expected at companies like Trego.</p>
+
+    <div class="theory-box">
+        <h3>Theory: T (&sig)[N]</h3>
+        By using a reference to an array, we prevent the decay. The compiler deduces two things:
+        <ol>
+            <li><strong>T:</strong> The type of data (int, double, float).</li>
+            <li><strong>N:</strong> The exact number of elements in the array.</li>
+        </ol>
+    </div>
+
+    <pre><code>template &lt;typename T, size_t N&gt;
+void printSignal(T (&sig)[N]) {
+    // N is now a compile-time constant.
+    // We can use it safely in loops or static_asserts!
+    std::cout << "Processing " << N << " samples." << std::endl;
+
+    for(size_t i = 0; i < N; ++i) {
+        std::cout << sig[i] << " ";
+    }
+}</code></pre>
+
+    <div class="visual-aid">
+        
+    </div>
+
+    <h3>Why is this superior?</h3>
+    <ul>
+        <li><strong>No Memory Overhead:</strong> <code>N</code> is not stored in RAM; it is baked into the code by the compiler.</li>
+        <li><strong>Range-Based Loops:</strong> Because the array hasn't decayed, <code>for(auto x : sig)</code> works perfectly!</li>
+        <li><strong>Type Safety:</strong> You cannot accidentally pass a single pointer to this function; it <em>must</em> be an actual array.</li>
+    </ul>
+</section>
+
+<section>
+    <h2>4. Advanced: Compile-Time Branching</h2>
+    <p>Sometimes you want to handle pointers and arrays in the same function. We use <code>if constexpr</code> (C++17) to make decisions while the code is compiling.</p>
+
+    <pre><code>template &lt;typename S&gt;
+void smartPrint(S& sig) {
+    if constexpr (std::is_array_v&lt;S&gt;) {
+        std::cout << "Array detected! Size: " << std::extent_v&lt;S&gt; << std::endl;
+    } else {
+        std::cout << "Standard variable detected." << std::endl;
+    }
+}</code></pre>
+</section>
+
+<section>
+    <h2>5. Practice Exercises</h2>
+
+    <div class="exercise-card">
+        <span class="exercise-tag">Exercise 1</span>
+        <h3>The Buffer Overflow Guard</h3>
+        <p>Write a template function <code>sumArray</code> that accepts a reference to an array of any numeric type. Use <code>static_assert</code> to ensure the array has at least 2 elements before performing any math.</p>
+        <button onclick="toggle('sol1')">Show Solution</button>
+        <div id="sol1" class="solution">
+<pre><code>template &lt;typename T, size_t N&gt;
+T sumArray(T (&arr)[N]) {
+    static_assert(N >= 2, "Array too small for processing!");
+    T total = 0;
+    for(const auto& val : arr) total += val;
+    return total;
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="exercise-card">
+        <span class="exercise-tag">Exercise 2</span>
+        <h3>EE Application: Moving Average</h3>
+        <p>Create a template function that accepts an array of signal data by reference and returns the average. Ensure the function works for <code>float</code>, <code>double</code>, and <code>int</code> arrays.</p>
+        <button onclick="toggle('sol2')">Show Solution</button>
+        <div id="sol2" class="solution">
+<pre><code>template &lt;typename T, size_t N&gt;
+double getAverage(T (&arr)[N]) {
+    double sum = 0;
+    for(size_t i = 0; i < N; ++i) {
+        sum += arr[i];
+    }
+    return sum / N; // N is perfectly known
+}</code></pre>
+        </div>
+    </div>
+</section>
+
+<script>
+    function toggle(id) {
+        var x = document.getElementById(id);
+        if (x.style.display === "none" || x.style.display === "") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

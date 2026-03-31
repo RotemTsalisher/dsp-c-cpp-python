@@ -1,0 +1,27 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+constexpr int square(int x) {
+    return x * x;
+};
+
+constexpr double square(double x) {
+    return x * x;
+};
+
+int main()
+{
+    static_assert(4 == square(2), "int math is broke!");
+    static_assert(2.25 == square(1.5), "double math is broke!");
+    
+    static_assert(3 == square(2), "int fail example!");
+    static_assert(1.0 == square(1.5), "double fail example!");
+    return 0;
+}

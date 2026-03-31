@@ -1,0 +1,25 @@
+instructions in bullets:
+
+- everytime you create an exercise, create 5~7 exercises with increasing difficulty
+- create the problems so it would mix the entire subjects list in the course-subjects.txt
+- putting more emphasis on the last subject studies but mixing also elements from previously studies subjects
+
+* create the exercises as html files I can save and load on my computer
+* with button to press that reveals the solution
+
+------------------------------------------------------------------------------------------------------------
+
+*==* you will go over the solutions, see their correctness and test them upon the criteria: *==*
+
+* Correctness – Meets all requirements, correct results, handles edge cases
+* Compilation – Builds successfully, no errors or warnings
+* Code Structure – Logical organization, proper use of functions and classes
+* Readability – Clear formatting, meaningful variable and function names
+* C++ Usage – Appropriate use of C++ features for the level
+* Memory & Resources – Safe memory usage, no leaks, correct ownership
+* Error Handling – Validates inputs, handles failures gracefully
+* Efficiency – Reasonable time and space complexity
+* Comments & Documentation – Clear, concise, non-redundant comments
+
+Advanced Concepts – Correct use of advanced features when required
+

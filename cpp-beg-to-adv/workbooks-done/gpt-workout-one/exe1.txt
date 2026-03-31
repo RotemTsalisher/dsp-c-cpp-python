@@ -1,0 +1,27 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+namespace mathA {
+    int compute_int(int x) { return x * 2;};
+};
+
+namespace mathB {
+    int compute_int(int x) { return x * 3;};
+};
+
+int main()
+{
+    int x = 2;
+    
+    std::cout << "mathA::compute_int(x) = " << mathA::compute_int(x) << std::endl;
+    std::cout << "mathB::compute_int(x) = " << mathB::compute_int(x) << std::endl;
+
+    return 0;
+}

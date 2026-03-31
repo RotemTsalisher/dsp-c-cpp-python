@@ -1,0 +1,38 @@
+#include <iostream>
+
+class Sensor {
+    private:
+        const int id;
+        double value;
+        
+    public:
+        Sensor() = default;
+        Sensor(int id_, double value_) : id(id_), value(value_) {};
+        Sensor(const Sensor& s) : id(s.id), value(s.value) {};
+        
+        int get_id() {return id;};
+        double get_value() {return value;};
+        
+        Sensor& set_val(double value_) {value = value_; return *this;};
+        Sensor& print_sensor() {std::cout << "id = " << id << std::endl << "value = " << value << std::endl; return *this;};
+        
+};
+
+int main() {
+    
+    Sensor s1(1, 25.4);   // create sensor
+    s1.print_sensor();
+
+    std::cout << "----" << std::endl;
+
+    s1.set_val(30.7).print_sensor();  // test chaining
+    s1.print_sensor().set_val(22.5);
+    s1.print_sensor();
+
+    std::cout << "----" << std::endl;
+
+    Sensor s2(s1);  // copy constructor
+    s2.print_sensor();
+
+    return 0;
+};

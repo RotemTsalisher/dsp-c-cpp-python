@@ -1,0 +1,30 @@
+#include <iostream>
+#include <type_traits>
+#include <concepts>
+
+template <typename... Args>
+concept Addable = requires(Args... args) { (args + ...) ;};
+
+template <typename... Args>
+requires Addable<Args...>
+constexpr auto sum_args(Args... args){
+    const auto res = (args + ...);
+    return res;
+};
+
+int main() {
+    // 1. SUCCESS: Adding mixed numbers
+    // This happens at compile-time because the inputs are constants.
+    constexpr auto result1 = sum_args(1, 2.5, 3); 
+    std::cout << "Success 1: " << result1 << std::endl;
+
+    // 2. SUCCESS: Adding at runtime
+    int x = 10;
+    std::cout << "Success 2: " << sum_args(x, 20) << std::endl;
+
+    // 3. ERROR: This will fail to compile!
+    // Reasoning: You cannot add an integer to a std::string.
+    // sum_args(std::string("Power: "), 100); 
+
+    return 0;
+}

@@ -1,0 +1,49 @@
+#include <iostream>
+#include <string>
+
+int calculate(int, int);
+double calculate(double, double);
+double calculate(int, int, int);
+void display(std::string);
+void display(int);
+
+int main()
+{
+    int int_a{3}, int_b{4}, int_c{3};
+    double double_a{2.5}, double_b{3.0};
+    
+    std::cout << "Sum of " << int_a << " and " << int_b << ": " << calculate(int_a,int_b) << std::endl;
+    std::cout << "Product of " << double_a << " and " << double_b << ": " << calculate(double_a,double_b) << std::endl;
+    std::cout << "Average of " << int_a << ", " << int_b << ", " << int_c << ": " << calculate(int_a,int_b,int_c) << std::endl;
+    
+    std::string str = "Hello, c++!";
+    std::cout << "Message: ";
+    display(str);
+    display(42);
+    return 0;
+}
+
+// Calculates and returns the sum of two integers
+int calculate(int a, int b){
+    return a + b;
+}
+
+// Calculates and returns the product of two doubles
+double calculate(double a, double b){
+    return a * b;
+}
+
+// Calculates and returns the average of three integers as a double
+double calculate(int a, int b, int c){
+  return (static_cast<double>(a) + b + c) / 3;
+}
+
+// Displays a string message to the console
+void display(std::string str){
+    std::cout << str << std::endl;
+}
+
+// Displays an integer value with a "Value: " label
+void display(int a){
+    std::cout << "Value: " << a << std::endl;
+}

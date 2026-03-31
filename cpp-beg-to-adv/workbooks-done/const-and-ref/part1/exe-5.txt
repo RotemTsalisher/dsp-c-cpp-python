@@ -1,0 +1,53 @@
+#include <iostream>
+
+class BankAccount {
+    private:
+        const int account_number;
+        double balance;
+    
+    public:
+        BankAccount() : account_number(0), balance(0) {};
+        BankAccount(int account_number_, double balance_) : account_number(account_number_), balance(balance_) {};
+        BankAccount(const BankAccount& ba) : account_number(ba.account_number), balance(ba.balance) {};
+        
+        BankAccount& withdraw(double amount) {
+            if(amount > balance) {
+                std::cout << "Insuficcient Balance!" << std::endl;
+                return *this;
+            }
+            
+            balance -= amount;
+            std::cout << "updated balance (account number: " << account_number << ") : " << balance << std::endl;
+            return *this;
+        };
+        
+        
+        BankAccount& deposit(double amount) {
+            balance += amount;
+            std::cout << "updated balance (account number: " << account_number << ") : " << balance << std::endl;
+            return *this;
+        };
+};
+
+int main() {
+
+    // create account
+    BankAccount acc1(12345, 1000.0);
+
+    // deposit money
+    acc1.deposit(500);
+
+    // withdraw money
+    acc1.withdraw(300);
+
+    // attempt to withdraw too much
+    acc1.withdraw(2000);
+
+    // copy constructor test
+    BankAccount acc2(acc1);
+
+    // modify the copy
+    acc2.deposit(200);
+
+    return 0;
+}

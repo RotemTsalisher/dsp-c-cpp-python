@@ -1,0 +1,100 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <concepts>
+#include <type_traits>
+#include <string>
+
+/*
+In your `main()` function, test all functions with:
+   - Integers (should work with all functions)
+   - Doubles (should work with all functions)
+   - Pointers (test with `findMax` - will compare addresses, which may or may not be useful)
+   - Demonstrate that trying to use incompatible types gives clear error messages
+
+Example Output:
+Max of 5 and 10: 10
+Max of 3.14 and 2.71: 3.14
+Are 5 and 5 equal? true
+Are 3 and 7 equal? false
+Before sorting: x=10, y=5
+After sorting: x=5, y=10
+Subtract 10 from 15: 5
+*/
+template<typename T>
+concept comparable = requires(T a, T b) {
+    a == b;
+    a < b;
+};
+
+template<typename T>
+requires requires(T a, T b) {a == b; a < b;}
+T findMax(T a, T b){
+    return (a < b) ? b : a;
+};
+
+template<typename T>
+bool areEqual(T a, T b) requires requires(T a_, T b_) {a_ == b;}
+{
+    return static_cast<bool>(a==b);
+};
+
+template<typename T> requires comparable<T>
+void sortPair(T &first, T &second)
+{
+    if((first < second) || (first == second))
+    {
+        return;
+    }
+    T tmp = first;
+    first = second;
+    second = tmp;
+};
+
+template<typename T>
+T subtract(T a, T b) requires requires(T a, T b) { a - b;}
+{
+    return (a - b);
+};
+
+int main()
+{
+    // Integers
+    int a = 5, b = 10;
+    std::cout << "Max of 5 and 10: " << findMax(a, b) << '\n';
+    std::cout << "Are 5 and 5 equal? " << areEqual(5, 5) << '\n';
+    std::cout << "Are 3 and 7 equal? " << areEqual(3, 7) << '\n';
+
+    // Doubles
+    double x = 3.14, y = 2.71;
+    std::cout << "Max of 3.14 and 2.71: " << findMax(x, y) << '\n';
+
+    // Pointers (address comparison)
+    int p = 1, q = 2;
+    int* p1 = &p;
+    int* p2 = &q;
+    std::cout << "Max of two pointers (address-based): "
+              << findMax(p1, p2) << '\n';
+
+    // sortPair
+    int s1 = 10, s2 = 5;
+    std::cout << "Before sorting: x=" << s1 << ", y=" << s2 << '\n';
+    sortPair(s1, s2);
+    std::cout << "After sorting: x=" << s1 << ", y=" << s2 << '\n';
+
+    // subtract
+    std::cout << "Subtract 10 from 15: " << subtract(15, 10) << '\n';
+
+    // Uncommenting any of these lines should produce clear compile-time errors
+    // std::mutex m1, m2;
+    // findMax(m1, m2);
+    // areEqual(m1, m2);
+
+    return 0;
+}

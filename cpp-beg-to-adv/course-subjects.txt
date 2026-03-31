@@ -1,0 +1,35 @@
+- functions 
+- functions overloading
+- functions templates
+- template specialization
+- lambda functions
+- requires
+- functions pointers
+- passing functions as arguments
+- fold expressions and arg packs
+- constexpr
+- handle "traits" using variable templates or struct-based templates
+- threads (<thread> basics)
+- namespace (prevent naming collisions)
+- concepts and auto variables
+- introduction to classes (class definition mainly)
+- Classes: Encapsulation (private and public members, "getters", "setters", etc)
+- Classes: constructors, with and without arguments
+- Classes: spreading across multiple files
+- Include Guards
+- Classes: managing class objects through pointers
+- Classes: Destructors
+- Classes: 'this' operator: chaining calls using pointers
+- Struct (as a thing that resembles Class)
+- Boundary Alignment (Memory)
+- Classes: Inheritance and Method Overriding
+- Classes: const correctness
+- Classes: const member variables and reference member variables
+- Classes: chaining class functions 
+- Classes: protected member variables
+- Classes: Base Class access specifiers
+- Classes: 'friend' in inharitance
+- Classes: resurrect members in a more relaxed access level in inheritance
+- Classes: Copy Contructors and inharitance
+
+01:02:06 -> inheritance with destructors

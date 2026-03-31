@@ -1,0 +1,59 @@
+EXERCISE 6: Concept Subsumption and Overload Resolution
+Difficulty: Advanced
+
+Objective:
+Understand how concepts participate in overload resolution, concept hierarchies, and subsumption.
+
+Requirements:
+1. Create a hierarchy of concepts:
+   - `Number` - base concept checking for arithmetic operations (`+`, `-`, `*`, `/`)
+     Syntax: `template<typename T> concept Number = requires(T a, T b) { a + b; a - b; a * b; a / b; };`
+   - `Integer` - refines `Number`, also checks for `%` (modulo)
+     Syntax: `template<typename T> concept Integer = Number<T> && requires(T a, T b) { a % b; };`
+   - `SignedNumber` - refines `Number`, also checks for unary `-` (negation)
+     Syntax: `template<typename T> concept SignedNumber = Number<T> && requires(T a) { -a; }`
+
+2. Create multiple overloaded `process()` functions:
+   - `void process(Number auto n)` - prints "Processing number"
+   - `void process(Integer auto n)` - prints "Processing integer"  
+   - `void process(SignedNumber auto n)` - prints "Processing signed number"
+   - Test with `int`, `double`, `unsigned int` and observe which overload is selected
+   - Note: More specific concepts should be preferred by the compiler
+
+3. Create a concept `Comparable` that checks for `<` and `>` operators.
+   Create a concept `EqualityComparable` that refines `Comparable` and adds `==` and `!=`.
+   - `Comparable<T>`: checks for `<`, `>`
+   - `EqualityComparable<T>`: `Comparable<T> && requires(T a, T b) { a == b; a != b; }`
+
+4. Create overloaded `compare()` functions:
+   - `bool compare(Comparable auto a, Comparable auto b)` - uses `<` and `>`, returns -1, 0, or 1
+   - `bool compare(EqualityComparable auto a, EqualityComparable auto b)` - can also use `==`
+   - Show that more constrained version is preferred
+
+5. Create a concept `Addable` (just `+` operator).
+   Create a concept `FullyArithmetic` that refines `Addable` and adds all four operations.
+   - Show concept subsumption in action
+
+6. Create a concept `Pointer` using `std::is_pointer_v`.
+   Create a concept `NullablePointer` that refines `Pointer` and checks for nullability.
+   - Test with `int*`, `double*`, etc.
+
+7. In your `main()`, demonstrate:
+   - Subsumption: `Integer` should subsume `Number` (any `Integer` is also a `Number`)
+   - Overload resolution: when `int` matches both `Number` and `Integer`, `Integer` version is chosen
+   - Create examples where concept constraints determine which function is called
+   - Show that concepts provide better overload selection than plain templates
+
+Example Output:
+Processing integer (int): Processing integer
+Processing number (double): Processing number
+Processing signed number (-5): Processing signed number
+Compare with equality: a == b: true
+Compare without equality: a < b: false
+
+Note:
+- Understand concept subsumption: if `ConceptB` requires `ConceptA`, then `ConceptB` is more constrained
+- Learn how compiler chooses between concept-constrained overloads (more specific = more constrained)
+- Experiment with `requires` clauses that combine multiple concepts using `&&` and `||`
+- See how concepts enable better function overloading than old template techniques
+- Practice defining concept hierarchies where one concept builds upon another

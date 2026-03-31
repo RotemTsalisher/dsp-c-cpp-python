@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signal Processing Interview Workbook – Coding Edition</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background:#f7f7f7; }
+h1, h2 { color:#222; }
+.exercise { background:white; padding:20px; margin-bottom:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+.preview { font-weight:bold; margin-bottom:8px; }
+.solution { display:none; margin-top:10px; padding:10px; background:#eef5ff; border-radius:6px; white-space:pre-wrap; font-family: Consolas, monospace; }
+button { margin-top:10px; padding:6px 12px; border:none; border-radius:6px; background:#222; color:white; cursor:pointer; }
+button:hover { background:#444; }
+.level { margin-top:40px; }
+</style>
+<script>
+function toggleSolution(id) {
+  var x = document.getElementById(id);
+  if (x.style.display === "none") x.style.display = "block";
+  else x.style.display = "none";
+}
+</script>
+</head>
+<body>
+<h1>Signal Processing Interview Workbook – Coding Edition</h1>
+<p>Follow‑up coding challenges aligned with the conceptual workbook. Slight emphasis on C/C++ with balanced Python & MATLAB usage.</p>
+
+<div class="level">
+<h2>🟢 Easy Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 1 – Aliasing Simulation (Python)</div>
+<div>Generate a 30 kHz sine sampled at 48 kHz. Plot its FFT and identify the aliased frequency.</div>
+<button onclick="toggleSolution('sol1')">Show Solution</button>
+<div class="solution" id="sol1">import numpy as np
+import matplotlib.pyplot as plt
+fs = 48000
+f = 30000
+N = 4096
+t = np.arange(N)/fs
+x = np.sin(2*np.pi*f*t)
+X = np.fft.fft(x)
+freq = np.fft.fftfreq(N, 1/fs)
+plt.plot(freq[:N//2], np.abs(X[:N//2]))</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 2 – FIR Filter (MATLAB)</div>
+<div>Design a low‑pass FIR filter using a window method.</div>
+<button onclick="toggleSolution('sol2')">Show Solution</button>
+<div class="solution" id="sol2">N = 51;
+fc = 0.2; 
+b = fir1(N-1, fc, hamming(N));
+freqz(b,1);</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 3 – Quantization (C++)</div>
+<div>Implement fixed‑point quantization of a floating‑point signal.</div>
+<button onclick="toggleSolution('sol3')">Show Solution</button>
+<div class="solution" id="sol3">int16_t quantize(float x) {
+    return (int16_t)(x * 32767.0f);
+}</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 4 – Windowing Effect (Python)</div>
+<div>Compare FFT with and without windowing.</div>
+<button onclick="toggleSolution('sol4')">Show Solution</button>
+<div class="solution" id="sol4">w = np.hanning(N)
+Xw = np.fft.fft(x*w)</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 5 – Vector Operations (C)</div>
+<div>Compute dot product of two arrays.</div>
+<button onclick="toggleSolution('sol5')">Show Solution</button>
+<div class="solution" id="sol5">float dot(float* a, float* b, int N) {
+ float acc=0;
+ for(int i=0;i<N;i++) acc+=a[i]*b[i];
+ return acc;
+}</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 6 – Simple Interpolator (MATLAB)</div>
+<div>Upsample a signal by factor of 2.</div>
+<button onclick="toggleSolution('sol6')">Show Solution</button>
+<div class="solution" id="sol6">y = upsample(x,2);</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🟡 Intermediate Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 7 – Channel Distortion (Python)</div>
+<div>Simulate ISI using convolution.</div>
+<button onclick="toggleSolution('sol7')">Show Solution</button>
+<div class="solution" id="sol7">h = [1, 0.5, 0.2]
+y = np.convolve(x, h)</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 8 – Phase Rotation (MATLAB)</div>
+<div>Rotate constellation points.</div>
+<button onclick="toggleSolution('sol8')">Show Solution</button>
+<div class="solution" id="sol8">theta = pi/6;
+y = x .* exp(1j*theta);</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 9 – Saturation Logic (C++)</div>
+<div>Add saturation to fixed‑point addition.</div>
+<button onclick="toggleSolution('sol9')">Show Solution</button>
+<div class="solution" id="sol9">int16_t sat_add(int16_t a, int16_t b) {
+ int32_t tmp = a + b;
+ if(tmp > 32767) return 32767;
+ if(tmp < -32768) return -32768;
+ return tmp;
+}</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 10 – Multithreaded Sum (C++)</div>
+<div>Parallelize vector sum.</div>
+<button onclick="toggleSolution('sol10')">Show Solution</button>
+<div class="solution" id="sol10">// std::thread example skeleton</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 11 – MFCC Extraction (Python)</div>
+<div>Compute MFCCs using librosa.</div>
+<button onclick="toggleSolution('sol11')">Show Solution</button>
+<div class="solution" id="sol11">import librosa
+mfcc = librosa.feature.mfcc(x, sr=fs)</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 12 – SIMD Hint (C)</div>
+<div>Explain how this loop could be vectorized.</div>
+<button onclick="toggleSolution('sol12')">Show Solution</button>
+<div class="solution" id="sol12">Use compiler auto‑vectorization / intrinsics.</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🔵 Advanced Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 13 – TED Prototype (MATLAB)</div>
+<div>Implement early‑late detector logic.</div>
+<button onclick="toggleSolution('sol13')">Show Solution</button>
+<div class="solution" id="sol13">e = x(n+1) - x(n-1);</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 14 – Fixed‑Point Scaling (C++)</div>
+<div>Scale signal to prevent overflow.</div>
+<button onclick="toggleSolution('sol14')">Show Solution</button>
+<div class="solution" id="sol14">x_scaled = x >> shift;</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 15 – Classical vs ML (Python)</div>
+<div>Implement simple energy detector.</div>
+<button onclick="toggleSolution('sol15')">Show Solution</button>
+<div class="solution" id="sol15">energy = np.sum(x**2)</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 16 – Stability Check (MATLAB)</div>
+<div>Verify pole locations.</div>
+<button onclick="toggleSolution('sol16')">Show Solution</button>
+<div class="solution" id="sol16">p = roots(a);
+abs(p)</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 17 – Real‑Time Buffer (C)</div>
+<div>Implement circular buffer.</div>
+<button onclick="toggleSolution('sol17')">Show Solution</button>
+<div class="solution" id="sol17">// ring buffer skeleton</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 18 – Noise Injection (Python)</div>
+<div>Add AWGN at target SNR.</div>
+<button onclick="toggleSolution('sol18')">Show Solution</button>
+<div class="solution" id="sol18">noise = np.random.randn(len(x))
+noise *= np.sqrt(np.var(x)/snr)</div>
+</div>
+</div>
+
+<div class="level">
+<h2>🔴 Expert Level</h2>
+
+<div class="exercise">
+<div class="preview">Exercise 19 – Phase Recovery Step (MATLAB)</div>
+<div>Single‑step PLL phase update.</div>
+<button onclick="toggleSolution('sol19')">Show Solution</button>
+<div class="solution" id="sol19">theta = theta + mu * error;</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 20 – Noise Propagation (Python)</div>
+<div>Measure SNR after quantization.</div>
+<button onclick="toggleSolution('sol20')">Show Solution</button>
+<div class="solution" id="sol20">snr = 10*np.log10(np.var(x)/np.var(x-q))</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 21 – Latency vs Throughput (C++)</div>
+<div>Pipeline processing skeleton.</div>
+<button onclick="toggleSolution('sol21')">Show Solution</button>
+<div class="solution" id="sol21">// staged processing example</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 22 – Model Quantization Thought Exercise</div>
+<div>Describe steps to quantize ML model.</div>
+<button onclick="toggleSolution('sol22')">Show Solution</button>
+<div class="solution" id="sol22">Post‑training quantization / calibration / validation.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 23 – Profiling (Python)</div>
+<div>Profile slow DSP function.</div>
+<button onclick="toggleSolution('sol23')">Show Solution</button>
+<div class="solution" id="sol23">Use cProfile / line_profiler.</div>
+</div>
+
+<div class="exercise">
+<div class="preview">Exercise 24 – Receiver Skeleton (C++)</div>
+<div>Outline modular DSP receiver architecture.</div>
+<button onclick="toggleSolution('sol24')">Show Solution</button>
+<div class="solution" id="sol24">class Receiver { Sync sync; Equalizer eq; PLL pll; };</div>
+</div>
+
+</div>
+</body>
+</html>

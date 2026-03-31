@@ -1,0 +1,19 @@
+#include <iostream>
+
+class Point {
+    private:
+        int x,y;
+    
+    public:
+        Point(int x_, int y_) : x(x_), y(y_) {};
+        int get_x() {return x;};
+        int get_y() {return y;};
+
+};
+
+int main(){
+    Point p(2,3);
+    
+    std::cout << "Point: (x,y) = (" << p.get_x() << "," << p.get_y() << ")" << std::endl; 
+    return 0;
+};

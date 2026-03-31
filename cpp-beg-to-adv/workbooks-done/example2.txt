@@ -1,0 +1,31 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+template <typename S>
+void smartPrint(S& s){
+    if constexpr (std::is_array_v<S>){
+        std::cout << "Array of size " << std::extent_v<S> << std::endl;
+    }
+    else
+    {
+        std::cout << "Standart variable!" << std::endl;
+    }
+};
+
+int main()
+{
+    double arr[] = {0.2, 1.1, 2.7, 3.6, 3.2, 2.6, 1.8};
+    double val = 2.2;
+    smartPrint(arr);
+    smartPrint(val);
+    return 0;
+}

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C++ Workbook – Friend ostream & Constructor Initialization Lists</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:40px;background:#f5f7fb;color:#222}
+h1{border-bottom:3px solid #444;padding-bottom:8px}
+h2{margin-top:40px}
+.exercise{background:white;border-radius:10px;padding:20px;margin:20px 0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+code,pre{background:#1e1e1e;color:#dcdcdc;padding:10px;border-radius:6px;display:block;overflow:auto}
+button{margin-top:10px;padding:8px 14px;border:none;border-radius:6px;background:#2d6cdf;color:white;font-weight:bold;cursor:pointer}
+button:hover{background:#1f4ea8}
+.solution{display:none;margin-top:15px}
+</style>
+<script>
+function toggleSolution(id){
+ const el=document.getElementById(id);
+ el.style.display=(el.style.display==='none'||el.style.display==='')?'block':'none';
+}
+</script>
+</head>
+<body>
+
+<h1>C++ Workbook</h1>
+<p>This workbook contains two independent modules:</p>
+<ul>
+<li><b>Friend operator&lt;&lt; with std::ostream</b></li>
+<li><b>Constructor Initialization Lists</b></li>
+</ul>
+
+<h1>Section 1 – Friend ostream Printing</h1>
+
+<div class="exercise">
+<h2>Exercise 1 – Printing a Point</h2>
+<p>Create a class <b>Point</b> with private members:</p>
+<pre>int x;
+int y;</pre>
+<p>Implement a <b>friend operator&lt;&lt;</b> so this works:</p>
+<pre>Point p(3,7);
+std::cout &lt;&lt; p &lt;&lt; std::endl;</pre>
+
+<button onclick="toggleSolution('sol1')">Show Solution</button>
+<div class="solution" id="sol1">
+<pre>#include &lt;iostream&gt;
+
+class Point{
+private:
+    int x;
+    int y;
+
+public:
+    Point(int x_, int y_) : x(x_), y(y_) {}
+
+    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Point&amp; p){
+        os &lt;&lt; "Point(" &lt;&lt; p.x &lt;&lt; ", " &lt;&lt; p.y &lt;&lt; ")";
+        return os;
+    }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 2 – Rectangle Printer</h2>
+<p>Create a class <b>Rectangle</b> with:</p>
+<pre>int width;
+int height;</pre>
+<p>Add a function:</p>
+<pre>int area() const;</pre>
+<p>Print format:</p>
+<pre>Rectangle[width=10, height=5, area=50]</pre>
+
+<button onclick="toggleSolution('sol2')">Show Solution</button>
+<div class="solution" id="sol2">
+<pre>#include &lt;iostream&gt;
+
+class Rectangle{
+private:
+    int width;
+    int height;
+
+public:
+    Rectangle(int w,int h):width(w),height(h){}
+
+    int area() const { return width*height; }
+
+    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os,const Rectangle&amp; r){
+        os &lt;&lt; "Rectangle[width=" &lt;&lt; r.width
+           &lt;&lt; ", height=" &lt;&lt; r.height
+           &lt;&lt; ", area=" &lt;&lt; r.area() &lt;&lt; "]";
+        return os;
+    }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 3 – Nested Objects</h2>
+<p>Create classes <b>Point</b> and <b>Line</b>.</p>
+<p>Line contains:</p>
+<pre>Point start;
+Point end;</pre>
+<p>Output format:</p>
+<pre>Line[Point(1,2) -&gt; Point(5,8)]</pre>
+
+<button onclick="toggleSolution('sol3')">Show Solution</button>
+<div class="solution" id="sol3">
+<pre>#include &lt;iostream&gt;
+
+class Point{
+private:
+    int x,y;
+
+public:
+    Point(int x_,int y_):x(x_),y(y_){}
+
+    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os,const Point&amp; p){
+        os &lt;&lt; "Point(" &lt;&lt; p.x &lt;&lt; "," &lt;&lt; p.y &lt;&lt; ")";
+        return os;
+    }
+};
+
+class Line{
+private:
+    Point start;
+    Point end;
+
+public:
+    Line(Point s,Point e):start(s),end(e){}
+
+    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os,const Line&amp; l){
+        os &lt;&lt; "Line[" &lt;&lt; l.start &lt;&lt; " -&gt; " &lt;&lt; l.end &lt;&lt; "]";
+        return os;
+    }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 4 – Vector3D</h2>
+<p>Create class <b>Vector3D</b>:</p>
+<pre>double x;
+double y;
+double z;</pre>
+<p>Add:</p>
+<pre>double magnitude() const;</pre>
+<p>Example output:</p>
+<pre>Vector3D(x=1, y=2, z=3, |v|=3.74)</pre>
+
+<button onclick="toggleSolution('sol4')">Show Solution</button>
+<div class="solution" id="sol4">
+<pre>#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+
+class Vector3D{
+private:
+    double x,y,z;
+
+public:
+    Vector3D(double x_,double y_,double z_):x(x_),y(y_),z(z_){}
+
+    double magnitude() const{
+        return std::sqrt(x*x + y*y + z*z);
+    }
+
+    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os,const Vector3D&amp; v){
+        os &lt;&lt; "Vector3D(x=" &lt;&lt; v.x
+           &lt;&lt; ", y=" &lt;&lt; v.y
+           &lt;&lt; ", z=" &lt;&lt; v.z
+           &lt;&lt; ", |v|=" &lt;&lt; v.magnitude() &lt;&lt; ")";
+        return os;
+    }
+};</pre>
+</div>
+</div>
+
+<h1>Section 2 – Constructor Initialization Lists</h1>
+
+<div class="exercise">
+<h2>Exercise 1 – Basic Initialization</h2>
+<p>Create class <b>Point</b> with private members:</p>
+<pre>int x;
+int y;</pre>
+<p>Initialize them using an initialization list.</p>
+
+<button onclick="toggleSolution('sol5')">Show Solution</button>
+<div class="solution" id="sol5">
+<pre>class Point{
+private:
+    int x;
+    int y;
+
+public:
+    Point(int x_,int y_):x(x_),y(y_){}
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 2 – Rectangle Initialization</h2>
+<p>Members:</p>
+<pre>int width;
+int height;
+int area;</pre>
+<p>Initialize width and height using initialization list.</p>
+
+<button onclick="toggleSolution('sol6')">Show Solution</button>
+<div class="solution" id="sol6">
+<pre>class Rectangle{
+private:
+    int width;
+    int height;
+    int area;
+
+public:
+    Rectangle(int w,int h):width(w),height(h){
+        area = width*height;
+    }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 3 – Member Object Initialization</h2>
+<p>Create classes Point and Circle.</p>
+<p>Circle contains:</p>
+<pre>Point center;
+double radius;</pre>
+
+<button onclick="toggleSolution('sol7')">Show Solution</button>
+<div class="solution" id="sol7">
+<pre>class Point{
+private:
+    double x,y;
+
+public:
+    Point(double x_,double y_):x(x_),y(y_){}
+};
+
+class Circle{
+private:
+    Point center;
+    double radius;
+
+public:
+    Circle(double x,double y,double r)
+        : center(x,y), radius(r) {}
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 4 – Const Member</h2>
+<p>Create class <b>Sensor</b>:</p>
+<pre>const int id;
+double value;</pre>
+
+<button onclick="toggleSolution('sol8')">Show Solution</button>
+<div class="solution" id="sol8">
+<pre>class Sensor{
+private:
+    const int id;
+    double value;
+
+public:
+    Sensor(int id_, double v)
+        : id(id_), value(v) {}
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2>Exercise 5 – Reference Member</h2>
+<p>Create class <b>Logger</b>:</p>
+<pre>std::ostream&amp; output;
+int level;</pre>
+
+<button onclick="toggleSolution('sol9')">Show Solution</button>
+<div class="solution" id="sol9">
+<pre>#include &lt;iostream&gt;
+
+class Logger{
+private:
+    std::ostream&amp; output;
+    int level;
+
+public:
+    Logger(std::ostream&amp; os,int lvl)
+        : output(os), level(lvl) {}
+};</pre>
+</div>
+</div>
+
+</body>
+</html>

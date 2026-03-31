@@ -1,0 +1,32 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+
+void printMessege(std::string m){
+    std::cout << "messege: " << m << std::endl;
+};
+
+unsigned int printMessegeWithControl(std::string m){
+    std::cout << "messege: " << m << std::endl;
+    return 0;
+};
+
+int main()
+{
+    // original c style
+    void(*f1)(std::string) = &printMessege; 
+    unsigned int(*f2)(std::string) = &printMessegeWithControl;
+        
+    f1(std::string("Hello f1!"));
+    if(0 == f2(std::string("Hello f2!"))){
+        std::cout << "SUCESS!" << std::endl;
+    };
+    return 0;
+}

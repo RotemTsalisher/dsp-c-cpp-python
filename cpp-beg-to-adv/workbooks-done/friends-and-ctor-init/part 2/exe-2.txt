@@ -1,0 +1,24 @@
+#include <iostream>
+
+class Rectangle {
+    private:
+        int height, width, area;
+    
+    public:
+        Rectangle(int h, int w) : height(h), width(w) {
+            this->set_area();
+        };
+        
+        Rectangle& set_area() {area = height * width; return *this;};
+        friend std::ostream& operator<<(std::ostream& os, const Rectangle& r) {
+            os << "Rectangle:" << std::endl;
+            os << "height = " << r.height << ", width = " << r.width << std::endl;
+            os << "area = " << r.area;
+            return os;
+        };
+};
+
+int main(){
+    Rectangle r(2,3);
+    std::cout << r << std::endl;
+}

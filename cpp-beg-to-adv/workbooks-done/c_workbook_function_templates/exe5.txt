@@ -1,0 +1,19 @@
+#include <iostream>
+#include <cstring>
+
+template <typename T>
+T maxVal(T a, T b) {
+    return (a > b) ? a : b;
+}
+template <>
+const char* maxVal(const char* a, const char* b){
+    return (std::strcmp(a,b) > 0) ? a : b;   
+}
+int main()
+{
+    int a = 5, b = 3;
+    const char* s1 = "Hello";
+    const char* s2 = "World!";
+    std::cout << "max(" << s1 << "," << s2 << ") = " << maxVal(s1,s2) << std::endl;
+    return 0;
+}

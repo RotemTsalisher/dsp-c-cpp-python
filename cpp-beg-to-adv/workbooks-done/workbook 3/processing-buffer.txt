@@ -1,0 +1,43 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <cmath> 
+#include <algorithm>
+
+void processingBuffer(
+    void(*processor[])(double*, size_t),
+    double* buffer, 
+    size_t bufferSize, 
+    size_t numProcesses){
+    
+    for(size_t i = 0; i<numProcesses; i++){
+        std::cout << "Process [" << i << "]" << std::endl;
+        processor[i](buffer, bufferSize);
+    }
+};
+int main()
+{
+    double buffer[] = {10.0, 15.0, 30.0, 25.0, 20.0};
+    size_t size = std::size(buffer);
+    
+    auto subtract_max = [](double* arr, size_t size) {std::cout << "subtract max" << std::endl;double max_ele = *std::max_element(arr, arr + size); for(size_t i = 0; i<size; i++) {arr[i] -=max_ele;}};
+    auto to_db        = [](double* arr, size_t size) {std::cout << "to db" << std::endl;for(size_t i = 0; i<size; i++) {arr[i] = 20*std::log10(std::abs(arr[i])); }};
+    
+    void(*processor[2])(double*, size_t) = {to_db, subtract_max};
+    processingBuffer(processor, buffer, size, 2);
+    
+    for(size_t i = 0; i<size; i++)
+    {
+        std::cout << "[" << buffer[i] << "] ";
+    }
+    std::cout << std::endl;
+    return 0;
+}

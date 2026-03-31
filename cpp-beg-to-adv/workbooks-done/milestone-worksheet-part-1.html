@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Programming Exercises</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    margin:40px;
+    background:#f7f7f7;
+}
+
+h1{
+    text-align:center;
+}
+
+.exercise{
+    background:white;
+    padding:20px;
+    margin-bottom:25px;
+    border-radius:10px;
+    box-shadow:0px 0px 6px rgba(0,0,0,0.15);
+}
+
+button{
+    margin-top:10px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+.solution{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    background:#eef6ff;
+    border-left:4px solid #3399ff;
+}
+
+.difficulty{
+    font-weight:bold;
+    color:#444;
+}
+
+</style>
+
+<script>
+function toggleSolution(id){
+    let s = document.getElementById(id);
+    s.style.display = (s.style.display === "none") ? "block" : "none";
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>C++ Progressive Exercise Sheet</h1>
+
+<h2>Part 1 — Topic Exercises</h2>
+
+
+<div class="exercise">
+<h3>1. Functions</h3>
+<p>
+Write a function <b>square()</b> that receives a number and returns its square.
+Create a program that calls the function for 5 different numbers.
+</p>
+
+<button onclick="toggleSolution('s1')">Show Solution</button>
+
+<div class="solution" id="s1">
+<pre>
+int square(int x){
+    return x*x;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>2. Function Overloading</h3>
+<p>
+Create overloaded versions of a function <b>add()</b> that work for:
+</p>
+
+<ul>
+<li>two integers</li>
+<li>two doubles</li>
+<li>three integers</li>
+</ul>
+
+<button onclick="toggleSolution('s2')">Show Solution</button>
+
+<div class="solution" id="s2">
+<pre>
+int add(int a,int b){ return a+b; }
+
+double add(double a,double b){ return a+b; }
+
+int add(int a,int b,int c){ return a+b+c; }
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>3. Function Templates</h3>
+
+<p>
+Create a template function <b>max_val()</b> that returns the maximum
+between two values of any type.
+</p>
+
+<button onclick="toggleSolution('s3')">Show Solution</button>
+
+<div class="solution" id="s3">
+<pre>
+template<typename T>
+T max_val(T a,T b){
+    return (a>b)?a:b;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>4. Template Specialization</h3>
+
+<p>
+Specialize the template <b>max_val()</b> for <b>const char*</b>
+so that strings are compared using <b>strcmp</b>.
+</p>
+
+<button onclick="toggleSolution('s4')">Show Solution</button>
+
+<div class="solution" id="s4">
+<pre>
+template<>
+const char* max_val(const char* a,const char* b){
+    return strcmp(a,b)>0 ? a : b;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>5. Lambda Functions</h3>
+
+<p>
+Create a lambda that calculates the cube of a number and use it inside a loop.
+</p>
+
+<button onclick="toggleSolution('s5')">Show Solution</button>
+
+<div class="solution" id="s5">
+<pre>
+auto cube = [](int x){ return x*x*x; };
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>6. Function Pointers</h3>
+
+<p>
+Create two functions:
+</p>
+
+<ul>
+<li>add</li>
+<li>multiply</li>
+</ul>
+
+Use a function pointer to choose which operation to execute.
+</p>
+
+<button onclick="toggleSolution('s6')">Show Solution</button>
+
+<div class="solution" id="s6">
+<pre>
+int (*operation)(int,int);
+operation = add;
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>7. Passing Functions as Arguments</h3>
+
+<p>
+Write a function <b>compute()</b> that receives:
+</p>
+
+<ul>
+<li>two integers</li>
+<li>a function pointer</li>
+</ul>
+
+and applies the function to the integers.
+</p>
+
+<button onclick="toggleSolution('s7')">Show Solution</button>
+
+<div class="solution" id="s7">
+<pre>
+int compute(int a,int b,int (*op)(int,int)){
+    return op(a,b);
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>8. Fold Expressions</h3>
+
+<p>
+Create a variadic template function that sums any number of arguments.
+</p>
+
+<button onclick="toggleSolution('s8')">Show Solution</button>
+
+<div class="solution" id="s8">
+<pre>
+template<typename... Args>
+auto sum(Args... args){
+    return (... + args);
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>9. constexpr</h3>
+
+<p>
+Write a <b>constexpr factorial()</b> function.
+</p>
+
+<button onclick="toggleSolution('s9')">Show Solution</button>
+
+<div class="solution" id="s9">
+<pre>
+constexpr int factorial(int n){
+    return n<=1 ? 1 : n*factorial(n-1);
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>10. Intro to Classes</h3>
+
+<p>
+Create a class <b>Car</b> with:
+</p>
+
+<ul>
+<li>speed</li>
+<li>fuel</li>
+</ul>
+
+</p>
+
+<button onclick="toggleSolution('s10')">Show Solution</button>
+
+<div class="solution" id="s10">
+<pre>
+class Car{
+public:
+    int speed;
+    int fuel;
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>11. Encapsulation</h3>
+
+<p>
+Make the members private and implement getters/setters.
+</p>
+
+<button onclick="toggleSolution('s11')">Show Solution</button>
+
+<div class="solution" id="s11">
+<pre>
+class Car{
+
+private:
+    int speed;
+
+public:
+
+    void set_speed(int s){
+        speed=s;
+    }
+
+    int get_speed(){
+        return speed;
+    }
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>12. Constructors</h3>
+
+<p>
+Add:
+</p>
+
+<ul>
+<li>default constructor</li>
+<li>constructor with parameters</li>
+</ul>
+
+<button onclick="toggleSolution('s12')">Show Solution</button>
+
+<div class="solution" id="s12">
+<pre>
+Car():speed(0){}
+Car(int s):speed(s){}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>13. Destructors</h3>
+
+<p>
+Add a destructor that prints when an object is destroyed.
+</p>
+
+<button onclick="toggleSolution('s13')">Show Solution</button>
+
+<div class="solution" id="s13">
+<pre>
+~Car(){
+    cout<<"Car destroyed";
+}
+</pre>
+</div>
+</div>
+
+
+
+<h2>Part 2 — Integrated Challenges</h2>
+
+
+<div class="exercise">
+
+<h3>Challenge 1 — Difficulty 5/10</h3>
+
+<p>
+Create a template function that receives a vector
+and a lambda operation and applies it to every element.
+</p>
+
+<button onclick="toggleSolution('c1')">Show Solution</button>
+
+<div class="solution" id="c1">
+<pre>
+template<typename T,typename Func>
+
+void apply(vector<T>& v,Func f){
+
+    for(auto& x:v)
+        x=f(x);
+
+}
+</pre>
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h3>Challenge 2 — Difficulty 6/10</h3>
+
+<p>
+Create a class <b>MathEngine</b> that can store a function pointer
+and apply it to numbers.
+</p>
+
+<button onclick="toggleSolution('c2')">Show Solution</button>
+
+<div class="solution" id="c2">
+<pre>
+class MathEngine{
+
+int (*func)(int,int);
+
+public:
+
+MathEngine(int (*f)(int,int)):func(f){}
+
+int compute(int a,int b){
+    return func(a,b);
+}
+
+};
+</pre>
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h3>Challenge 3 — Difficulty 7/10</h3>
+
+<p>
+Create a variadic template class that can store values of different types
+and print them using fold expressions.
+</p>
+
+<button onclick="toggleSolution('c3')">Show Solution</button>
+
+<div class="solution" id="c3">
+<pre>
+template<typename... Args>
+
+void print_all(Args... args){
+
+    (cout<<...<<args);
+
+}
+</pre>
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h3>Challenge 4 — Difficulty 8/10</h3>
+
+<p>
+Create a class hierarchy:
+</p>
+
+<ul>
+<li>Shape</li>
+<li>Circle</li>
+<li>Rectangle</li>
+</ul>
+
+Implement virtual <b>area()</b>.
+</p>
+
+<button onclick="toggleSolution('c4')">Show Solution</button>
+
+<div class="solution" id="c4">
+<pre>
+class Shape{
+
+public:
+virtual double area()=0;
+
+};
+</pre>
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h3>Challenge 5 — Difficulty 10/10</h3>
+
+<p>
+
+Build a mini framework that includes:
+
+</p>
+
+<ul>
+
+<li>Template utilities</li>
+<li>Concepts for numeric types</li>
+<li>Class hierarchy</li>
+<li>Thread that computes results</li>
+<li>Lambda operations</li>
+
+</ul>
+
+<p>
+The program should execute operations in parallel and print results.
+</p>
+
+<button onclick="toggleSolution('c5')">Show Solution</button>
+
+<div class="solution" id="c5">
+
+<p>
+Expected architecture:
+</p>
+
+<pre>
+concept Numeric
+
+template class Operation
+
+thread worker
+
+lambda operations
+</pre>
+
+</div>
+
+</div>
+
+
+
+</body>
+</html>

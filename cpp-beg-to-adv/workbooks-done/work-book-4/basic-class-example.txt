@@ -1,0 +1,52 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+
+class Point {
+    private:
+        double x,y;
+    
+    public:
+        double get_x() { return x;};
+        double get_y() { return y;};
+        
+        void set_x(double x_) {x = x_;};
+        void set_y(double y_) {y = y_;};
+        
+        void print_point() {std::cout << "x = " << x << ", y = " << y << std::endl;};
+        
+        Point() {x = 0; y = 0;};
+        Point(double x_) {x = x_; y = 0;};
+        Point(double x_, double y_) {x = x_; y = y_;};
+};
+
+int main()
+{
+    Point p0;
+    Point p1(1.0);
+    Point p2(1.0, 2.0);
+    
+    std::cout << "Printing Points:" << std::endl;
+    p0.print_point();
+    p1.print_point();
+    p2.print_point();
+
+    p0.set_x(p2.get_y());
+    p0.set_y(p2.get_x());
+    
+    p2.set_y(20.0);
+    
+    std::cout << "Printing Points:" << std::endl;
+    p0.print_point();
+    p1.print_point();
+    p2.print_point();
+    
+    return 0;
+}

@@ -1,0 +1,22 @@
+#include <iostream>
+#include <cstring>
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+void print(T a){
+    std::cout << "Hello, I am arithmetic type T: " << "a = " << a <<std::endl;
+}
+
+int return_int(int a) {
+    std::cout << "a = " << a << std::endl;
+    return a;
+}
+int main()
+{
+    int a = 3;
+    int (*func)(int) = return_int;
+    
+    std::cout << "return = " << func(a);
+
+    return 0;
+}

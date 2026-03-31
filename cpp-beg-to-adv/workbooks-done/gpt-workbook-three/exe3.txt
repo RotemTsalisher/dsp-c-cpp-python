@@ -1,0 +1,39 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <type_traits>
+
+template <typename T, typename U>
+struct is_same_type {
+    static constexpr bool val = std::is_same_v<T, U>;
+};
+
+template <typename First, typename... Rest>
+struct is_all_same {
+    static constexpr bool val = (std::is_same_v<First, Rest> && ...);
+};
+
+template <typename T, typename U>
+inline constexpr bool is_same_type_v = is_same_type<T,U>::val;
+
+template <typename First, typename... Rest>
+inline constexpr bool is_all_same_type_v = is_all_same<First, Rest...>::val;
+
+int main()
+{
+    std::cout << "is_same_type_v<int   , int>    = " << is_same_type_v<int   , int>    <<std::endl;
+    std::cout << "is_same_type_v<int   , double> = " << is_same_type_v<int   , double> <<std::endl;
+    std::cout << "is_same_type_v<double, double> = " << is_same_type_v<double, double> << std::endl;
+    std::cout << "is_all_same_type_v<int, int, int, int> = " << is_all_same_type_v<int, int, int, int> << std::endl;
+    std::cout << "is_all_same_type_v<double, int , int>  = " << is_all_same_type_v<double, int, int>   << std::endl;
+    std::cout << "is_all_same_type_v<int, double , int>  = " << is_all_same_type_v<int , double, int>  << std::endl;
+    std::cout << "is_all_same_type_v<char, char, char>   = " << is_all_same_type_v<char, char, char >  << std::endl;
+
+    return 0;
+}

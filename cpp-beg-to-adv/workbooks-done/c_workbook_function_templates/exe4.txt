@@ -1,0 +1,12 @@
+#include <iostream>
+
+template <typename T>
+T maxVal(T a, T b) {
+    return (a > b) ? a : b;
+}
+int main()
+{
+    int a = 5, b = 3;
+    std::cout << "max(" << a << "," << b << ") = " << maxVal(a,b) << std::endl;
+    return 0;
+}

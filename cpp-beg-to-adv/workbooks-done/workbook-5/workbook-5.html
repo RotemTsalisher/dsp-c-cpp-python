@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workbook 5</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin: 40px;
+    line-height: 1.6;
+}
+
+.exercise{
+    border:2px solid #333;
+    border-radius:8px;
+    padding:20px;
+    margin-bottom:50px;
+}
+
+.solution{
+    display:none;
+    background:#f2f2f2;
+    padding:15px;
+    margin-top:15px;
+    border-radius:6px;
+    white-space:pre-wrap;
+}
+
+button{
+    padding:8px 16px;
+    cursor:pointer;
+}
+</style>
+
+<script>
+function toggleSolution(id){
+    let s=document.getElementById(id);
+    if(s.style.display==="none"){s.style.display="block";}
+    else{s.style.display="none";}
+}
+</script>
+</head>
+
+<body>
+
+<h1>C++ Workbook 5</h1>
+
+<!-- Exercise 1 -->
+
+<div class="exercise">
+
+<h2>Exercise 1 — Struct vs Class</h2>
+
+Create:
+
+• struct `Point` with public members  
+• class `SafePoint` with private members
+
+Requirements:
+
+- struct allows direct access
+- class requires getters
+
+<button onclick="toggleSolution('s1')">Reveal Solution</button>
+
+<div id="s1" class="solution">
+
+#include <iostream>
+
+struct Point
+{
+    int x;
+    int y;
+};
+
+class SafePoint
+{
+private:
+    int x;
+    int y;
+
+public:
+
+    SafePoint(int x_, int y_)
+    {
+        x = x_;
+        y = y_;
+    }
+
+    int get_x(){ return x; }
+    int get_y(){ return y; }
+};
+
+int main()
+{
+    Point p;
+    p.x = 5;
+    p.y = 6;
+
+    SafePoint sp(5,6);
+
+    std::cout << p.x << std::endl;
+    std::cout << sp.get_x() << std::endl;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 2 -->
+
+<div class="exercise">
+
+<h2>Exercise 2 — Constructors</h2>
+
+Create class `Rectangle`.
+
+Requirements:
+
+- private width and height
+- default constructor
+- constructor with parameters
+- function `area()`
+
+<button onclick="toggleSolution('s2')">Reveal Solution</button>
+
+<div id="s2" class="solution">
+
+#include <iostream>
+
+class Rectangle
+{
+private:
+
+    int width;
+    int height;
+
+public:
+
+    Rectangle()
+    {
+        width = 1;
+        height = 1;
+    }
+
+    Rectangle(int w,int h)
+    {
+        width = w;
+        height = h;
+    }
+
+    int area()
+    {
+        return width * height;
+    }
+};
+
+int main()
+{
+    Rectangle r1;
+    Rectangle r2(3,4);
+
+    std::cout << r1.area() << std::endl;
+    std::cout << r2.area() << std::endl;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 3 -->
+
+<div class="exercise">
+
+<h2>Exercise 3 — Class Object Through Pointer</h2>
+
+Create class `Counter`.
+
+Requirements:
+
+- private value
+- increment function
+- getter
+
+Create object using a pointer.
+
+<button onclick="toggleSolution('s3')">Reveal Solution</button>
+
+<div id="s3" class="solution">
+
+#include <iostream>
+
+class Counter
+{
+private:
+    int value;
+
+public:
+
+    Counter(int v)
+    {
+        value = v;
+    }
+
+    void increment()
+    {
+        value++;
+    }
+
+    int get()
+    {
+        return value;
+    }
+};
+
+int main()
+{
+    Counter* c = new Counter(10);
+
+    c->increment();
+
+    std::cout << c->get() << std::endl;
+
+    delete c;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 4 -->
+
+<div class="exercise">
+
+<h2>Exercise 4 — Destructor</h2>
+
+Create class `Tracker`.
+
+Requirements:
+
+- constructor prints "created"
+- destructor prints "destroyed"
+
+Create object inside a scope block.
+
+<button onclick="toggleSolution('s4')">Reveal Solution</button>
+
+<div id="s4" class="solution">
+
+#include <iostream>
+
+class Tracker
+{
+public:
+
+    Tracker()
+    {
+        std::cout << "created" << std::endl;
+    }
+
+    ~Tracker()
+    {
+        std::cout << "destroyed" << std::endl;
+    }
+};
+
+int main()
+{
+    {
+        Tracker t;
+    }
+
+    std::cout << "scope finished" << std::endl;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 5 -->
+
+<div class="exercise">
+
+<h2>Exercise 5 — this Pointer + Chaining</h2>
+
+Create class `Accumulator`.
+
+Requirements:
+
+- private value
+- add(int)
+- multiply(int)
+
+Both functions return `this`.
+
+Allow:
+
+obj.add(3)->multiply(2)
+
+<button onclick="toggleSolution('s5')">Reveal Solution</button>
+
+<div id="s5" class="solution">
+
+#include <iostream>
+
+class Accumulator
+{
+private:
+    int value;
+
+public:
+
+    Accumulator(int v)
+    {
+        value = v;
+    }
+
+    Accumulator* add(int v)
+    {
+        value += v;
+        return this;
+    }
+
+    Accumulator* multiply(int v)
+    {
+        value *= v;
+        return this;
+    }
+
+    int get()
+    {
+        return value;
+    }
+};
+
+int main()
+{
+    Accumulator a(5);
+
+    a.add(3)->multiply(2);
+
+    std::cout << a.get() << std::endl;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 6 -->
+
+<div class="exercise">
+
+<h2>Exercise 6 — Classes Across Multiple Files + Include Guards</h2>
+
+Split class `Car` across files:
+
+- Car.h
+- Car.cpp
+- main.cpp
+
+<button onclick="toggleSolution('s6')">Reveal Solution</button>
+
+<div id="s6" class="solution">
+
+// Car.h
+
+#ifndef CAR_H
+#define CAR_H
+
+class Car
+{
+private:
+    int speed;
+
+public:
+    Car(int s);
+    int get_speed();
+};
+
+#endif
+
+
+// Car.cpp
+
+#include "Car.h"
+
+Car::Car(int s)
+{
+    speed = s;
+}
+
+int Car::get_speed()
+{
+    return speed;
+}
+
+
+// main.cpp
+
+#include <iostream>
+#include "Car.h"
+
+int main()
+{
+    Car c(120);
+
+    std::cout << c.get_speed() << std::endl;
+}
+
+</div>
+</div>
+
+
+<!-- Exercise 7 -->
+
+<div class="exercise">
+
+<h2>Exercise 7 — Memory Alignment</h2>
+
+Create:
+
+struct Data
+{
+    char a;
+    int b;
+    char c;
+};
+
+Print sizeof(Data).
+
+Explain the result.
+
+<button onclick="toggleSolution('s7')">Reveal Solution</button>
+
+<div id="s7" class="solution">
+
+#include <iostream>
+
+struct Data
+{
+    char a;
+    int b;
+    char c;
+};
+
+int main()
+{
+    std::cout << sizeof(Data) << std::endl;
+}
+
+Typical result: 12 bytes.
+
+Reason:
+
+char a  -> 1 byte  
+padding -> 3 bytes  
+int b   -> 4 bytes  
+char c  -> 1 byte  
+padding -> 3 bytes
+
+Alignment inserted by compiler.
+
+</div>
+</div>
+
+</body>
+</html>

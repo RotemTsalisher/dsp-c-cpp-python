@@ -1,0 +1,34 @@
+EXERCISE 2: Function Templates and Lambda Functions
+Difficulty: Intermediate
+
+Objective:
+Combine function templates with lambda functions to create flexible, reusable code—without relying on C++ containers.
+
+Requirements:
+1. Create a function template `processArray()` that:
+   - Works on a plain array given as pointer + size (or two iterators)
+   - Takes a lambda function as a parameter
+   - Applies the lambda to each element and writes results into an output array you provide
+   - Returns the number of processed elements (or nothing, if you prefer void)
+
+2. In your `main()` function, create:
+   - A C-style array of integers: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+   - A C-style array of doubles: {1.5, 2.5, 3.5, 4.5, 5.5}
+
+3. Use `processArray()` with different lambda functions to:
+   - Double each integer (multiply by 2)
+   - Square each integer (multiply by itself)
+   - Add 1.0 to each double
+
+4. Print the original and processed arrays using a helper function template `printArray()` that takes pointer + size (no containers required).
+
+5. Use lambda expressions directly in the `processArray()` calls (capture nothing needed here).
+
+Example Output:
+Original integers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+Doubled: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+Squared: [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+Original doubles: [1.5, 2.5, 3.5, 4.5, 5.5]
+Incremented: [2.5, 3.5, 4.5, 5.5, 6.5]
+
+Note: Keep the templates generic for pointer + size (or iterator pairs). Avoid requiring `std::vector` or other containers.

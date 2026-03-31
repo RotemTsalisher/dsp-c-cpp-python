@@ -1,0 +1,474 @@
+
+<div class="exercise">
+<h3>14. Namespaces</h3>
+
+<p>
+Create two namespaces:
+</p>
+
+<ul>
+<li>math_utils</li>
+<li>string_utils</li>
+</ul>
+
+<p>
+Both should contain a function named <b>print()</b>. Demonstrate how namespaces prevent name collisions.
+</p>
+
+<button onclick="toggleSolution('s14')">Show Solution</button>
+
+<div class="solution" id="s14">
+<pre>
+namespace math_utils{
+    void print(){ cout<<"math"; }
+}
+
+namespace string_utils{
+    void print(){ cout<<"string"; }
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>15. Concepts and auto</h3>
+
+<p>
+Create a concept <b>Numeric</b> that accepts only arithmetic types.  
+Write a function using <b>auto</b> parameters constrained by the concept.
+</p>
+
+<button onclick="toggleSolution('s15')">Show Solution</button>
+
+<div class="solution" id="s15">
+<pre>
+template<typename T>
+concept Numeric = is_arithmetic_v<T>;
+
+auto add(Numeric auto a, Numeric auto b){
+    return a+b;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>16. Requires</h3>
+
+<p>
+Write a template function that only works for types that support the <b>+</b> operator.
+</p>
+
+<button onclick="toggleSolution('s16')">Show Solution</button>
+
+<div class="solution" id="s16">
+<pre>
+template<typename T>
+
+requires requires(T a,T b){ a+b; }
+
+T add(T a,T b){
+    return a+b;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>17. Traits (type traits)</h3>
+
+<p>
+Create a trait <b>is_pointer_type</b> using either a struct template or variable template.
+</p>
+
+<button onclick="toggleSolution('s17')">Show Solution</button>
+
+<div class="solution" id="s17">
+<pre>
+template<typename T>
+struct is_pointer_type{
+    static constexpr bool value=false;
+};
+
+template<typename T>
+struct is_pointer_type<T*>{
+    static constexpr bool value=true;
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>18. Threads</h3>
+
+<p>
+Create a thread that prints numbers from 1 to 5 while the main thread prints letters.
+</p>
+
+<button onclick="toggleSolution('s18')">Show Solution</button>
+
+<div class="solution" id="s18">
+<pre>
+void worker(){
+    for(int i=1;i<=5;i++)
+        cout<<i;
+}
+
+thread t(worker);
+t.join();
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>19. Classes Across Multiple Files</h3>
+
+<p>
+Split a class <b>Logger</b> into:
+</p>
+
+<ul>
+<li>Logger.h</li>
+<li>Logger.cpp</li>
+</ul>
+
+<button onclick="toggleSolution('s19')">Show Solution</button>
+
+<div class="solution" id="s19">
+<pre>
+// Logger.h
+class Logger{
+public:
+    void log();
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>20. Include Guards</h3>
+
+<p>
+Add include guards to a header file named <b>Logger.h</b>.
+</p>
+
+<button onclick="toggleSolution('s20')">Show Solution</button>
+
+<div class="solution" id="s20">
+<pre>
+#ifndef LOGGER_H
+#define LOGGER_H
+
+class Logger{};
+
+#endif
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>21. Class Objects Through Pointers</h3>
+
+<p>
+Create a class <b>Point</b> and allocate it dynamically using <b>new</b>.  
+Access its members through a pointer.
+</p>
+
+<button onclick="toggleSolution('s21')">Show Solution</button>
+
+<div class="solution" id="s21">
+<pre>
+Point* p = new Point();
+p->set_x(5);
+delete p;
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>22. 'this' Operator</h3>
+
+<p>
+Create a class where setter functions return <b>*this</b> to allow chaining.
+</p>
+
+<button onclick="toggleSolution('s22')">Show Solution</button>
+
+<div class="solution" id="s22">
+<pre>
+class A{
+
+int x;
+
+public:
+
+A& set_x(int v){
+    this->x=v;
+    return *this;
+}
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>23. Struct vs Class</h3>
+
+<p>
+Create a <b>struct Vector</b> with x,y,z members.  
+Explain the difference between struct and class default access levels.
+</p>
+
+<button onclick="toggleSolution('s23')">Show Solution</button>
+
+<div class="solution" id="s23">
+<pre>
+struct Vector{
+    int x,y,z;
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>24. Memory Alignment</h3>
+
+<p>
+Create two structs with different member ordering and compare their size using <b>sizeof</b>.
+</p>
+
+<button onclick="toggleSolution('s24')">Show Solution</button>
+
+<div class="solution" id="s24">
+<pre>
+struct A{
+    char a;
+    int b;
+};
+
+struct B{
+    int b;
+    char a;
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>25. Inheritance</h3>
+
+<p>
+Create a base class <b>Animal</b> with a virtual function <b>speak()</b>.  
+Create a derived class <b>Dog</b> that overrides it.
+</p>
+
+<button onclick="toggleSolution('s25')">Show Solution</button>
+
+<div class="solution" id="s25">
+<pre>
+class Dog:public Animal{
+
+public:
+
+void speak() override{
+    cout<<"bark";
+}
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>26. Const Correctness</h3>
+
+<p>
+Create a const member function that returns a value without modifying the object.
+</p>
+
+<button onclick="toggleSolution('s26')">Show Solution</button>
+
+<div class="solution" id="s26">
+<pre>
+int get_speed() const{
+    return speed;
+}
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>27. Const and Reference Members</h3>
+
+<p>
+Create a class that contains:
+</p>
+
+<ul>
+<li>a const integer</li>
+<li>a reference member</li>
+</ul>
+
+<button onclick="toggleSolution('s27')">Show Solution</button>
+
+<div class="solution" id="s27">
+<pre>
+class Test{
+
+const int id;
+int& ref;
+
+public:
+
+Test(int i,int& r):id(i),ref(r){}
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>28. Protected Members</h3>
+
+<p>
+Create a base class with a protected variable that is accessed by a derived class.
+</p>
+
+<button onclick="toggleSolution('s28')">Show Solution</button>
+
+<div class="solution" id="s28">
+<pre>
+class Base{
+
+protected:
+int value;
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>29. Base Class Access Specifiers</h3>
+
+<p>
+Create a class that inherits from a base class using:
+</p>
+
+<ul>
+<li>public</li>
+<li>protected</li>
+<li>private</li>
+</ul>
+
+Explain the effect on accessibility.
+</p>
+
+<button onclick="toggleSolution('s29')">Show Solution</button>
+
+<div class="solution" id="s29">
+<pre>
+class A:public Base{};
+class B:protected Base{};
+class C:private Base{};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>30. Friend in Inheritance</h3>
+
+<p>
+Create a friend function that can access private members of a base class.
+</p>
+
+<button onclick="toggleSolution('s30')">Show Solution</button>
+
+<div class="solution" id="s30">
+<pre>
+class A{
+
+int x;
+
+friend void show(A&);
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>31. Resurrecting Members with using</h3>
+
+<p>
+Create a base class with a protected function.  
+Use <b>using</b> in the derived class to make it public.
+</p>
+
+<button onclick="toggleSolution('s31')">Show Solution</button>
+
+<div class="solution" id="s31">
+<pre>
+class Derived:public Base{
+
+public:
+
+using Base::protected_function;
+
+};
+</pre>
+</div>
+</div>
+
+
+
+<div class="exercise">
+<h3>32. Default Constructor with Inheritance</h3>
+
+<p>
+Create a derived class that explicitly calls the base constructor.
+</p>
+
+<button onclick="toggleSolution('s32')">Show Solution</button>
+
+<div class="solution" id="s32">
+<pre>
+Derived():Base(10){}
+</pre>
+</div>
+</div>

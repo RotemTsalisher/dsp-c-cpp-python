@@ -1,0 +1,39 @@
+#include <iostream>
+#include <thread>
+
+class Worker {
+    
+    private:
+        int value;
+    
+    public:
+    
+        Worker() {value = 0;};
+        Worker(int value_) {value = value_;};
+        
+        int get_value() {return this->value;};
+        
+        void do_work(int val){
+            for(int i = 0; i < 5; i++){
+                std::cout << "WORKING..." << std::endl;
+                unsigned long long int j = 1000000000;
+                while(j-- > 0);
+            }
+            std::cout << "value = " << val << std::endl;
+        };
+        
+};
+
+int main() {
+    
+    Worker w0(5);
+    Worker w1;
+    Worker w2;
+    
+    //std::thread t0(&Worker::do_work, &w0, w0.get_value());
+    std::thread t1(&Worker::do_work, &w1, w1.get_value());
+    //std::thread t2(w2.do_work);
+    
+    t1.join();
+    return 0;
+}

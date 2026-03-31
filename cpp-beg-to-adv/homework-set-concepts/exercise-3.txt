@@ -1,0 +1,56 @@
+EXERCISE 3: Basic `requires` Clauses
+Difficulty: Intermediate
+
+Objective:
+Learn how to use `requires` clauses directly in function templates (not just in concept definitions).
+
+Requirements:
+1. Create a concept `Comparable` that checks if a type supports both `<` and `==` operators.
+   - Use a requires expression: `requires(T a, T b) { a < b; a == b; }`
+
+2. Create a function template `findMax()` that:
+   - Takes two parameters of type `T`
+   - Uses a `requires` clause (NOT a concept) directly to ensure `T` supports the `<` operator
+   - Syntax: `template<typename T> requires requires(T a, T b) { a < b; } T findMax(T a, T b)`
+   - Returns the maximum of the two values
+   - Note: This is `requires requires` - first `requires` is the clause keyword, second is the expression
+
+3. Create a function template `areEqual()` that:
+   - Takes two parameters of type `T`
+   - Uses a trailing `requires` clause to check if `T` supports the `==` operator
+   - Syntax: `template<typename T> T areEqual(T a, T b) requires requires(T x, T y) { x == y; }`
+   - Returns a boolean indicating if they're equal
+
+4. Create a function template `sortPair()` that:
+   - Takes two references of type `T`
+   - Uses a `requires` clause with the `Comparable` concept you defined
+   - Syntax: `template<typename T> requires Comparable<T> void sortPair(T& a, T& b)`
+   - Sorts them so the smaller value is in the first parameter and larger in the second
+
+5. Create a function template `subtract()` that:
+   - Takes two parameters
+   - Uses an inline requires expression (not a separate concept): `requires requires(T a, T b) { a - b; }`
+   - Returns the difference
+
+6. In your `main()` function, test all functions with:
+   - Integers (should work with all functions)
+   - Doubles (should work with all functions)
+   - Pointers (test with `findMax` - will compare addresses, which may or may not be useful)
+   - Demonstrate that trying to use incompatible types gives clear error messages
+
+Example Output:
+Max of 5 and 10: 10
+Max of 3.14 and 2.71: 3.14
+Are 5 and 5 equal? true
+Are 3 and 7 equal? false
+Before sorting: x=10, y=5
+After sorting: x=5, y=10
+Subtract 10 from 15: 5
+
+Note:
+- Learn the difference between:
+  - Concept definition: `concept Name = requires(...) { ... };`
+  - Requires clause using concept: `requires Concept<T>`
+  - Requires clause with inline expression: `requires requires(T t) { ... }` (the "requires requires" syntax)
+- Try both inline requires clauses and trailing requires clauses
+- Understand when to use concepts vs. requires clauses directly (concepts are reusable, inline requires are one-off)

@@ -1,0 +1,20 @@
+#include <iostream>
+
+auto square_(auto x){
+    decltype(auto) res = x*x;
+    return res;
+}
+
+void swap(int& a, int& b){
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
+int main()
+{
+    int a = 2, b = 3;
+    std::cout << "before swap: a = " << a << ", b = " << b << std::endl;
+    swap(a,b);
+    std::cout << "after swap: a = " << a << ", b = " << b << std::endl;
+    return 0;
+}

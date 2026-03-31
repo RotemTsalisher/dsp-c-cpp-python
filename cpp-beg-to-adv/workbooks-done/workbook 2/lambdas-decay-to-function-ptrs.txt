@@ -1,0 +1,30 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+
+int main()
+{
+    unsigned int userSelection = 1;
+    int a = 1, b = 2;
+    
+    auto add   = [](int a, int b) -> int {return a + b;};
+    auto mult  = [](int a, int b) -> int {return a * b;};
+    
+    int(*op)(int,int);
+    if(0 == userSelection){
+        op = add;
+    }
+    else{
+        op = mult;
+    }
+    
+    std::cout << "op returns: " << op(a,b) << std::endl;
+    return 0;
+}

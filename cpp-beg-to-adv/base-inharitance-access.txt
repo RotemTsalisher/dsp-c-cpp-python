@@ -1,0 +1,93 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+class Base {
+    private:
+        int private_int;
+    protected:
+        int protected_int;
+    public: 
+        int public_int;
+    
+    Base() = default;
+    Base(int a, int b, int c) : private_int(a), protected_int(b), public_int(c) {};
+};
+
+class PublicDerived : public Base {
+    // private:   private_int
+    // protected: protected_int -> modifiable
+    // public:    public_int -> modifiable
+    
+    void access() {
+        // private_int++; can't modify
+        protected_int++;
+        public_int++;
+    };
+};
+
+class ProtectedDerived : protected Base {
+    
+    // private: private int 
+    // protected: protected int -> modifiable
+    // protected: public int -> modifiable
+    
+    void access(){
+        
+        // private_int++; // can't modify
+        protected_int++;
+        public_int++;
+    };
+};
+
+class PrivateDerived : private Base {
+    // private: private_int
+    // protected: protected_int -> modifiable
+    // public: public_int -> modifiable
+    
+    void access() {
+        
+        protected_int++;
+        public_int++;
+    };
+};
+
+int main()
+{
+    
+    Base b(0,1,2);
+    
+    PublicDerived public_d;
+    ProtectedDerived protected_d;
+    PrivateDerived private_d;
+    
+    public_d.public_int++;
+    
+    // public_d.protected_int++; 
+    // main is an outside scope and cannot see "protected" members
+    
+    // public_d.private_int++;
+    // main is an outside scope and cannot see "private" members
+    
+    // protected_d.public_int++;
+    // protected inharitance: "public" becomes "protected" in derived class
+    // cannot reach from main
+    
+    // protected_d.protected_int++;
+    // private_d.private_int++;
+    
+    // provate inharitance, cannot reach from main:
+    //private_d.public_int++;
+    //private_d.protected_int++;
+    //private_d.private_int++;
+    
+    std::cout<<"Hello World";
+
+    return 0;
+}

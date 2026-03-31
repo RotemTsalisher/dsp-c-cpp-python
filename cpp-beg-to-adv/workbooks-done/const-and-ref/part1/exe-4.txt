@@ -1,0 +1,39 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+
+class User {
+    private:
+        const int id;
+        
+    public:
+        User() : id(0) {};
+        User(int id_) : id(id_) {};
+        User(const User& u) : id(u.id) {};
+        
+        int get_id() {return id;};
+};
+
+int main() {
+    
+    // default constructor
+    User u1;
+    std::cout << "u1 id = " << u1.get_id() << std::endl;
+
+    // parameterized constructor
+    User u2(42);
+    std::cout << "u2 id = " << u2.get_id() << std::endl;
+
+    // copy constructor
+    User u3(u2);
+    std::cout << "u3 id (copy of u2) = " << u3.get_id() << std::endl;
+
+    return 0;
+}

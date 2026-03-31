@@ -1,0 +1,52 @@
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+struct circular_buffer {
+    static constexpr size_t SIZE = 4;
+    int16_t buffer[SIZE] = {0};
+    size_t ptr = 0;
+};
+
+uint16_t push(circular_buffer &cb, int16_t val){
+    cb.buffer[cb.ptr] = val;
+    cb.ptr = (cb.ptr + 1) & (circular_buffer::SIZE - 1);
+    return (cb.ptr - 1) & (circular_buffer::SIZE - 1);
+}
+
+int main() {
+
+    circular_buffer cb;
+    std::vector<int16_t> memory;
+
+    for(int i = 0; i < 12; i++) {
+
+        uint16_t last_index = push(cb, i);
+
+        std::cout << "push: " << i
+                  << "  wrote_index: " << last_index
+                  << "  ptr_now: " << cb.ptr
+                  << "  buffer: ";
+
+        for(size_t j = 0; j < circular_buffer::SIZE; j++)
+            std::cout << cb.buffer[j] << " ";
+
+        std::cout << "\n";
+
+        // detect full cycle (buffer filled)
+        if(cb.ptr == 0) {
+
+            std::cout << "BUFFER FULL → copying to memory\n";
+
+            for(size_t j = 0; j < circular_buffer::SIZE; j++)
+                memory.push_back(cb.buffer[j]);
+        }
+    }
+
+    std::cout << "\nMemory vector contents:\n";
+
+    for(auto v : memory)
+        std::cout << v << " ";
+
+    std::cout << std::endl;
+}

@@ -1,0 +1,53 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+template <typename T>
+struct power_factor {
+    static const int value = 1;
+};
+
+template <>
+struct power_factor<int> {
+    static const int value = 2;
+};
+
+template <typename S>
+inline constexpr int power_factor_v = power_factor<S>::value;
+
+template <typename T>
+constexpr T multiply(T v) {
+    if constexpr (power_factor_v<T> == 1){
+        return v;
+    }
+    else if constexpr (power_factor_v<T> == 2){
+        return v * v;
+    }
+    else{
+        return 0;
+    }
+}
+
+int main()
+{
+    int a = 10;
+    double d = 2.5;
+    
+    
+    std::cout << "power_factor_v<double> = " << power_factor_v<double> << std::endl;
+    std::cout << "power_factor_v<int>    = " << power_factor_v<int>    << std::endl;
+    
+    std::cout << "a = " << a << ", d = " << d << std::endl;
+    a = multiply(a);
+    d = multiply(d);
+    
+    std::cout << "a = " << a << ", d = " << d << std::endl;
+
+    return 0;
+}

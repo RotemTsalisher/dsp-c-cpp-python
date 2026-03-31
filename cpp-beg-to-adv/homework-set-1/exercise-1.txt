@@ -1,0 +1,26 @@
+EXERCISE 1: Basic Functions and Function Overloading
+Difficulty: Beginner
+
+Objective:
+Create a program that demonstrates basic function usage and function overloading.
+
+Requirements:
+1. Create a function called `calculate()` that takes two integers and returns their sum.
+2. Overload `calculate()` to take two doubles and return their product.
+3. Overload `calculate()` to take three integers and return their average (as a double).
+4. Create a function called `display()` that takes a string message and prints it.
+5. Overload `display()` to take an integer and print it with a label "Value: ".
+
+In your `main()` function:
+- Test all three `calculate()` functions with different inputs
+- Test both `display()` functions
+- Print appropriate output to show all results
+
+Example Output:
+Sum of 5 and 10: 15
+Product of 3.5 and 2.0: 7.0
+Average of 10, 20, 30: 20.0
+Message: Hello, C++!
+Value: 42
+
+Note: Use meaningful variable names and add brief comments explaining each function's purpose.

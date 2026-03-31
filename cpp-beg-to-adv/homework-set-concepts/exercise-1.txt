@@ -1,0 +1,48 @@
+EXERCISE 1: Basic Concept Syntax
+Difficulty: Beginner
+
+Objective:
+Learn the fundamental syntax of C++20 concepts and understand how to define simple constraints using requires expressions.
+
+Requirements:
+1. Define a concept called `Addable` that checks if a type supports the `+` operator between two instances of that type.
+   - Use a `requires` expression: `requires(T a, T b) { a + b; }`
+
+2. Define a concept called `Printable` that checks if a type can be printed to `std::cout` using the `<<` operator.
+   - Use a `requires` expression: `requires(T t) { std::cout << t; }`
+
+3. Define a concept called `Multipliable` that checks if a type supports the `*` operator.
+
+4. Create a function template `add()` that:
+   - Takes two parameters of the same type `T`
+   - Uses the `Addable` concept to constrain the template parameter
+   - Syntax: `template<Addable T> T add(T a, T b)` or `auto add(Addable auto a, Addable auto b)`
+   - Returns the sum of the two parameters
+
+5. Create a function template `print()` that:
+   - Takes one parameter of type `T`
+   - Uses the `Printable` concept to constrain the template parameter
+   - Prints the value to `std::cout` followed by a newline
+
+6. Create a function template `multiply()` that uses the `Multipliable` concept.
+
+7. In your `main()` function, test these functions with:
+   - Integers (should work with `add()`, `multiply()`, and `print()`)
+   - Doubles (should work with `add()`, `multiply()`, and `print()`)
+   - Try `print()` with a string (should work)
+
+Example Output:
+Adding 5 and 10: 15
+Multiplying 3 and 4: 12
+Adding 3.5 and 2.5: 6
+Multiplying 2.5 and 3.0: 7.5
+Printing integer: 42
+Printing double: 3.14
+Printing string: Hello, Concepts!
+
+Note: 
+- Use `requires` expressions to check for operations within your concepts
+- Make sure to include `<concepts>` and `<iostream>` headers
+- Comment your code to explain what each concept checks for
+- Focus on understanding the syntax: `concept Name = requires(T t) { /* expressions */ };`
+

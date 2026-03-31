@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workout 04</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:40px;
+    line-height:1.6;
+}
+.exercise{
+    margin-bottom:60px;
+    padding:20px;
+    border:2px solid #222;
+    border-radius:8px;
+}
+button{
+    padding:8px 16px;
+    margin-top:15px;
+    cursor:pointer;
+}
+.solution{
+    display:none;
+    margin-top:20px;
+    background:#f2f2f2;
+    padding:15px;
+    white-space:pre-wrap;
+    border-radius:6px;
+}
+</style>
+
+<script>
+function toggleSolution(id){
+    var s = document.getElementById(id);
+    if(s.style.display === "none"){
+        s.style.display = "block";
+    }else{
+        s.style.display = "none";
+    }
+}
+</script>
+</head>
+
+<body>
+
+<h1>C++ Workbook 04</h1>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 1 – Basic Class + Getter / Setter</h2>
+
+<p>Create a class <b>Counter</b> with:</p>
+
+<ul>
+<li>Private integer member <code>value</code></li>
+<li>Setter <code>set(int)</code></li>
+<li>Getter <code>get()</code></li>
+<li>Function <code>increment()</code> that increases the value</li>
+</ul>
+
+<p>Demonstrate usage in <code>main()</code>.</p>
+
+<button onclick="toggleSolution('s1')">Reveal Solution</button>
+
+<div id="s1" class="solution">
+
+#include &lt;iostream&gt;
+
+class Counter{
+private:
+    int value;
+
+public:
+
+    void set(int v){
+        value = v;
+    }
+
+    int get() const{
+        return value;
+    }
+
+    void increment(){
+        value++;
+    }
+};
+
+int main(){
+
+    Counter c;
+
+    c.set(5);
+    c.increment();
+
+    std::cout &lt;&lt; c.get() &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 2 – Function Template + Class</h2>
+
+<p>Create a template function:</p>
+
+<pre>square(T value)</pre>
+
+<p>Then create a class <b>Calculator</b> with a method:</p>
+
+<pre>compute_square(T value)</pre>
+
+<p>It must call the template function.</p>
+
+<button onclick="toggleSolution('s2')">Reveal Solution</button>
+
+<div id="s2" class="solution">
+
+#include &lt;iostream&gt;
+
+template&lt;typename T&gt;
+T square(T value){
+    return value * value;
+}
+
+class Calculator{
+
+public:
+
+    template&lt;typename T&gt;
+    T compute_square(T v){
+        return square(v);
+    }
+};
+
+int main(){
+
+    Calculator c;
+
+    std::cout &lt;&lt; c.compute_square(5) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 3 – Concept + requires</h2>
+
+<p>Create a concept:</p>
+
+<pre>Arithmetic</pre>
+
+<p>It should accept arithmetic types.</p>
+
+<p>Create a function:</p>
+
+<pre>add(T a, T b)</pre>
+
+<p>It must use the concept.</p>
+
+<button onclick="toggleSolution('s3')">Reveal Solution</button>
+
+<div id="s3" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template&lt;typename T&gt;
+concept Arithmetic = std::is_arithmetic_v&lt;T&gt;;
+
+template&lt;Arithmetic T&gt;
+T add(T a, T b){
+    return a + b;
+}
+
+int main(){
+
+    std::cout &lt;&lt; add(3,4) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 4 – Traits + Class Interaction</h2>
+
+<p>Create trait:</p>
+
+<pre>is_floating_type_v&lt;T&gt;</pre>
+
+<p>Then create class <b>TypeChecker</b> with function:</p>
+
+<pre>check(T value)</pre>
+
+<p>Print whether the type is floating or not.</p>
+
+<button onclick="toggleSolution('s4')">Reveal Solution</button>
+
+<div id="s4" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template&lt;typename T&gt;
+constexpr bool is_floating_type_v = std::is_floating_point_v&lt;T&gt;;
+
+class TypeChecker{
+
+public:
+
+    template&lt;typename T&gt;
+    void check(T value){
+
+        if constexpr(is_floating_type_v&lt;T&gt;)
+            std::cout &lt;&lt; "floating\n";
+        else
+            std::cout &lt;&lt; "not floating\n";
+    }
+};
+
+int main(){
+
+    TypeChecker t;
+
+    t.check(5);
+    t.check(3.14);
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 5 – Fold Expression + Concept</h2>
+
+<p>Create a concept that accepts arithmetic types.</p>
+
+<p>Create variadic function:</p>
+
+<pre>sum_all(...)</pre>
+
+<p>Use fold expression to sum arguments.</p>
+
+<button onclick="toggleSolution('s5')">Reveal Solution</button>
+
+<div id="s5" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template&lt;typename T&gt;
+concept Arithmetic = std::is_arithmetic_v&lt;T&gt;;
+
+template&lt;Arithmetic... Args&gt;
+auto sum_all(Args... args){
+    return (args + ...);
+}
+
+int main(){
+
+    std::cout &lt;&lt; sum_all(1,2,3,4) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 6 – Class + Lambda + Function Pointer</h2>
+
+<p>Create class <b>OperationRunner</b>.</p>
+
+<p>It should have a function:</p>
+
+<pre>run(int a, int b, int(*op)(int,int))</pre>
+
+<p>Call the function pointer inside.</p>
+
+<p>Pass a lambda from <code>main()</code>.</p>
+
+<button onclick="toggleSolution('s6')">Reveal Solution</button>
+
+<div id="s6" class="solution">
+
+#include &lt;iostream&gt;
+
+class OperationRunner{
+
+public:
+
+    int run(int a, int b, int(*op)(int,int)){
+        return op(a,b);
+    }
+};
+
+int main(){
+
+    OperationRunner r;
+
+    auto add = [](int a, int b){
+        return a + b;
+    };
+
+    std::cout &lt;&lt; r.run(5,3,add) &lt;&lt; "\n";
+}
+
+</div>
+</div>
+
+<!-- ============================================= -->
+<div class="exercise">
+
+<h2>Exercise 7 – Threads + Class</h2>
+
+<p>Create class <b>Worker</b> with function:</p>
+
+<pre>do_work(int value)</pre>
+
+<p>It prints the value.</p>
+
+<p>Launch two threads that call this method.</p>
+
+<button onclick="toggleSolution('s7')">Reveal Solution</button>
+
+<div id="s7" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+
+class Worker{
+
+public:
+
+    void do_work(int value){
+        std::cout &lt;&lt; value &lt;&lt; "\n";
+    }
+};
+
+int main(){
+
+    Worker w;
+
+    std::thread t1(&Worker::do_work, &w, 10);
+    std::thread t2(&Worker::do_work, &w, 20);
+
+    t1.join();
+    t2.join();
+}
+
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+#include <type_traits>
+
+template <typename... Args>
+requires (std::is_arithmetic_v<Args> && ...)
+auto multiply_all(Args... args){
+    
+    return (args * ...);
+}
+
+int main()
+{
+    
+    int (*fint)(int, int, int) = &multiply_all<int, int, int>;
+    double (*fdouble)(double, double, double) = &multiply_all<double, double, double>;
+    
+    int res = fint(1,2,3);
+    double res_ = fdouble(1.0, 1.5, 1.5);
+    
+    std::cout << "multiply_all(1,2,3)         = " << res << std::endl;
+    std::cout << "multiply_all(1.0, 1.5, 1.5) = " << res_ << std::endl;
+    return 0;
+}

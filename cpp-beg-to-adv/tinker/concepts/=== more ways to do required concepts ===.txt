@@ -1,0 +1,43 @@
+=== more ways to do required concepts ===
+
+#include <iostream>
+#include <concepts>
+#include <string>
+
+/*
+template <typename T>
+requires (std::integral<T> || std::floating_point<T>)
+void printVal(T a){
+    std::cout << "Value: " << a << std::endl;
+};*/
+
+template <std::unsigned_integral T>
+T add_(T a, T b)
+{
+    std::cout << "unsigned integral" << std::endl;
+    return a + b;
+};
+
+template <typename T>
+concept demand_ = std::integral<T> || std::floating_point<T>;
+
+
+auto add_(demand_ auto a, demand_ auto b)
+{
+    std::cout << "demant inst" << std::endl;
+    return a + b;
+}
+
+
+
+int main()
+{
+    unsigned int a{1},b{2};
+    int a_{1},b_{2};
+    float f{1.0f};
+    
+    add_(a,b);
+    add_(a_,b_);
+    add_(f,f);
+    return 0;
+}

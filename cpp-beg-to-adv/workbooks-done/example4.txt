@@ -1,0 +1,36 @@
+/******************************************************************************
+
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+
+template <typename S, size_t N>
+S moving_avg(S (&arr)[N]){
+    if constexpr (N <= 0){
+        return static_cast<S>(0);
+    }
+    else
+    {
+        S avg = 0;
+        for(const auto val : arr){
+            avg += val;
+        }
+        avg /= static_cast<double>(N);
+        return avg;
+    }
+}
+
+int main()
+{
+    double arr[] = {0.2, 1.1, 2.7, 3.6, 3.2, 2.6, 1.8};
+    double val = 2.2;
+    val = moving_avg(arr);
+    std::cout << "avg = " << val <<std::endl;
+    return 0;
+}

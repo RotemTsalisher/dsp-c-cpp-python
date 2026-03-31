@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workbook – Const & Reference Members</title>
+
+<style>
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    margin:40px;
+    background:#f4f6f8;
+    line-height:1.6;
+}
+
+section{
+    background:white;
+    padding:25px;
+    margin-bottom:30px;
+    border-radius:10px;
+    box-shadow:0px 3px 10px rgba(0,0,0,0.08);
+}
+
+h1,h2,h3{
+    color:#222;
+}
+
+pre{
+    background:#111;
+    color:#eee;
+    padding:15px;
+    border-radius:6px;
+    overflow-x:auto;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#1e4fd1;
+}
+
+.solution{
+    display:none;
+    margin-top:10px;
+}
+
+</style>
+
+<script>
+function reveal(id){
+    let x = document.getElementById(id);
+
+    if(x.style.display === "none"){
+        x.style.display = "block";
+    }else{
+        x.style.display = "none";
+    }
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>C++ OOP Workbook: Const Members & Reference Members</h1>
+
+<p>This workbook teaches two important C++ object-oriented programming concepts from scratch.</p>
+
+<hr>
+
+<section>
+
+<h2>Part 1 — Const Member Variables</h2>
+
+<h3>Concept</h3>
+
+<p>
+A <b>const member variable</b> is a class variable whose value cannot change after the object is created.
+</p>
+
+<pre>
+class Circle {
+
+private:
+    const double pi;
+
+public:
+    Circle() : pi(3.14159) {}
+
+};
+</pre>
+
+<h3>Rules</h3>
+
+<ul>
+<li>A const member MUST be initialized in the constructor initializer list.</li>
+<li>It cannot be assigned inside the constructor body.</li>
+<li>After construction the value cannot change.</li>
+</ul>
+
+<pre>
+class Example {
+
+private:
+    const int x;
+
+public:
+    Example(int value) : x(value) {}
+
+};
+</pre>
+
+---
+
+<h3>Exercise 1 – Basic Const Member</h3>
+
+Create a class <b>Student</b> with:
+
+<ul>
+<li>const int id</li>
+<li>std::string name</li>
+</ul>
+
+<button onclick="reveal('s1')">Show Solution</button>
+
+<pre id="s1" class="solution">
+class Student {
+
+private:
+    const int id;
+    std::string name;
+
+public:
+    Student(int id_, std::string name_)
+        : id(id_), name(name_) {}
+
+};
+</pre>
+
+---
+
+<h3>Exercise 2 – Printing</h3>
+
+Add a <b>print()</b> method.
+
+<button onclick="reveal('s2')">Show Solution</button>
+
+<pre id="s2" class="solution">
+void print() const
+{
+    std::cout << "ID: " << id
+              << " Name: " << name
+              << std::endl;
+}
+</pre>
+
+---
+
+<h3>Exercise 3 – Device Serial</h3>
+
+Create class <b>Device</b>
+
+<ul>
+<li>const int serial</li>
+<li>bool is_on</li>
+</ul>
+
+<button onclick="reveal('s3')">Show Solution</button>
+
+<pre id="s3" class="solution">
+class Device {
+
+private:
+    const int serial;
+    bool is_on;
+
+public:
+
+    Device(int s)
+        : serial(s), is_on(false) {}
+
+    void turn_on()
+    {
+        is_on = true;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 4 – Getter</h3>
+
+Create class <b>User</b> with a const ID and getter.
+
+<button onclick="reveal('s4')">Show Solution</button>
+
+<pre id="s4" class="solution">
+class User {
+
+private:
+    const int user_id;
+    std::string email;
+
+public:
+
+    User(int id, std::string mail)
+        : user_id(id), email(mail) {}
+
+    int get_id() const
+    {
+        return user_id;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 5 – Bank Account</h3>
+
+Design class <b>BankAccount</b>
+
+<ul>
+<li>const account_number</li>
+<li>balance</li>
+<li>deposit()</li>
+<li>withdraw()</li>
+</ul>
+
+<button onclick="reveal('s5')">Show Solution</button>
+
+<pre id="s5" class="solution">
+class BankAccount {
+
+private:
+
+    const int account_number;
+    double balance;
+
+public:
+
+    BankAccount(int num, double bal)
+        : account_number(num), balance(bal) {}
+
+    void deposit(double amount)
+    {
+        balance += amount;
+    }
+
+    void withdraw(double amount)
+    {
+        balance -= amount;
+    }
+
+};
+</pre>
+
+</section>
+
+<section>
+
+<h2>Part 2 — Reference Member Variables</h2>
+
+<h3>Concept</h3>
+
+<p>
+A <b>reference member</b> stores a reference to another variable instead of owning its own copy.
+</p>
+
+<pre>
+class Counter {
+
+private:
+    int& value;
+
+public:
+    Counter(int& v) : value(v) {}
+
+};
+</pre>
+
+<h3>Rules</h3>
+
+<ul>
+<li>Reference members MUST be initialized in the initializer list.</li>
+<li>They cannot be reseated.</li>
+<li>They always refer to the same variable.</li>
+</ul>
+
+---
+
+<h3>Exercise 1 – Simple Modifier</h3>
+
+Store a reference to an int and increment it.
+
+<button onclick="reveal('r1')">Show Solution</button>
+
+<pre id="r1" class="solution">
+class Modifier {
+
+private:
+    int& value;
+
+public:
+
+    Modifier(int& v)
+        : value(v) {}
+
+    void increment()
+    {
+        value++;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 2 – Temperature Display</h3>
+
+<button onclick="reveal('r2')">Show Solution</button>
+
+<pre id="r2" class="solution">
+class TemperatureDisplay {
+
+private:
+    double& temperature;
+
+public:
+
+    TemperatureDisplay(double& t)
+        : temperature(t) {}
+
+    void print() const
+    {
+        std::cout << temperature << std::endl;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 3 – Balance Controller</h3>
+
+<button onclick="reveal('r3')">Show Solution</button>
+
+<pre id="r3" class="solution">
+class BalanceController {
+
+private:
+    double& balance;
+
+public:
+
+    BalanceController(double& b)
+        : balance(b) {}
+
+    void deposit(double amount)
+    {
+        balance += amount;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 4 – Logger</h3>
+
+Use a reference to `std::ostream`.
+
+<button onclick="reveal('r4')">Show Solution</button>
+
+<pre id="r4" class="solution">
+class Logger {
+
+private:
+    std::ostream& os;
+
+public:
+
+    Logger(std::ostream& stream)
+        : os(stream) {}
+
+    void log(std::string msg)
+    {
+        os << msg << std::endl;
+    }
+
+};
+</pre>
+
+---
+
+<h3>Exercise 5 – Vector Element Scaler</h3>
+
+<button onclick="reveal('r5')">Show Solution</button>
+
+<pre id="r5" class="solution">
+class VectorScaler {
+
+private:
+    double& element;
+
+public:
+
+    VectorScaler(double& e)
+        : element(e) {}
+
+    void scale(double factor)
+    {
+        element *= factor;
+    }
+
+};
+</pre>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <iostream>
+#include <type_traits>
+#include <concepts>
+
+int16_t add_with_sat_prevention(int16_t a, int16_t b){
+    
+    int32_t res = static_cast<int32_t>(a) + b;
+    int32_t edge = (1 << 15);
+    if(res <= -edge){
+        std::cout << "--CLAMP NEGATIVE!--" << std::endl;
+        res = static_cast<int16_t>(-edge);
+    }
+    else if (res >= (edge - 1)){
+        std::cout << "--CLAMP POSITIVE!--" << std::endl;
+        res = static_cast<int16_t>(edge - 1);
+    }
+    else{
+        std::cout << "--NORMAL ADDITION--!" << std::endl;
+    }
+    
+    return res;
+};
+
+int main() {
+    // Test 1: Positive Saturation (Ceiling)
+    // 32760 + 10 = 32770 (Should be capped at 32767)
+    int16_t pos = add_with_sat_prevention(32760, 10);
+    std::cout << "Positive Test: " << pos << std::endl;
+
+    // Test 2: Negative Saturation (Floor)
+    // -32760 + (-10) = -32770 (Should be capped at -32768)
+    int16_t neg = add_with_sat_prevention(-32760, -10);
+    std::cout << "Negative Test: " << neg << std::endl;
+
+    // Test 3: Normal Addition (The "Error" Case)
+    // 10 + 10 = 20 (This will currently print "ERROR!" and return 20)
+    int16_t norm = add_with_sat_prevention(10, 10);
+    std::cout << "Normal Test:   " << norm << std::endl;
+
+    return 0;
+}

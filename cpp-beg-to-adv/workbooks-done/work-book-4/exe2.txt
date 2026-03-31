@@ -1,0 +1,28 @@
+#include <iostream>
+
+template <typename T>
+T square (T x) {return x*x;};
+
+class Calculator {
+    private:
+        double x;
+        
+    public:
+        void set_x(double x_) { x = x_;};
+        double get_x() {return x;};
+        
+        double compute_square() {return square(x);};
+        Calculator() {x = 0;};
+        Calculator(double x_) {set_x(x_);};
+    
+};
+
+int main()
+{
+    Calculator c0{1.5};
+    Calculator c1;
+    
+    std::cout << "c0 squared = " << c0.compute_square() << std::endl;
+    std::cout << "c1 squared = " << c1.compute_square() << std::endl;
+    
+}

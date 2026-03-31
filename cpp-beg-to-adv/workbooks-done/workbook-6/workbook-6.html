@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>C++ Workbook 6</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:40px;
+    line-height:1.6;
+}
+
+.exercise{
+    border:2px solid #333;
+    border-radius:8px;
+    padding:20px;
+    margin-bottom:50px;
+}
+
+.solution{
+    display:none;
+    background:#f2f2f2;
+    padding:15px;
+    margin-top:15px;
+    border-radius:6px;
+    white-space:pre-wrap;
+}
+
+button{
+    padding:8px 16px;
+    cursor:pointer;
+}
+</style>
+
+<script>
+function toggleSolution(id){
+    let s=document.getElementById(id);
+    if(s.style.display==="none"){s.style.display="block";}
+    else{s.style.display="none";}
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>C++ Workbook 6</h1>
+
+
+<div class="exercise">
+
+<h2>Exercise 1 — Function Overloading</h2>
+
+Create two overloaded functions:
+
+square(int)  
+square(double)
+
+Test both in main.
+
+<button onclick="toggleSolution('s1')">Reveal Solution</button>
+
+<div id="s1" class="solution">
+
+#include &lt;iostream&gt;
+
+int square(int x)
+{
+    return x*x;
+}
+
+double square(double x)
+{
+    return x*x;
+}
+
+int main()
+{
+    std::cout << square(5) << std::endl;
+    std::cout << square(2.5) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 2 — Function Template</h2>
+
+Create a template function:
+
+max_value(T a, T b)
+
+Return the larger value.
+
+<button onclick="toggleSolution('s2')">Reveal Solution</button>
+
+<div id="s2" class="solution">
+
+#include &lt;iostream&gt;
+
+template &lt;typename T&gt;
+T max_value(T a, T b)
+{
+    if(a > b) return a;
+    return b;
+}
+
+int main()
+{
+    std::cout << max_value(5,3) << std::endl;
+    std::cout << max_value(3.5,7.2) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 3 — Template Specialization</h2>
+
+Create template struct:
+
+type_multiplier
+
+Default value = 1  
+Specialize for double → value = 2
+
+Create variable template:
+
+type_multiplier_v
+
+<button onclick="toggleSolution('s3')">Reveal Solution</button>
+
+<div id="s3" class="solution">
+
+#include &lt;iostream&gt;
+
+template &lt;typename T&gt;
+struct type_multiplier
+{
+    static const int val = 1;
+};
+
+template &lt;&gt;
+struct type_multiplier&lt;double&gt;
+{
+    static const int val = 2;
+};
+
+template &lt;typename T&gt;
+constexpr int type_multiplier_v = type_multiplier&lt;T&gt;::val;
+
+int main()
+{
+    std::cout << type_multiplier_v&lt;int&gt; << std::endl;
+    std::cout << type_multiplier_v&lt;double&gt; << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 4 — Lambda Function</h2>
+
+Create a lambda that adds two numbers.
+
+Store it in a variable and call it.
+
+<button onclick="toggleSolution('s4')">Reveal Solution</button>
+
+<div id="s4" class="solution">
+
+#include &lt;iostream&gt;
+
+int main()
+{
+    auto add = [](int a,int b)
+    {
+        return a + b;
+    };
+
+    std::cout << add(3,4) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 5 — Function Pointer</h2>
+
+Create function:
+
+multiply(int,int)
+
+Store it in a function pointer and call it.
+
+<button onclick="toggleSolution('s5')">Reveal Solution</button>
+
+<div id="s5" class="solution">
+
+#include &lt;iostream&gt;
+
+int multiply(int a,int b)
+{
+    return a*b;
+}
+
+int main()
+{
+    int (*f)(int,int) = &multiply;
+
+    std::cout << f(3,4) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 6 — Passing Function as Argument</h2>
+
+Create function:
+
+compute(int a,int b, function_pointer)
+
+Test with add and multiply.
+
+<button onclick="toggleSolution('s6')">Reveal Solution</button>
+
+<div id="s6" class="solution">
+
+#include &lt;iostream&gt;
+
+int add(int a,int b){ return a+b; }
+int multiply(int a,int b){ return a*b; }
+
+int compute(int a,int b,int (*f)(int,int))
+{
+    return f(a,b);
+}
+
+int main()
+{
+    std::cout << compute(3,4,add) << std::endl;
+    std::cout << compute(3,4,multiply) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 7 — Fold Expression</h2>
+
+Create function template:
+
+sum_all(args...)
+
+Use a fold expression.
+
+<button onclick="toggleSolution('s7')">Reveal Solution</button>
+
+<div id="s7" class="solution">
+
+#include &lt;iostream&gt;
+
+template &lt;typename... Args&gt;
+auto sum_all(Args... args)
+{
+    return (args + ...);
+}
+
+int main()
+{
+    std::cout << sum_all(1,2,3,4) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 8 — Requires Constraint</h2>
+
+Create function template:
+
+increment(T)
+
+Allow only integral types.
+
+<button onclick="toggleSolution('s8')">Reveal Solution</button>
+
+<div id="s8" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_integral_v&lt;T&gt;
+T increment(T v)
+{
+    return v+1;
+}
+
+int main()
+{
+    std::cout << increment(5) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 9 — Namespace</h2>
+
+Create namespace:
+
+math_utils
+
+Inside it create function:
+
+cube(int)
+
+<button onclick="toggleSolution('s9')">Reveal Solution</button>
+
+<div id="s9" class="solution">
+
+#include &lt;iostream&gt;
+
+namespace math_utils
+{
+    int cube(int x)
+    {
+        return x*x*x;
+    }
+}
+
+int main()
+{
+    std::cout << math_utils::cube(3) << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 10 — Class With Encapsulation</h2>
+
+Create class:
+
+Counter
+
+Private member:
+value
+
+Functions:
+set_value  
+get_value  
+increment
+
+<button onclick="toggleSolution('s10')">Reveal Solution</button>
+
+<div id="s10" class="solution">
+
+#include &lt;iostream&gt;
+
+class Counter
+{
+private:
+    int value;
+
+public:
+
+    void set_value(int v)
+    {
+        value = v;
+    }
+
+    int get_value()
+    {
+        return value;
+    }
+
+    void increment()
+    {
+        value++;
+    }
+};
+
+int main()
+{
+    Counter c;
+
+    c.set_value(5);
+    c.increment();
+
+    std::cout << c.get_value() << std::endl;
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 11 — Thread Basics</h2>
+
+Create a thread that prints numbers 1–5.
+
+<button onclick="toggleSolution('s11')">Reveal Solution</button>
+
+<div id="s11" class="solution">
+
+#include &lt;iostream&gt;
+#include &lt;thread&gt;
+
+void worker()
+{
+    for(int i=1;i<=5;i++)
+    {
+        std::cout << i << std::endl;
+    }
+}
+
+int main()
+{
+    std::thread t(worker);
+
+    t.join();
+}
+
+</div>
+</div>
+
+
+
+<div class="exercise">
+
+<h2>Exercise 12 — Class + Function Pointer</h2>
+
+Create class Calculator.
+
+Add method:
+
+compute(int a,int b,function_pointer)
+
+Test with:
+
+• normal function  
+• lambda
+
+<button onclick="toggleSolution('s12')">Reveal Solution</button>
+
+<div id="s12" class="solution">
+
+#include &lt;iostream&gt;
+
+class Calculator
+{
+public:
+
+    int compute(int a,int b,int (*f)(int,int))
+    {
+        return f(a,b);
+    }
+};
+
+int add(int a,int b)
+{
+    return a+b;
+}
+
+int main()
+{
+    Calculator c;
+
+    auto mul = [](int a,int b)
+    {
+        return a*b;
+    };
+
+    std::cout << c.compute(3,4,add) << std::endl;
+    std::cout << c.compute(3,4,mul) << std::endl;
+}
+
+</div>
+</div>
+
+
+</body>
+</html>

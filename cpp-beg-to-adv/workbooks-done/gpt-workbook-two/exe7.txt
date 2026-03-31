@@ -1,0 +1,42 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+#include <type_traits>
+#include <thread>
+
+static bool is_done = false;
+static auto res = 0;
+
+template <typename... Args>
+void sum_all(Args... args){
+    
+    res = (args + ...);
+    for(size_t i = 0; i < 5; i++){
+        std::cout << "WORKING... " << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    is_done = true;
+}
+
+void print_sum(){
+    while(!is_done);
+    std::cout << "res = " << res << std::endl;
+}
+
+int main()
+{
+    
+    std::thread worker(sum_all<int, int, int, int>, 1 , 2 , 3 , 4);
+    std::thread printer(print_sum);
+    
+    worker.join();
+    printer.join();
+    return 0;
+}

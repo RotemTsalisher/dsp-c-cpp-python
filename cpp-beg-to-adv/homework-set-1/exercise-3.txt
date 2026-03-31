@@ -1,0 +1,38 @@
+EXERCISE 3: Template Specialization and Requires Clause
+Difficulty: Intermediate-Advanced
+
+Objective:
+Use template specialization and C++20 requires clauses to handle different types appropriately.
+
+Requirements:
+1. Create a function template `getTypeInfo()` that uses a `requires` clause to ensure the template parameter is an arithmetic type (int, float, double, etc.).
+
+2. Create template specializations of `getTypeInfo()` for:
+   - `std::string` type
+   - Pointer types (any pointer)
+
+3. For each specialization/version:
+   - Arithmetic types: return a string "Arithmetic type: [typeid name]"
+   - `std::string`: return "String type with length: [actual length]"
+   - Pointer types: return "Pointer type pointing to: [pointed-to type]"
+
+4. Create a helper function template `processValue()` that:
+   - Takes any type
+   - Calls `getTypeInfo()` with that value
+   - Prints the result
+
+5. In your `main()` function, test with:
+   - An integer (42)
+   - A double (3.14)
+   - A string ("Hello, C++!")
+   - A pointer to an integer (int*)
+   - A pointer to a double (double*)
+
+Example Output:
+Type info: Arithmetic type: i
+Type info: Arithmetic type: d
+Type info: String type with length: 11
+Type info: Pointer type pointing to: i
+Type info: Pointer type pointing to: d
+
+Note: Use `typeid` and/or `std::is_same_v` if needed. Make sure your requires clause properly constrains the template. No container knowledge is required here.

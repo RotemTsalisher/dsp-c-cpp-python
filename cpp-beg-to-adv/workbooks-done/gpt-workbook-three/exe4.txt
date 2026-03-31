@@ -1,0 +1,24 @@
+#include <iostream>
+
+int operate(int a, int b, int(*op)(int, int)){
+    
+    return (op(a,b));
+};
+
+int main()
+{
+    
+    auto add      = [](int a, int b) -> int {return a + b;};
+    auto multiply = [](int a, int b) -> int {return a * b;};
+    
+    int res_add = operate(1,2,add);
+    int res_mul = operate(1,2,multiply);
+    
+    int (*fadd)(int, int) = add;
+    int function_ptr_res = operate(1,2,fadd);
+    
+    std::cout << "res add = " << res_add << std::endl;
+    std::cout << "res mul = " << res_mul << std::endl;
+    std::cout << "function_ptr_res = " << function_ptr_res << std::endl;
+    return 0;
+}

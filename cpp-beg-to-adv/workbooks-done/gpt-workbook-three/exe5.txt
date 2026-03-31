@@ -1,0 +1,19 @@
+#include <iostream>
+#include <type_traits>
+
+template <typename... Args>
+requires (std::is_arithmetic_v<Args> && ...)
+double average(Args... args){
+    int length = sizeof...(Args);
+    double sum = (args + ...);
+    
+    return sum / static_cast<double>(length);
+}
+
+int main()
+{
+    std::cout << average(1,2,3,4) << std::endl;   // 2.5
+    std::cout << average(1.0,2,3) << std::endl;   // 2.0
+    return 0;
+}
+

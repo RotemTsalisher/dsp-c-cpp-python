@@ -1,0 +1,50 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <print>
+#include <iostream>
+
+class Counter {
+    private:
+        int value;
+        
+    public:
+        int get_val() {return value;};
+        void set_val(int v) {value = v;};
+        void increment() {value++;};
+        
+        Counter() {value = 0;};
+        Counter(int init) {value = init;};
+};
+
+int main()
+{
+
+    Counter c1;
+    Counter c2 = 10;
+    
+    std::cout << "c1.value = " << c1.get_val() << std::endl;
+    std::cout << "c2.value = " << c2.get_val() << std::endl;
+    
+    c1.increment();
+    c2.increment();
+    
+    std::cout << "c1.value = " << c1.get_val() << std::endl;
+    std::cout << "c2.value = " << c2.get_val() << std::endl;
+    
+    c1.increment();
+    
+    
+    std::cout << "RESET C1:" << std::endl;
+    c1.set_val(0);
+    std::cout << "c1.value = " << c1.get_val() << std::endl;
+    
+    c1.increment();
+    std::cout << "c1.value = " << c1.get_val() << std::endl;
+    return 0;
+}

@@ -1,0 +1,37 @@
+#include <iostream>
+#include <type_traits>
+#include <concepts>
+
+#define SQRT_2 1.414
+
+constexpr double calc_octave(double fc){
+    return fc*SQRT_2;
+};
+
+void logSignal(double psd){
+    std::cout << "PSD: " << psd <<std::endl;
+};
+
+void logSignal(double psd, int band_idx){
+    std::cout << "Band[" << band_idx << "] PSD: " << psd << std::endl;
+};
+
+int main() {
+    // 1. Test calculation
+    double center_freq = 1000.0;
+    double upper_limit = calc_octave(center_freq);
+    
+    std::cout << "Center: " << center_freq << " Hz -> Upper Limit: " << upper_limit << " Hz\n";
+    std::cout << "------------------------------------" << std::endl;
+
+    // 2. Test Overloading
+    double my_psd = -45.5;
+    
+    // Calls version 1
+    logSignal(my_psd); 
+    
+    // Calls version 2
+    logSignal(my_psd, 12); 
+
+    return 0;
+}

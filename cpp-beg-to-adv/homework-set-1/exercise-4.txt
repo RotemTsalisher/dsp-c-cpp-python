@@ -1,0 +1,43 @@
+EXERCISE 4: Function Pointers and Passing Functions as Arguments
+Difficulty: Advanced
+
+Objective:
+Demonstrate function pointers and passing functions (including lambdas) as arguments to other functions—without requiring knowledge of containers.
+
+Requirements:
+1. Create three regular functions:
+   - `add(int a, int b)` - returns a + b
+   - `multiply(int a, int b)` - returns a * b
+   - `subtract(int a, int b)` - returns a - b
+
+2. Create a function `operation()` that:
+   - Takes two integers as parameters
+   - Takes a function pointer (or function reference) as the third parameter
+   - The function pointer should have signature: `int(*)(int, int)`
+   - Applies the function to the two integers and returns the result
+
+3. Create a higher-order function `applyOperations()` that:
+   - Takes a C-style array of integers (pointer + size)
+   - Takes a function pointer or function-like object (use templates to accept both)
+   - Applies the function to consecutive pairs of elements in the array
+   - Fills an output array you provide with the results (or returns the count)
+
+4. In your `main()` function:
+   - Create function pointers to `add`, `multiply`, and `subtract`
+   - Test `operation()` with all three function pointers and values (10, 5)
+   - Create a C-style array of integers: {10, 5, 8, 3, 12, 4}
+   - Use `applyOperations()` with:
+     * The `add` function pointer
+     * A lambda that returns the maximum of two numbers
+     * A lambda that returns the sum of squares: a*a + b*b
+   - Print all results
+
+Example Output:
+Using function pointer - add(10, 5) = 15
+Using function pointer - multiply(10, 5) = 50
+Using function pointer - subtract(10, 5) = 5
+Applying add: [15, 13, 16]
+Applying max lambda: [10, 8, 12]
+Applying sum of squares: [125, 73, 160]
+
+Note: Show both traditional function pointers and how you can pass lambdas to the same template function, using only pointer + size (no `std::vector` needed).

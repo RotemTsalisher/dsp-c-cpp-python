@@ -1,0 +1,54 @@
+EXERCISE 2: Using Standard Library Concepts
+Difficulty: Beginner
+
+Objective:
+Familiarize yourself with standard library concepts from `<concepts>` header and use them as constraints in function templates.
+
+Requirements:
+1. Use the standard concept `std::integral` to create a function template `multiply()` that:
+   - Takes two parameters of integral type (int, long, char, etc.)
+   - Returns their product
+   - Only accepts integral types (not floating-point)
+   - Try: `template<std::integral T> T multiply(T a, T b)`
+
+2. Use the standard concept `std::floating_point` to create a function template `divide()` that:
+   - Takes two floating-point numbers
+   - Returns their quotient
+   - Only accepts floating-point types
+
+3. Use `std::same_as` to create a function template `swap()` that:
+   - Takes two references of the same type
+   - Swaps their values
+   - Use `std::same_as<T, U>` to ensure both parameters are of exactly the same type
+   - Syntax: `template<typename T, typename U> requires std::same_as<T, U> void swap(T& a, U& b)`
+
+4. Use `std::convertible_to` to create a function template `convert()` that:
+   - Takes a value of type `T`
+   - Converts it to type `U` (where `T` is convertible to `U`)
+   - Returns the converted value
+   - Syntax: `template<typename T, typename U> requires std::convertible_to<T, U> U convert(T value)`
+
+5. Use `std::arithmetic` (which covers both integral and floating-point) to create `add()` that works with any arithmetic type.
+
+6. In your `main()` function:
+   - Test `multiply()` with integers and char (should compile)
+   - Test `divide()` with floats and doubles (should compile)
+   - Test `swap()` with integers, doubles, and pointers
+   - Test `convert()` by converting int to double, double to int, int to bool, char to int
+   - Use `if constexpr` to demonstrate what would NOT compile (comment out invalid calls)
+
+Example Output:
+Multiply 5 and 7: 35
+Multiply char 'A' (65) and 2: 130
+Divide 15.0 by 3.0: 5
+Before swap: a=10, b=20
+After swap: a=20, b=10
+Convert 42 (int) to double: 42.0
+Convert 3.7 (double) to int: 3
+Convert 1 (int) to bool: true
+
+Note:
+- Include `<concepts>`, `<iostream>`, and `<type_traits>` headers
+- Experiment with what compiles and what doesn't
+- Practice both syntax styles: `template<Concept T>` and `requires Concept<T>`
+- Understand that concepts give you better error messages than plain templates

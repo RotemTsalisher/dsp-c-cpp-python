@@ -1,0 +1,25 @@
+=== tinker with concepts ===
+
+1. requires on a template:
+
+template <TypeName T>
+requires ## concept is here
+
+2. can use to specelize:
+
+template <TypeName T>
+requires ##required 1
+func_1(T a)
+
+template <TypeName T>
+requites ##specialized 
+func_1(T a)
+
+3. use requirement as a type indication
+
+template< ##typetrait T>
+void func(T a)
+
+4. using auto
+
+void func(#typetrait auto a, #typetrait auto b)

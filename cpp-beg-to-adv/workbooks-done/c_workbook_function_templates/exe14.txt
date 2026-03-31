@@ -1,0 +1,26 @@
+#include <iostream>
+#include <type_traits>
+#include <concepts>
+
+template <typename F>
+requires std::is_invocable_v<F>
+auto call_(F f){
+    std::cout << "call_: ";
+    return f();
+};
+
+int main() {
+    
+    void (*func)(void) = [](){std::cout << "Hello Lambda!" << std::endl;};
+    auto func2 = []() {std::cout << "Also a Lambda!" << std::endl;};
+    func();
+    func2();
+    
+    call_(func);
+    call_(func2);
+    
+    // error:
+    //call_(2); 
+    // not an invocable type
+    return 0;
+}

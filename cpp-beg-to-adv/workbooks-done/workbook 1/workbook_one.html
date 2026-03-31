@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>C++ Comprehensive Workbook</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: auto; padding: 40px; background-color: #f9f9f9; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { background: #3498db; color: white; padding: 10px 15px; border-radius: 5px; margin-top: 40px; }
+        .intro { background: #e8f4f8; border-left: 5px solid #3498db; padding: 15px; margin: 10px 0 20px 0; font-style: italic; }
+        .exercise { background: white; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .diff { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .lvl-1 { background: #27ae60; color: white; }
+        .lvl-2 { background: #f1c40f; color: black; }
+        .lvl-3 { background: #e67e22; color: white; }
+        .lvl-4 { background: #e74c3c; color: white; }
+        code { background: #f0f0f0; padding: 2px 5px; border-radius: 4px; font-family: 'Consolas', monospace; }
+        .hint { color: #7f8c8d; font-size: 0.9em; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>C++ Programming Workbook</h1>
+
+    <h2>1. Functions & Overloading</h2>
+    <div class="intro">Basic building blocks: modularity and reusing names for different parameter types[cite: 1].</div>
+    
+    <div class="exercise">
+        <span class="diff lvl-1">Ex 1.1</span>
+        <p>Write a function <code>calculateOctave</code> that takes a center frequency (double) and returns the upper band limit (frequency * 1.414).</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-2">Ex 1.2</span>
+        <p>Overload <code>logSignal</code>. One version takes a <code>double</code> (representing a single PSD value) and prints it. The second version takes a <code>double</code> and an <code>int</code> (representing a band index) and prints "Band [index]: [value]".</p>
+    </div>
+
+    <h2>2. Templates & Specialization</h2>
+    <div class="intro">Generic programming: writing code that works for any data type[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-1">Ex 2.1</span>
+        <p>Create a function template <code>findAbsMax</code> that takes two arguments of the same type and returns the one with the larger absolute value. (Recall: Overloading - ensure it works for integers and floats).</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-2">Ex 2.2</span>
+        <p>Create a template <code>printData&lt;T&gt;</code>. Provide a <b>Template Specialization</b> for <code>const char*</code> that wraps the text in square brackets, while the general template just prints the data normally.</p>
+    </div>
+
+    <h2>3. Lambda Functions</h2>
+    <div class="intro">Inline anonymous functions that can capture local variables[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-2">Ex 3.1</span>
+        <p>Define a lambda that captures a <code>threshold</code> variable by value. The lambda should take a <code>double value</code> and return true if <code>value > threshold</code>.</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-3">Ex 3.2</span>
+        <p>Create a function that takes a <code>double signal</code> and a lambda as a "processor". Use the lambda to subtract a <code>max_val</code> from the signal (simulating the subtraction of the maximum PSD value).</p>
+    </div>
+
+    <h2>4. The 'Requires' Clause</h2>
+    <div class="intro">Constraints for templates to ensure they only accept valid types[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-2">Ex 4.1</span>
+        <p>Write a template function <code>addSignals</code> that uses a <code>requires</code> clause to ensure both parameters are arithmetic types (numbers). Use <code>std::is_arithmetic_v&lt;T&gt;</code>.</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-3">Ex 4.2</span>
+        <p>Combine <b>Specialization</b> and <b>Requires</b>: Create a function that prints a signal. Use <code>requires</code> to only allow floating-point types. If a user tries to pass a string, the compiler should fail cleanly.</p>
+    </div>
+
+    <h2>5. Function Pointers & Arguments</h2>
+    <div class="intro">Treating functions like data by passing their addresses to other functions[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-2">Ex 5.1</span>
+        <p>Write two functions: <code>applyGain</code> and <code>applyAttenuation</code>. Write a third function <code>processBuffer</code> that takes a <code>double value</code> and a <b>function pointer</b> to choose which process to apply.</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-4">Ex 5.2</span>
+        <p><b>DSP Mix:</b> Write a function that accepts a function pointer. Use this pointer to pass a <b>Lambda</b> that performs a subtraction of a max PSD value. Ensure the main function also uses a <code>requires</code> clause for type safety[cite: 1, 2].</p>
+    </div>
+
+    <h2>6. Fold Expressions & Arg Packs</h2>
+    <div class="intro">Handling a variable number of arguments (variadic templates) using concise syntax[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-3">Ex 6.1</span>
+        <p>Write a variadic template <code>averageSignal</code> that takes any number of doubles using an <b>argument pack</b>. Use a <b>fold expression</b> to sum them all up and divide by the count (use <code>sizeof...(args)</code>).</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-4">Ex 6.2</span>
+        <p>Create a function <code>allAboveThreshold</code> that takes a threshold and a variadic pack of values. Use a fold expression with the <code>&&</code> operator to return true ONLY if every value in the pack is above the threshold.</p>
+    </div>
+
+    <h2>7. Constexpr</h2>
+    <div class="intro">Enforcing compile-time evaluation for maximum efficiency[cite: 1].</div>
+
+    <div class="exercise">
+        <span class="diff lvl-3">Ex 7.1</span>
+        <p>Create a <code>constexpr</code> function that calculates the center frequency of the Nth octave band (Formula: 1000 * 2^N). Verify it works at compile time by using it to size a raw array: <code>int data[(int)getFreq(2)];</code>.</p>
+    </div>
+    <div class="exercise">
+        <span class="diff lvl-4">Ex 7.2</span>
+        <p><b>The Ultimate Mix:</b> Create a <code>constexpr</code> function that calculates a coefficient. Pass this coefficient into a <b>Variadic Template</b> function that uses a <b>Fold Expression</b> to apply the coefficient to a list of signal values provided via a <b>Lambda</b>[cite: 1, 2].</p>
+    </div>
+
+</body>
+</html>
