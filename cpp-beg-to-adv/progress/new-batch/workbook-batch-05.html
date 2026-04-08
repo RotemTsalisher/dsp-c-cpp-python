@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Workbook — Batch 5: protected, Access, friend, Using, Copy, Virtual, Hiding</title>
+<style>
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+h1 { color: #1a1a1a; }
+.meta { background: #e8f4fc; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #1976d2; }
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.goals { margin: 8px 0 12px 0; padding-left: 20px; }
+.goals li { margin: 4px 0; }
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.9rem; }
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #2e7d32; color: #fff; font-size: 0.95rem; }
+button:hover { background: #1b5e20; }
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+
+<h1>Batch 5 — protected, base-class access, friend in inheritance, using-declarations, copy ctor with inheritance, virtual polymorphism, overload vs override vs hiding</h1>
+
+<div class="meta">
+<p><strong>How to use this workbook:</strong> These topics are easy to get subtly wrong. Compile every example. When an exercise says “should not compile”, try it in a scratch file and read the error.</p>
+<p><strong>Subjects (in order):</strong> protected members, base-class access specifiers (<code>public</code>/<code>protected</code>/<code>private</code> inheritance), <code>friend</code> across inheritance, <code>using</code> to change access, copy constructor with bases, <code>virtual</code> and polymorphism, overloading vs overriding vs name hiding.</p>
+<p>Exercise 7 focuses on <strong>hiding vs override</strong> and is the hardest in this batch.</p>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 1</span><span class="tag">protected</span></h2>
+<p><strong>Task:</strong> Class <code>Base</code> with <code>protected: int n_;</code> and public ctor setting <code>n_</code>. Class <code>Derived : public Base</code> with method <code>int bump()</code> that increments <code>n_</code> and returns it. <code>main</code> cannot access <code>n_</code> on a <code>Derived</code> from outside the class (verify).</p>
+<button type="button" onclick="toggleSolution('b5s1')">Show solution</button>
+<div class="solution" id="b5s1">
+<pre>class Base {
+protected:
+    int n_;
+public:
+    explicit Base(int n = 0) : n_(n) {}
+};
+
+class Derived : public Base {
+public:
+    using Base::Base;
+    int bump() { return ++n_; }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 2</span><span class="tag">Base access specifiers</span></h2>
+<p><strong>Task:</strong> Write three one-line comments comparing <code>struct D1 : public B</code>, <code>struct D2 : protected B</code>, <code>struct D3 : private B</code> regarding how <code>B</code>’s <code>public</code> members appear to users of <code>D1</code>/<code>D2</code>/<code>D3</code>. No code required beyond a minimal empty <code>struct B {};</code> if you want to compile.</p>
+<button type="button" onclick="toggleSolution('b5s2')">Show solution</button>
+<div class="solution" id="b5s2">
+<pre>struct B { public: int x; };
+
+// public inheritance: B's public stays public to users of D1.
+struct D1 : public B {};
+
+// protected inheritance: B's public becomes protected in D2 (outside world cannot use x).
+struct D2 : protected B {};
+
+// private inheritance: B's public becomes private in D3 (implementation detail).
+struct D3 : private B {};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 3</span><span class="tag">friend</span></h2>
+<p><strong>Task:</strong> <code>class Engine { friend class Mechanic; private: int secret_; public: explicit Engine(int s):secret_(s){} };</code> and <code>class Mechanic { public: static int peek(Engine const&amp; e) { return e.secret_; } };</code>. Only <code>Mechanic</code> can read <code>secret_</code>. Demonstrate in <code>main</code>.</p>
+<button type="button" onclick="toggleSolution('b5s3')">Show solution</button>
+<div class="solution" id="b5s3">
+<pre>class Engine {
+    friend class Mechanic;
+    int secret_;
+public:
+    explicit Engine(int s) : secret_(s) {}
+};
+
+class Mechanic {
+public:
+    static int peek(Engine const&amp; e) { return e.secret_; }
+};
+
+// Mechanic::peek(Engine(3)) == 3 ; direct e.secret_ in main is ill-formed</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 4</span><span class="tag">using (access)</span></h2>
+<p><strong>Task:</strong> Base has <code>protected: void helper();</code>. Derived privately inherits Base and adds <code>public: using Base::helper;</code> so outside code can call <code>helper</code> on <code>Derived</code>. Implement empty bodies.</p>
+<button type="button" onclick="toggleSolution('b5s4')">Show solution</button>
+<div class="solution" id="b5s4">
+<pre>class Base {
+protected:
+    void helper() {}
+};
+
+class Derived : private Base {
+public:
+    using Base::helper;
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 5</span><span class="tag">Copy ctor + inheritance</span></h2>
+<p><strong>Task:</strong> <code>struct A { int x; };</code> <code>struct B : A { int y; };</code> Write copy constructor for <code>B</code> that copies both <code>x</code> and <code>y</code> from another <code>B</code> (use initializer list <code>: A(other), y(other.y)</code>).</p>
+<button type="button" onclick="toggleSolution('b5s5')">Show solution</button>
+<div class="solution" id="b5s5">
+<pre>struct A {
+    int x{};
+};
+
+struct B : A {
+    int y{};
+    B() = default;
+    B(B const&amp; other) : A(other), y(other.y) {}
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 6</span><span class="tag">Virtual</span></h2>
+<p><strong>Task:</strong> Abstract interface <code>struct IFilter { virtual double process(double x) const = 0; virtual ~IFilter() = default; };</code> Concrete <code>Gain : IFilter</code> with member <code>double g_</code> and <code>process</code> returning <code>g_*x</code>. Call through <code>IFilter const*</code>.</p>
+<button type="button" onclick="toggleSolution('b5s6')">Show solution</button>
+<div class="solution" id="b5s6">
+<pre>struct IFilter {
+    virtual double process(double x) const = 0;
+    virtual ~IFilter() = default;
+};
+
+struct Gain : IFilter {
+    double g_;
+    explicit Gain(double g) : g_(g) {}
+    double process(double x) const override { return g_ * x; }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 7</span><span class="tag">Overload / override / hiding</span></h2>
+<p><strong>Task:</strong> (1) Show that a derived class member <code>void f(int)</code> <strong>hides</strong> all overloads <code>f(double)</code> from base unless you import with <code>using Base::f;</code>. (2) Show correct <code>override</code> of <code>virtual void g();</code> in derived. Write minimal structs and comments explaining the three keywords <code>overload</code> (same name, different params), <code>override</code> (virtual replacement), <code>hiding</code> (name in derived shadows base).</p>
+<button type="button" onclick="toggleSolution('b5s7')">Show solution</button>
+<div class="solution" id="b5s7">
+<pre>struct Base {
+    void f(double) {}
+    virtual void g() {}
+};
+
+struct DerivedHide : Base {
+    void f(int) {} // hides Base::f(double) — d.f(1.0) won't resolve to Base::f
+};
+
+struct DerivedUsing : Base {
+    using Base::f;
+    void f(int) {} // both overloads visible where using applies
+};
+
+struct DerivedOverride : Base {
+    void g() override {} // replaces virtual g(); use override keyword
+};
+
+// Overload: two functions same name, different signatures.
+// Override: derived virtual function replaces base virtual with same signature.
+// Hiding: derived name f shadows all Base::f unless brought in with using.</pre>
+</div>
+</div>
+
+</body>
+</html>

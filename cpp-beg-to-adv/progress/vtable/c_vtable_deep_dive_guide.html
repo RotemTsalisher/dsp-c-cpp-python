@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ VTable Deep Dive</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.75; margin: 40px; background: #f7f7f7; }
+h1, h2, h3 { color: #2c3e50; }
+code { background: #eee; padding: 3px 6px; border-radius: 4px; }
+pre { background: #222; color: #0f0; padding: 12px; overflow-x: auto; border-radius: 6px; }
+.section { background: white; padding: 22px; margin-bottom: 22px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+button { padding: 8px 12px; margin-top: 10px; cursor: pointer; }
+.solution { display: none; background: #eef; padding: 10px; margin-top: 10px; border-radius: 6px; }
+.note { background: #fff8dc; padding: 10px; border-left: 4px solid #f1c40f; margin-top: 10px; }
+.deep { background: #eefaf1; padding: 10px; border-left: 4px solid #27ae60; margin-top: 10px; }
+.warn { background: #ffecec; padding: 10px; border-left: 4px solid #e74c3c; margin-top: 10px; }
+</style>
+<script>
+function toggleSolution(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</head>
+<body>
+
+<h1>C++ VTable — Complete Deep Dive (Beginner to Expert)</h1>
+
+<div class="section">
+<h2>Step 1: What Problem Does the VTable Solve?</h2>
+<p>When using <code>virtual</code>, C++ must decide at runtime which function to call.</p>
+<p>This requires a mechanism to map an object → correct function implementation.</p>
+
+<div class="deep">
+The vtable is essentially a lookup table:
+<ul>
+<li>Input: object</li>
+<li>Output: correct function address</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 2: What is a VTable?</h2>
+<p>A vtable (virtual table) is a hidden array of function pointers.</p>
+
+<pre>
+Base vtable:
+[ &Base::f ]
+[ &Base::g ]
+</pre>
+
+<p>Each class with virtual functions has its own vtable.</p>
+</div>
+
+<div class="section">
+<h2>Step 3: The vptr (Virtual Pointer)</h2>
+<p>Every object of a polymorphic class contains a hidden pointer called <b>vptr</b>.</p>
+
+<pre>
+Object:
+[ vptr ] → points to vtable
+[ data members ]
+</pre>
+
+<div class="deep">
+Think of vptr as the object's "type identity at runtime".
+</div>
+</div>
+
+<div class="section">
+<h2>Step 4: How Objects Get Their vptr</h2>
+<p>The compiler inserts code into constructors:</p>
+
+<pre>
+Derived::Derived() {
+    this->vptr = &Derived_vtable;
+}
+</pre>
+
+<div class="deep">
+Important:
+<ul>
+<li>vptr is set during construction</li>
+<li>Changes during base → derived construction phases</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 5: Function Call Through VTable</h2>
+<p>A virtual call:</p>
+
+<pre>
+obj->f();
+</pre>
+
+<p>Becomes roughly:</p>
+
+<pre>
+obj->vptr[0](obj);
+</pre>
+
+<div class="deep">
+This is dynamic dispatch in action.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 6: Inheritance and VTable Overriding</h2>
+<p>Derived classes override entries in the vtable.</p>
+
+<pre>
+Base vtable:
+[ &Base::f ]
+
+Derived vtable:
+[ &Derived::f ]
+</pre>
+
+<div class="deep">
+Only overridden functions are replaced.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 7: Multiple Virtual Functions</h2>
+<pre>
+class Base {
+    virtual void f();
+    virtual void g();
+};
+
+VTable:
+[ &Base::f ]
+[ &Base::g ]
+</pre>
+</div>
+
+<div class="section">
+<h2>Step 8: Multiple Inheritance</h2>
+<p>Each base class may introduce its own vtable and vptr.</p>
+
+<div class="warn">
+Leads to complex layouts and pointer adjustments.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 9: Constructor Behavior</h2>
+<p>During construction:</p>
+<ul>
+<li>Base constructor runs first</li>
+<li>vptr points to base vtable</li>
+<li>Then updated to derived</li>
+</ul>
+
+<div class="warn">
+Virtual calls inside constructors use base version!
+</div>
+</div>
+
+<div class="section">
+<h2>Step 10: Destructor Behavior</h2>
+<p>During destruction:</p>
+<ul>
+<li>vptr changes back step-by-step</li>
+<li>Derived destroyed first</li>
+<li>Then base</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Step 11: Memory Cost</h2>
+<ul>
+<li>+1 pointer per object</li>
+<li>Shared vtable per class</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Step 12: Compiler Perspective</h2>
+<p>The compiler transforms virtual calls into indirect calls via vtable.</p>
+</div>
+
+<h1>Exercises (VTable Focused)</h1>
+
+<div class="section">
+<h3>Exercise 1</h3>
+<p>Create a class with one virtual function and reason about its vtable.</p>
+<button onclick="toggleSolution('s1')">Show Solution</button>
+<div id="s1" class="solution"><pre>One entry in vtable</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 2</h3>
+<p>Add a second virtual function.</p>
+<button onclick="toggleSolution('s2')">Show Solution</button>
+<div id="s2" class="solution"><pre>Two entries in order</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 3</h3>
+<p>Override one function in derived class.</p>
+<button onclick="toggleSolution('s3')">Show Solution</button>
+<div id="s3" class="solution"><pre>One entry replaced</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 4</h3>
+<p>Override all functions.</p>
+<button onclick="toggleSolution('s4')">Show Solution</button>
+<div id="s4" class="solution"><pre>All entries replaced</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 5</h3>
+<p>Inspect memory layout.</p>
+<button onclick="toggleSolution('s5')">Show Solution</button>
+<div id="s5" class="solution"><pre>[vptr][data]</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 6</h3>
+<p>Manually access vptr.</p>
+<button onclick="toggleSolution('s6')">Show Solution</button>
+<div id="s6" class="solution"><pre>void** vptr = *(void***)obj;</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 7</h3>
+<p>Call function via vtable manually.</p>
+<button onclick="toggleSolution('s7')">Show Solution</button>
+<div id="s7" class="solution"><pre>vptr[0](obj);</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 8</h3>
+<p>Experiment with multiple inheritance layout.</p>
+<button onclick="toggleSolution('s8')">Show Solution</button>
+<div id="s8" class="solution"><pre>Multiple vptrs</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 9</h3>
+<p>Trace constructor vptr changes.</p>
+<button onclick="toggleSolution('s9')">Show Solution</button>
+<div id="s9" class="solution"><pre>Base → Derived</pre></div>
+</div>
+
+<div class="section">
+<h3>Exercise 10 (Expert)</h3>
+<p>Build your own mini-vtable system.</p>
+<button onclick="toggleSolution('s10')">Show Solution</button>
+<div id="s10" class="solution"><pre>struct VTable { void(*f)(); };</pre></div>
+</div>
+
+</body>
+</html>

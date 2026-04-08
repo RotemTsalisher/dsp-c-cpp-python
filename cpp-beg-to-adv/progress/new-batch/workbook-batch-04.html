@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Workbook — Batch 4: this, Struct, Alignment, Inheritance, const</title>
+<style>
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+h1 { color: #1a1a1a; }
+.meta { background: #e8f4fc; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #1976d2; }
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.9rem; }
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #2e7d32; color: #fff; font-size: 0.95rem; }
+button:hover { background: #1b5e20; }
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+
+<h1>Batch 4 — this and chaining, struct, alignment, inheritance, const correctness, const and reference members, member chaining</h1>
+
+<div class="meta">
+<p><strong>Scope:</strong> Only listed subjects. No <code>std::string</code>, <code>&lt;cmath&gt;</code>, or other standard library beyond what the language needs. Use built-in arithmetic; for “length” use a simple formula that avoids <code>sqrt</code> (e.g. sum of squares) unless you implement Newton’s method yourself for practice—not required below.</p>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 1</span><span class="tag">this</span></h2>
+<p><strong>Task:</strong> Class <code>Node</code>: <code>Node&amp; setValue(int v)</code> sets <code>value_</code> and returns <code>*this</code>; private <code>int value_</code>; <code>int value() const</code>. Chain <code>n.setValue(1).setValue(2)</code> and check <code>value() == 2</code> via <code>return</code>.</p>
+<button type="button" onclick="toggleSolution('b4s1')">Show solution</button>
+<div class="solution" id="b4s1">
+<pre>class Node {
+    int value_{};
+public:
+    Node&amp; setValue(int v) {
+        value_ = v;
+        return *this;
+    }
+    int value() const { return value_; }
+};
+
+int main() {
+    Node n;
+    n.setValue(1).setValue(2);
+    return n.value() == 2 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 2</span><span class="tag">Struct</span></h2>
+<p><strong>Task:</strong> <code>struct Vec2 { float x; float y; };</code> Free function <code>float normSq(Vec2 v)</code> returning <code>v.x*v.x + v.y*v.y</code> (squared Euclidean length—no <code>&lt;cmath&gt;</code>).</p>
+<button type="button" onclick="toggleSolution('b4s2')">Show solution</button>
+<div class="solution" id="b4s2">
+<pre>struct Vec2 {
+    float x{};
+    float y{};
+};
+
+float normSq(Vec2 v) {
+    return v.x * v.x + v.y * v.y;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 3</span><span class="tag">Alignment</span></h2>
+<p><strong>Task:</strong> <code>struct alignas(8) AlignedPod { char c; int i; };</code> and <code>static_assert(alignof(AlignedPod) &gt;= 8);</code>. Comment on padding vs <code>sizeof</code>.</p>
+<button type="button" onclick="toggleSolution('b4s3')">Show solution</button>
+<div class="solution" id="b4s3">
+<pre>struct alignas(8) AlignedPod {
+    char c;
+    int i;
+};
+
+static_assert(alignof(AlignedPod) &gt;= 8);
+// Padding may increase sizeof beyond sizeof(char)+sizeof(int).</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 4</span><span class="tag">Inheritance</span></h2>
+<p><strong>Task:</strong> <code>struct Base { virtual int idCode() const; };</code> returns <code>1</code>. <code>struct Derived : Base { int idCode() const override; }</code> returns <code>2</code>. Through <code>Base const&amp; ref = d;</code>, <code>ref.idCode() == 2</code>. No I/O—use <code>return</code>.</p>
+<button type="button" onclick="toggleSolution('b4s4')">Show solution</button>
+<div class="solution" id="b4s4">
+<pre>struct Base {
+    virtual int idCode() const { return 1; }
+};
+
+struct Derived : Base {
+    int idCode() const override { return 2; }
+};
+
+int main() {
+    Derived d;
+    Base const&amp; ref = d;
+    return ref.idCode() == 2 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 5</span><span class="tag">const correctness</span></h2>
+<p><strong>Task:</strong> Class <code>Book</code> with private <code>int pages_</code>. <code>int pages() const</code> and non-const <code>void setPages(int p)</code>. On a <code>const Book</code>, only <code>pages()</code> may be called. Demonstrate with compile-time reasoning in comments; in code, use non-const object in <code>main</code> returning <code>pages()</code> after <code>setPages</code>.</p>
+<button type="button" onclick="toggleSolution('b4s5')">Show solution</button>
+<div class="solution" id="b4s5">
+<pre>class Book {
+    int pages_{0};
+public:
+    int pages() const { return pages_; }
+    void setPages(int p) { pages_ = p; }
+};
+
+// const Book b; b.setPages(3); // ill-formed: setPages is not const
+
+int main() {
+    Book b;
+    b.setPages(120);
+    return b.pages() == 120 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 6</span><span class="tag">const and reference members</span></h2>
+<p><strong>Task:</strong> <code>RefHolder</code> with <code>const int id_</code> and <code>int&amp; ref_</code>, ctor initializer list only. <code>int x=5; RefHolder h(1,x); x=9;</code> then <code>h.refValue()==9</code>.</p>
+<button type="button" onclick="toggleSolution('b4s6')">Show solution</button>
+<div class="solution" id="b4s6">
+<pre>class RefHolder {
+    const int id_;
+    int&amp; ref_;
+public:
+    RefHolder(int id, int&amp; r) : id_(id), ref_(r) {}
+    int id() const { return id_; }
+    int refValue() const { return ref_; }
+};
+
+int main() {
+    int x = 5;
+    RefHolder h(1, x);
+    x = 9;
+    return h.refValue() == 9 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 7</span><span class="tag">Chaining</span></h2>
+<p><strong>Task:</strong> <code>Builder</code> with <code>withA</code>, <code>withB</code>, <code>sum</code> as in the original batch; verify <code>Builder{}.withA(3).withB(4).sum() == 7</code> via <code>return</code>.</p>
+<button type="button" onclick="toggleSolution('b4s7')">Show solution</button>
+<div class="solution" id="b4s7">
+<pre>class Builder {
+    int a_{0};
+    int b_{0};
+public:
+    Builder&amp; withA(int x) { a_ = x; return *this; }
+    Builder&amp; withB(int y) { b_ = y; return *this; }
+    int sum() const { return a_ + b_; }
+};
+
+int main() {
+    int v = Builder{}.withA(3).withB(4).sum();
+    return v == 7 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+</body>
+</html>

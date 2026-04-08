@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Workbook — Batch 2: Callables, Folds, constexpr, Traits, Threads, Namespaces, Concepts</title>
+<style>
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+h1 { color: #1a1a1a; }
+.meta { background: #e8f4fc; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #1976d2; }
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.9rem; }
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #2e7d32; color: #fff; font-size: 0.95rem; }
+button:hover { background: #1b5e20; }
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+
+<h1>Batch 2 — Passing functions, fold expressions, constexpr, traits, threads, namespaces, concepts</h1>
+
+<div class="meta">
+<p><strong>Scope:</strong> Only subjects from the list for this batch. No <code>&lt;type_traits&gt;</code>, containers, mutexes, or I/O streams unless you add them on your own for debugging—solutions below avoid them.</p>
+<p><strong>Threads:</strong> The list says <code>&lt;thread&gt;</code> basics only; the thread exercise uses <code>join</code> and separate memory per thread (no mutex).</p>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 1</span><span class="tag">Passing functions</span></h2>
+<p><strong>Task:</strong> Write <code>template&lt;typename F&gt; void invokeTwice(F f)</code> that calls <code>f()</code> twice (pass lambda by value so no <code>std::forward</code> / <code>&lt;utility&gt;</code>). In <code>main</code>, use a lambda that increments an outer <code>int n</code> captured by reference; after <code>invokeTwice</code>, <code>n == 2</code>.</p>
+<button type="button" onclick="toggleSolution('b2s1')">Show solution</button>
+<div class="solution" id="b2s1">
+<pre>template &lt;typename F&gt;
+void invokeTwice(F f) {
+    f();
+    f();
+}
+
+int main() {
+    int n = 0;
+    invokeTwice([&amp;n] { ++n; });
+    return n == 2 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 2</span><span class="tag">Fold expressions</span></h2>
+<p><strong>Task:</strong> Variadic <code>sumAll(Args... args)</code> returning <code>int</code>, unary right fold <code>(... + args)</code>, such that <code>sumAll(1,2,3,4) == 10</code>.</p>
+<button type="button" onclick="toggleSolution('b2s2')">Show solution</button>
+<div class="solution" id="b2s2">
+<pre>template &lt;typename... Args&gt;
+int sumAll(Args... args) {
+    return (... + args);
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 3</span><span class="tag">constexpr</span></h2>
+<p><strong>Task:</strong> <code>constexpr int square(int x) noexcept</code>, <code>constexpr int area = square(12);</code>, <code>static_assert(area == 144);</code>.</p>
+<button type="button" onclick="toggleSolution('b2s3')">Show solution</button>
+<div class="solution" id="b2s3">
+<pre>constexpr int square(int x) noexcept {
+    return x * x;
+}
+constexpr int area = square(12);
+static_assert(area == 144);</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 4</span><span class="tag">Traits</span></h2>
+<p><strong>Task:</strong> Without <code>std::true_type</code>: primary <code>template&lt;typename T&gt; struct IsPointer { static constexpr bool value = false; };</code> partial specialization for <code>T*</code> with <code>value = true</code>. Variable template <code>is_pointer_v&lt;T&gt;</code> aliasing <code>IsPointer&lt;T&gt;::value</code>. <code>static_assert</code> for <code>int*</code> and <code>int</code>.</p>
+<button type="button" onclick="toggleSolution('b2s4')">Show solution</button>
+<div class="solution" id="b2s4">
+<pre>template &lt;typename T&gt;
+struct IsPointer {
+    static constexpr bool value = false;
+};
+
+template &lt;typename T&gt;
+struct IsPointer&lt;T*&gt; {
+    static constexpr bool value = true;
+};
+
+template &lt;typename T&gt;
+constexpr bool is_pointer_v = IsPointer&lt;T&gt;::value;
+
+static_assert(is_pointer_v&lt;int*&gt;);
+static_assert(!is_pointer_v&lt;int&gt;);</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 5</span><span class="tag">Threads</span></h2>
+<p><strong>Task:</strong> Two <code>std::thread</code> objects. Each runs a plain function (not required to be a lambda) that takes <code>int*</code> and writes the sum <code>1+2+3+4+5</code> into <code>*out</code> for distinct <code>int</code>s <code>s1</code> and <code>s2</code> in <code>main</code>. <code>join</code> both. Return <code>s1 == 15 &amp;&amp; s2 == 15 ? 0 : 1</code>. No mutex (no shared mutable state between threads).</p>
+<button type="button" onclick="toggleSolution('b2s5')">Show solution</button>
+<div class="solution" id="b2s5">
+<pre>#include &lt;thread&gt;
+
+void sumFive(int* out) {
+    *out = 1 + 2 + 3 + 4 + 5;
+}
+
+int main() {
+    int s1 = 0, s2 = 0;
+    std::thread t1(sumFive, &amp;s1);
+    std::thread t2(sumFive, &amp;s2);
+    t1.join();
+    t2.join();
+    return (s1 == 15 &amp;&amp; s2 == 15) ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 6</span><span class="tag">Namespaces</span></h2>
+<p><strong>Task:</strong> <code>namespace dsp::util { inline int dbToLinear(int) { return 10; } }</code> and <code>namespace dsp::test { inline int run() { return dsp::util::dbToLinear(0); } }</code>. Comment: anonymous namespaces in two different .cpp files give two different internal <code>helper</code> names—no link-time collision (list: namespaces prevent collisions).</p>
+<button type="button" onclick="toggleSolution('b2s6')">Show solution</button>
+<div class="solution" id="b2s6">
+<pre>namespace dsp::util {
+inline int dbToLinear(int) { return 10; }
+}
+
+namespace dsp::test {
+inline int run() { return dsp::util::dbToLinear(0); }
+}
+
+// Anonymous namespace: names are unique per translation unit — avoids clashes.</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 7</span><span class="tag">Concepts</span></h2>
+<p><strong>Task:</strong> Define <code>is_int_v</code> / <code>is_double_v</code> as variable templates with full specializations (only <code>int</code> and <code>double</code> true). Concept <code>Numeric</code> true when either holds. <code>template&lt;Numeric T&gt; T add(T a, T b)</code>. Verify mentally that <code>add(1,2)</code> works and a third type does not. No <code>std::string</code>, no <code>std::disjunction</code>.</p>
+<button type="button" onclick="toggleSolution('b2s7')">Show solution</button>
+<div class="solution" id="b2s7">
+<pre>template &lt;typename&gt;
+constexpr bool is_int_v = false;
+template &lt;&gt;
+constexpr bool is_int_v&lt;int&gt; = true;
+
+template &lt;typename&gt;
+constexpr bool is_double_v = false;
+template &lt;&gt;
+constexpr bool is_double_v&lt;double&gt; = true;
+
+template &lt;typename T&gt;
+concept Numeric = is_int_v&lt;T&gt; || is_double_v&lt;T&gt;;
+
+template &lt;Numeric T&gt;
+T add(T a, T b) {
+    return a + b;
+}</pre>
+</div>
+</div>
+
+</body>
+</html>

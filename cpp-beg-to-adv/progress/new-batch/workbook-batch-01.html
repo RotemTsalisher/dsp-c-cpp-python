@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>C++ Workbook — Batch 1: Functions through Function Pointers</title>
+
+<style>
+
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+
+h1 { color: #1a1a1a; }
+
+.meta { background: #e8f4fc; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #1976d2; }
+
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+
+.goals { margin: 8px 0 12px 0; padding-left: 20px; }
+
+.goals li { margin: 4px 0; }
+
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.9rem; }
+
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #2e7d32; color: #fff; font-size: 0.95rem; }
+
+button:hover { background: #1b5e20; }
+
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+
+.note { font-size: 0.9rem; color: #444; margin-top: 8px; }
+
+</style>
+
+<script>
+
+function toggleSolution(id) {
+
+  var el = document.getElementById(id);
+
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+
+
+<h1>Batch 1 — Functions, Overloading, Templates, Lambdas, <code>requires</code>, Function Pointers</h1>
+
+
+
+<div class="meta">
+
+<p><strong>Scope:</strong> These exercises use only the ideas from your course list for this batch (functions through function pointers). No standard-library containers, strings, or algorithms—only built-in types, arrays, references, and the language features named in the list.</p>
+
+<p><strong>How to use:</strong> Compile with a C++20 compiler where <code>requires</code> is used. Check results with <code>return</code> values from <code>main</code> or <code>static_assert</code>, not with console I/O (I/O is not on the subject list).</p>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 1</span><span class="tag">Functions</span></h2>
+
+<p><strong>Task:</strong> Implement <code>int clampInt(int value, int lo, int hi)</code> that returns <code>value</code> limited to <code>[lo, hi]</code>. If <code>lo &gt; hi</code>, return <code>value</code> unchanged (note that in a one-line comment).</p>
+
+<button type="button" onclick="toggleSolution('b1s1')">Show solution</button>
+
+<div class="solution" id="b1s1">
+
+<pre>// If lo &gt; hi, range is invalid — return value unchanged.
+
+int clampInt(int value, int lo, int hi) {
+
+    if (lo &gt; hi) return value;
+
+    if (value &lt; lo) return lo;
+
+    if (value &gt; hi) return hi;
+
+    return value;
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 2</span><span class="tag">Overloading</span></h2>
+
+<p><strong>Task:</strong> Overload <code>pickLarger</code> three times: for two <code>int</code>, return the greater <code>int</code>; for two <code>double</code>, return the greater <code>double</code>; for two <code>const char*</code>, return the pointer to the lexicographically larger C string (use a simple loop comparing <code>unsigned char</code> until a difference or <code>'\0'</code>; if one string is a prefix of the other, the longer one wins). No <code>std::string</code>.</p>
+
+<button type="button" onclick="toggleSolution('b1s2')">Show solution</button>
+
+<div class="solution" id="b1s2">
+
+<pre>int pickLarger(int a, int b) { return (a &gt; b) ? a : b; }
+
+
+
+double pickLarger(double a, double b) { return (a &gt; b) ? a : b; }
+
+
+
+const char* pickLarger(const char* a, const char* b) {
+
+    if (!a) return b;
+
+    if (!b) return a;
+
+    for (;; ++a, ++b) {
+
+        unsigned char ca = static_cast&lt;unsigned char&gt;(*a);
+
+        unsigned char cb = static_cast&lt;unsigned char&gt;(*b);
+
+        if (ca != cb) return (ca &gt; cb) ? a : b;
+
+        if (ca == '\0') return a; // both ended — strings equal
+
+    }
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 3</span><span class="tag">Function templates</span></h2>
+
+<p><strong>Task:</strong> Write a function template <code>twice</code> so <code>twice(x)</code> returns <code>x + x</code> for type <code>T</code> that supports <code>operator+</code> with itself. Instantiate in your mind for <code>int</code> and <code>double</code> only (still on the list as built-in arithmetic).</p>
+
+<button type="button" onclick="toggleSolution('b1s3')">Show solution</button>
+
+<div class="solution" id="b1s3">
+
+<pre>template &lt;typename T&gt;
+
+T twice(T x) {
+
+    return x + x;
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 4</span><span class="tag">Template specialization</span></h2>
+
+<p><strong>Task:</strong> Primary template <code>template&lt;typename T&gt; struct TypeName { static constexpr const char* value = "unknown"; };</code> Full specializations for <code>int</code> and <code>double</code> with <code>value</code> equal to <code>"int"</code> and <code>"double"</code>.</p>
+
+<button type="button" onclick="toggleSolution('b1s4')">Show solution</button>
+
+<div class="solution" id="b1s4">
+
+<pre>template &lt;typename T&gt;
+
+struct TypeName {
+
+    static constexpr const char* value = "unknown";
+
+};
+
+
+
+template &lt;&gt;
+
+struct TypeName&lt;int&gt; {
+
+    static constexpr const char* value = "int";
+
+};
+
+
+
+template &lt;&gt;
+
+struct TypeName&lt;double&gt; {
+
+    static constexpr const char* value = "double";
+
+};</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 5</span><span class="tag">Lambda functions</span></h2>
+
+<p><strong>Task:</strong> Use a C array: <code>int data[] = {1,2,3,4,5};</code>. Write a <strong>lambda</strong> that captures <code>int&amp; sum</code> by reference and takes one <code>int</code> parameter, adding it to <code>sum</code>. Loop with an index or pointer from <code>data</code> to <code>data + 5</code>, calling the lambda each time. After the loop, <code>sum</code> must be <code>15</code>. No standard containers or algorithms.</p>
+
+<button type="button" onclick="toggleSolution('b1s5')">Show solution</button>
+
+<div class="solution" id="b1s5">
+
+<pre>int main() {
+
+    int data[] = {1, 2, 3, 4, 5};
+
+    int sum = 0;
+
+    auto acc = [&amp;sum](int x) { sum += x; };
+
+    for (int i = 0; i &lt; 5; ++i)
+
+        acc(data[i]);
+
+    return sum == 15 ? 0 : 1;
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 6</span><span class="tag">requires</span></h2>
+
+<p><strong>Task:</strong> Using only language + list topics: define variable templates <code>is_fp_v&lt;T&gt;</code> (default <code>false</code>, <code>true</code> for <code>float</code> and <code>double</code> via full specializations—this is template specialization / traits style from the list). Then write <code>template&lt;typename T&gt; T safeDivide(T a, T b)</code> with a <code>requires</code> clause so it exists only when <code>is_fp_v&lt;T&gt;</code> is true. Calling with <code>int</code> must not compile.</p>
+
+<button type="button" onclick="toggleSolution('b1s6')">Show solution</button>
+
+<div class="solution" id="b1s6">
+
+<pre>template &lt;typename T&gt;
+
+constexpr bool is_fp_v = false;
+
+
+
+template &lt;&gt;
+
+constexpr bool is_fp_v&lt;float&gt; = true;
+
+
+
+template &lt;&gt;
+
+constexpr bool is_fp_v&lt;double&gt; = true;
+
+
+
+template &lt;typename T&gt;
+
+requires (is_fp_v&lt;T&gt;)
+
+T safeDivide(T a, T b) {
+
+    return a / b;
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+<div class="exercise">
+
+<h2><span class="tag">Exercise 7</span><span class="tag">Function pointers</span></h2>
+
+<p><strong>Task:</strong> <code>using IntBinOp = int (*)(int, int);</code>. Implement <code>add</code> and <code>mul</code>. Write <code>int apply(IntBinOp op, int x, int y)</code>. Store <code>add</code> and <code>mul</code> in a <strong>C array</strong> of two function pointers, loop with indices <code>0</code> and <code>1</code>, and combine results (e.g. return <code>apply(ops[0],3,4) + apply(ops[1],3,4)</code> from <code>main</code> and check it equals <code>19</code>). No <code>std::array</code> or <code>std::function</code>.</p>
+
+<button type="button" onclick="toggleSolution('b1s7')">Show solution</button>
+
+<div class="solution" id="b1s7">
+
+<pre>int add(int a, int b) { return a + b; }
+
+int mul(int a, int b) { return a * b; }
+
+
+
+using IntBinOp = int (*)(int, int);
+
+
+
+int apply(IntBinOp op, int x, int y) {
+
+    return op(x, y);
+
+}
+
+
+
+int main() {
+
+    IntBinOp ops[2] = {add, mul};
+
+    int a = apply(ops[0], 3, 4);
+
+    int b = apply(ops[1], 3, 4);
+
+    return (a + b == 19) ? 0 : 1;
+
+}</pre>
+
+</div>
+
+</div>
+
+
+
+</body>
+
+</html>
+

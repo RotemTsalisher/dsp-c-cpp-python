@@ -2,8 +2,14 @@ instructions in bullets:
 
 - everytime you create an exercise, create 5~7 exercises with increasing difficulty
 - create the problems so it would mix the entire subjects list in the course-subjects.txt
+- you can split the complete list in course-subjects to portions of 5~7 subjects at a time
+- split it serially and according to the hierchy in the list and do not change the order
+- make a workbook for each batch of 5~7 subjects
 - putting more emphasis on the last subject studies but mixing also elements from previously studies subjects
-
+- notebooks should get progressively harder
+- make sure you have an exercise per subject at least
+- after generating all independant subjects exercise, create a last notebook with exercises that combine everything
+- example: let's say we have x_ subjects in the list, split them into groups of 5 and make an extensive notebook to each sub-group, providing an exercise per subject (and following the combined-subjects rule)
 * create the exercises as html files I can save and load on my computer
 * with button to press that reveals the solution
 

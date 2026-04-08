@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Workbook — Batch 3: Classes, Files, Guards, Pointers, Destructors</title>
+<style>
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+h1 { color: #1a1a1a; }
+.meta { background: #e8f4fc; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #1976d2; }
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.goals { margin: 8px 0 12px 0; padding-left: 20px; }
+.goals li { margin: 4px 0; }
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.9rem; }
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #2e7d32; color: #fff; font-size: 0.95rem; }
+button:hover { background: #1b5e20; }
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+
+<h1>Batch 3 — Classes: definition, encapsulation, constructors, multiple files, include guards, pointers, destructors</h1>
+
+<div class="meta">
+<p><strong>How to use this workbook:</strong> Several exercises describe a <strong>multi-file layout</strong>. You can still verify logic in a single file first, then split as instructed. Compile with all .cpp files together.</p>
+<p><strong>Subjects (in order):</strong> class definition → encapsulation (getters/setters) → constructors → split across files → include guards → managing objects via pointers → destructors.</p>
+<p>The <strong>final exercise</strong> focuses on <strong>destructors</strong> and cleanup, using dynamic allocation from earlier topics.</p>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 1</span><span class="tag">Class definition</span></h2>
+<p><strong>Task:</strong> Define a class <code>Buffer</code> with <code>public:</code> member <code>int capacity;</code> and <code>public:</code> member function <code>bool empty() const</code> that returns <code>true</code> when <code>capacity == 0</code>. Write a short <code>main</code> that creates <code>Buffer b{0};</code> and checks <code>b.empty()</code>.</p>
+<ul class="goals">
+<li>Use aggregate-style init or a constructor—your choice—but <code>empty()</code> must be <code>const</code>.</li>
+</ul>
+<button type="button" onclick="toggleSolution('b3s1')">Show solution</button>
+<div class="solution" id="b3s1">
+<pre>class Buffer {
+public:
+    int capacity{0};
+    bool empty() const { return capacity == 0; }
+};
+
+int main() {
+    Buffer b{0};
+    return b.empty() ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 2</span><span class="tag">Encapsulation</span></h2>
+<p><strong>Task:</strong> Redesign <code>Counter</code> with <strong>private</strong> <code>int value_</code>. Provide <code>public</code> <code>int get() const</code>, <code>void set(int v)</code>, and <code>void increment()</code>. Do not expose <code>value_</code> directly.</p>
+<button type="button" onclick="toggleSolution('b3s2')">Show solution</button>
+<div class="solution" id="b3s2">
+<pre>class Counter {
+    int value_{0};
+public:
+    int get() const { return value_; }
+    void set(int v) { value_ = v; }
+    void increment() { ++value_; }
+};</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 3</span><span class="tag">Constructors</span></h2>
+<p><strong>Task:</strong> Class <code>Sample</code> with <strong>default constructor</strong> that sets a private <code>id_</code> to <code>0</code>, and a <strong>constructor taking <code>int id</code></strong> that sets <code>id_</code>. Add <code>int id() const</code>. Demonstrate both constructions in <code>main</code>.</p>
+<button type="button" onclick="toggleSolution('b3s3')">Show solution</button>
+<div class="solution" id="b3s3">
+<pre>class Sample {
+    int id_{};
+public:
+    Sample() : id_(0) {}
+    explicit Sample(int id) : id_(id) {}
+    int id() const { return id_; }
+};
+
+int main() {
+    Sample a;
+    Sample b{42};
+    return b.id() - a.id();
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 4</span><span class="tag">Multiple files</span></h2>
+<p><strong>Task:</strong> Describe (and implement locally if you prefer) a split: <code>Widget.h</code> declares <code>class Widget</code> with <code>void poke();</code>, <code>Widget.cpp</code> defines <code>void Widget::poke() { }</code>, <code>main.cpp</code> includes <code>Widget.h</code> and calls <code>poke()</code>. List the exact compiler command you would use for two .cpp files.</p>
+<ul class="goals">
+<li>Clarity matters: show <code>#include "Widget.h"</code> in .cpp files.</li>
+</ul>
+<button type="button" onclick="toggleSolution('b3s4')">Show solution</button>
+<div class="solution" id="b3s4">
+<pre>// Widget.h
+#pragma once
+class Widget {
+public:
+    void poke();
+};
+
+// Widget.cpp
+#include "Widget.h"
+void Widget::poke() {}
+
+// main.cpp
+#include "Widget.h"
+int main() {
+    Widget w;
+    w.poke();
+    return 0;
+}
+
+// Example (GCC/Clang): g++ -std=c++20 -Wall -Wextra -pedantic main.cpp Widget.cpp -o app
+// Example (MSVC): cl /EHsc /std:c++20 main.cpp Widget.cpp</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 5</span><span class="tag">Include guards</span></h2>
+<p><strong>Task:</strong> Show the same <code>Widget.h</code> protected with <strong>traditional include guards</strong> instead of <code>#pragma once</code> (use <code>WIDGET_H</code> macro). Explain in one sentence why including a header twice without guards can cause “redefinition” errors.</p>
+<button type="button" onclick="toggleSolution('b3s5')">Show solution</button>
+<div class="solution" id="b3s5">
+<pre>#ifndef WIDGET_H
+#define WIDGET_H
+
+class Widget {
+public:
+    void poke();
+};
+
+#endif
+
+// Without guards, two includes paste the class definition twice, violating ODR
+// (one definition rule) for types and functions.</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 6</span><span class="tag">Pointers to objects</span></h2>
+<p><strong>Task:</strong> Dynamically allocate a <code>Counter</code> (from your encapsulation pattern) with <code>new</code>, call <code>increment()</code> through the pointer, read <code>get()</code>, then <code>delete</code> the pointer. Use <code>Counter*</code> explicitly.</p>
+<ul class="goals">
+<li>Every <code>new</code> must match one <code>delete</code>.</li>
+</ul>
+<button type="button" onclick="toggleSolution('b3s6')">Show solution</button>
+<div class="solution" id="b3s6">
+<pre>class Counter {
+    int value_{0};
+public:
+    int get() const { return value_; }
+    void increment() { ++value_; }
+};
+
+int main() {
+    Counter* p = new Counter();
+    p-&gt;increment();
+    int v = p-&gt;get();
+    delete p;
+    return v == 1 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">Exercise 7</span><span class="tag">Destructors</span></h2>
+<p><strong>Task:</strong> Class <code>Owner</code> holds <code>int* data_</code> allocated in the constructor with <code>new int(7)</code>. Implement a <strong>destructor</strong> that <code>delete</code>s <code>data_</code>. Rule of zero/three/five: for this drill, implement destructor only and <strong>delete</strong> copy constructor and copy assignment (<code>= delete</code>) to avoid double-free. Add accessor <code>int value() const</code> reading <code>*data_</code>.</p>
+<ul class="goals">
+<li>Emphasis: destructor runs when object goes out of scope or is deleted.</li>
+</ul>
+<button type="button" onclick="toggleSolution('b3s7')">Show solution</button>
+<div class="solution" id="b3s7">
+<pre>class Owner {
+    int* data_{nullptr};
+public:
+    Owner() : data_(new int(7)) {}
+    ~Owner() { delete data_; }
+
+    Owner(const Owner&amp;) = delete;
+    Owner&amp; operator=(const Owner&amp;) = delete;
+
+    int value() const { return *data_; }
+};</pre>
+</div>
+</div>
+
+</body>
+</html>

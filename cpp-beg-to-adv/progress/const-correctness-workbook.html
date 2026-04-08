@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Const Correctness Quiz</title>
+<style>
+    body { font-family: Arial; margin:40px; background:#f5f5f5; }
+    .question { background:white; padding:15px; margin:15px 0; border-radius:10px; }
+    .result { margin-top:10px; font-weight:bold; }
+</style>
+</head>
+<body>
+<h1>Const Correctness Quiz (20 Questions)</h1>
+
+<div class="question">
+<h2>📘 Introduction: Const Correctness & Const Placement (From Basics → Expert)</h2>
+<p>
+Const correctness is one of the most important ideas in C++. It helps you write safer, clearer, and more predictable code.
+At its core, <b>const</b> means: <i>"this thing cannot be modified"</i> — but where you place <b>const</b> changes what exactly is protected.
+</p>
+
+<h3>1️⃣ Const with Variables</h3>
+<pre>const int x = 5;  // x cannot be changed</pre>
+<p>This is the simplest case: a constant value.</p>
+
+<h3>2️⃣ Const with Pointers (VERY IMPORTANT)</h3>
+<p>Const can apply to the <b>data</b> or to the <b>pointer itself</b>.</p>
+
+<pre>
+const int* p;     // pointer to const int (data is const)
+int* const p;     // const pointer to int (pointer is const)
+const int* const p; // both are const
+</pre>
+
+<p><b>Golden Rule (read right-to-left):</b></p>
+<ul>
+<li><code>int const* p</code> → p is pointer to const int</li>
+<li><code>int* const p</code> → p is const pointer to int</li>
+</ul>
+
+<p><b>Examples:</b></p>
+<pre>
+int x = 5;
+int y = 10;
+
+const int* p1 = &x; // cannot modify *p1
+p1 = &y;            // OK
+
+int* const p2 = &x; // cannot change pointer
+*p2 = 20;           // OK
+
+const int* const p3 = &x; // nothing can change
+</pre>
+
+<h3>3️⃣ Const with References</h3>
+<pre>
+const int& ref = x; // reference to const
+</pre>
+<p>You cannot modify x through ref.</p>
+
+<h3>4️⃣ Const with Functions (Return Type)</h3>
+<pre>
+const int get();
+</pre>
+<p>This means the returned value is const (rarely useful in practice).</p>
+
+<h3>5️⃣ Const Member Functions (OOP 🔥)</h3>
+<pre>
+class Car {
+public:
+    int speed;
+    int getSpeed() const {
+        return speed;
+    }
+};
+</pre>
+
+<p>
+The <code>const</code> at the end means:
+<b>this function will NOT modify the object</b>.
+</p>
+
+<p>Inside such functions:</p>
+<ul>
+<li>You cannot modify member variables</li>
+<li>You can only call other <b>const</b> functions</li>
+</ul>
+
+<h3>6️⃣ Why This Matters</h3>
+<ul>
+<li>Prevents bugs (compiler enforces rules)</li>
+<li>Improves readability (clear intent)</li>
+<li>Allows usage with const objects</li>
+</ul>
+
+<h3>7️⃣ Advanced Insight</h3>
+<p>
+Const correctness scales with system size. In large systems (DSP, embedded, real-time),
+const helps ensure components don't accidentally modify shared data.
+</p>
+
+<p>
+👉 Think of <b>const</b> as a contract: once you promise not to change something,
+C++ will enforce that promise for you.
+</p>
+
+<h3>🧠 Final Mental Model</h3>
+<ul>
+<li><b>Left of *</b> → data is const</li>
+<li><b>Right of *</b> → pointer is const</li>
+<li><b>After function ()</b> → object is const</li>
+</ul>
+
+<p><b>Example summary:</b></p>
+<pre>
+const int* p;      // data const
+int* const p;      // pointer const
+const int* const p; // both const
+int foo() const;   // object const
+</pre>
+
+<p>Now you're ready to tackle the quiz 👇</p>
+</div>
+<div id="quiz"></div>
+<script>
+
+const questions = [
+{q:"1. What does 'const' at the end of a member function mean?",options:["It cannot return values","It cannot modify the object","It must be inline","It cannot access members"],answer:1,explanation:"It guarantees no modification."},
+{q:"2. Which is correct syntax?",options:["int foo() CONST;","const int foo();","int foo() const;","foo() const int;"],answer:2,explanation:"Correct form."},
+{q:"3. Can const function modify members?",options:["Yes","No","Only static","Only private"],answer:1,explanation:"No modification allowed."},
+{q:"4. Type of this in const function?",options:["Class*","const Class*","Class&","const Class&"],answer:1,explanation:"Pointer to const."},
+{q:"5. Can const call non-const?",options:["Yes","No","Sometimes","Only static"],answer:1,explanation:"Not allowed."},
+{q:"6. What allows modification?",options:["inline","virtual","mutable","static"],answer:2,explanation:"mutable keyword."},
+{q:"7. Callable on const object?",options:["int get();","int get() const;","const int get();","int const get();"],answer:1,explanation:"Needs const."},
+{q:"8. const object calls non-const?",options:["OK","Error","Runtime error","UB"],answer:1,explanation:"Compile error."},
+{q:"9. Can overload const/non-const?",options:["No","Yes","Templates only","Struct only"],answer:1,explanation:"Yes."},
+{q:"10. Valid overload?",options:["same sig","const/non-const","dup const","none"],answer:1,explanation:"Different signatures."},
+{q:"11. const int get(); means?",options:["const func","const return","pointer","nothing"],answer:1,explanation:"Return is const."},
+{q:"12. int* const ptr; means?",options:["ptr to const","const ptr","both","invalid"],answer:1,explanation:"Pointer fixed."},
+{q:"13. const int* ptr; means?",options:["const ptr","ptr to const","both","invalid"],answer:1,explanation:"Data const."},
+{q:"14. Best practice derived?",options:["virtual","override","none","ignore"],answer:1,explanation:"Use override."},
+{q:"15. Why const?",options:["speed","safety","readability","all"],answer:3,explanation:"All."},
+
+// NEW CONST POSITION QUESTIONS
+{q:"16. const int* const ptr; means?",options:["ptr to const","const ptr","both const","invalid"],answer:2,explanation:"Pointer and data both const."},
+{q:"17. int const* ptr; means?",options:["ptr to const","const ptr","normal ptr","invalid"],answer:0,explanation:"Same as const int*."},
+{q:"18. int* const ptr; means?",options:["ptr to const","const ptr to int","both","invalid"],answer:1,explanation:"Pointer fixed, value mutable."},
+{q:"19. const int& ref; means?",options:["ref to const","const ref","normal ref","invalid"],answer:0,explanation:"Cannot modify referred value."},
+{q:"20. int& const ref; means?",options:["const ref","ref to const","invalid","same"],answer:2,explanation:"Invalid: references cannot be const."}
+];
+
+const quizDiv = document.getElementById("quiz");
+
+questions.forEach((q,i)=>{
+ let div=document.createElement("div");
+ div.className="question";
+ let html=`<p>${q.q}</p>`;
+ q.options.forEach((opt,j)=>{
+  html+=`<label><input type="radio" name="q${i}" value="${j}"> ${opt}</label><br>`;
+ });
+ html+=`<button onclick="check(${i})">Check</button><div class="result" id="r${i}"></div>`;
+ div.innerHTML=html;
+ quizDiv.appendChild(div);
+});
+
+function check(i){
+ let sel=document.querySelector(`input[name=q${i}]:checked`);
+ let res=document.getElementById(`r${i}`);
+ if(!sel){res.innerHTML="Select answer";return;}
+ if(parseInt(sel.value)===questions[i].answer){
+  res.innerHTML="✅ Correct<br>"+questions[i].explanation;
+  res.style.color="green";
+ } else {
+  res.innerHTML="❌ Wrong<br>"+questions[i].explanation;
+  res.style.color="red";
+ }
+}
+
+</script>
+</body>
+</html>

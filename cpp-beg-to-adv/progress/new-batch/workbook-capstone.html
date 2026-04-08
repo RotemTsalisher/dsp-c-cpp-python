@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Workbook — Capstone: Full course integration</title>
+<style>
+body { font-family: "Segoe UI", Arial, sans-serif; margin: 40px; background: #f5f5f5; color: #222; line-height: 1.5; max-width: 900px; }
+h1 { color: #1a1a1a; }
+.meta { background: #ede7f6; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #5e35b1; }
+.exercise { background: #fff; padding: 16px 18px; margin: 18px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.exercise h2 { font-size: 1.05rem; margin: 0 0 8px 0; color: #333; }
+.tag { display: inline-block; font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.solution { display: none; margin-top: 12px; padding: 12px 14px; background: #f0f7f0; border-radius: 8px; border: 1px solid #c8e6c9; }
+.solution pre { overflow-x: auto; margin: 8px 0 0 0; font-size: 0.85rem; }
+button { margin-top: 10px; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #5e35b1; color: #fff; font-size: 0.95rem; }
+button:hover { background: #4527a0; }
+code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+<script>
+function toggleSolution(id) {
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "block") ? "none" : "block";
+}
+</script>
+</head>
+<body>
+
+<h1>Capstone workbook — exercises combining the full course</h1>
+
+<div class="meta">
+<p><strong>Scope:</strong> Same rule as the batches: use only mechanisms that appear on your <code>course-subjects.txt</code> list. No standard containers, smart pointers, mutexes, algorithms, <code>std::function</code>, <code>std::invocable</code>, <code>std::string</code>, etc. Verify with <code>return</code> / <code>static_assert</code> instead of I/O.</p>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">1</span> Template + lambda + raw pointers</h2>
+<p><strong>Task:</strong> <code>template&lt;typename Pred&gt; int countIf(int const* first, int const* last, Pred p)</code> counts elements in <code>[first, last)</code> for which <code>p(*it)</code> is true. Test with C array <code>int a[] = {1,2,3,4};</code> and a lambda counting even values; expect <code>2</code>.</p>
+<button type="button" onclick="toggleSolution('cs1')">Show solution</button>
+<div class="solution" id="cs1">
+<pre>template &lt;typename Pred&gt;
+int countIf(int const* first, int const* last, Pred p) {
+    int n = 0;
+    for (; first != last; ++first)
+        if (p(*first)) ++n;
+    return n;
+}
+
+int main() {
+    int a[] = {1, 2, 3, 4};
+    int n = countIf(a, a + 4, [](int x) { return x % 2 == 0; });
+    return n == 2 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">2</span> constexpr + traits-style template</h2>
+<p><strong>Task:</strong> Template <code>elementCount(int const (&amp;)[N])</code> returning <code>N</code> (deduced bound). Use with <code>static_assert</code> on a constexpr C array.</p>
+<button type="button" onclick="toggleSolution('cs2')">Show solution</button>
+<div class="solution" id="cs2">
+<pre>template &lt;int N&gt;
+constexpr int elementCount(int const (&amp;)[N]) {
+    return N;
+}
+
+constexpr int cap_arr[] = {1, 2, 3};
+static_assert(elementCount(cap_arr) == 3);</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">3</span> Encapsulation + pointers (list: managing objects through pointers)</h2>
+<p><strong>Task:</strong> Class <code>Wallet</code> with private <code>int balance_</code>, ctor, <code>int balance() const</code>, <code>void add(int x)</code>. In <code>main</code>, <code>Wallet* w = new Wallet(10);</code>, <code>add</code>, read balance, <code>delete w;</code>. No smart pointers.</p>
+<button type="button" onclick="toggleSolution('cs3')">Show solution</button>
+<div class="solution" id="cs3">
+<pre>class Wallet {
+    int balance_{};
+public:
+    explicit Wallet(int b = 0) : balance_(b) {}
+    int balance() const { return balance_; }
+    void add(int x) { balance_ += x; }
+};
+
+int main() {
+    Wallet* w = new Wallet(10);
+    w-&gt;add(5);
+    int b = w-&gt;balance();
+    delete w;
+    return b == 15 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">4</span> Virtual + destructor + inheritance</h2>
+<p><strong>Task:</strong> Base <code>Source</code> with <code>virtual int next() = 0;</code> and <code>virtual ~Source() = default;</code>. <code>ConstantSource</code> returns a fixed <code>int</code>. Delete through <code>Source*</code> after <code>new ConstantSource(7)</code> and check value before delete.</p>
+<button type="button" onclick="toggleSolution('cs4')">Show solution</button>
+<div class="solution" id="cs4">
+<pre>struct Source {
+    virtual int next() = 0;
+    virtual ~Source() = default;
+};
+
+struct ConstantSource : Source {
+    int v;
+    explicit ConstantSource(int x) : v(x) {}
+    int next() override { return v; }
+};
+
+int main() {
+    Source* p = new ConstantSource(7);
+    int x = p-&gt;next();
+    delete p;
+    return x == 7 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">5</span> Namespace + passing a function (template)</h2>
+<p><strong>Task:</strong> In <code>namespace mathops</code>, <code>template&lt;typename F&gt; int applyInt(int x, F f)</code> returns <code>f(x)</code> where <code>f</code> is callable as <code>int(int)</code> (e.g. lambda). No <code>std::invocable</code>. Return <code>applyInt(3, [](int z){ return z*z; }) == 9</code> from <code>main</code>.</p>
+<button type="button" onclick="toggleSolution('cs5')">Show solution</button>
+<div class="solution" id="cs5">
+<pre>namespace mathops {
+
+template &lt;typename F&gt;
+int applyInt(int x, F f) {
+    return f(x);
+}
+
+} // namespace mathops
+
+int main() {
+    int r = mathops::applyInt(3, [](int z) { return z * z; });
+    return r == 9 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">6</span> Inheritance + protected + copy ctor</h2>
+<p><strong>Task:</strong> <code>struct Base { protected: int tag_; explicit Base(int t=0):tag_(t){} };</code> <code>struct Derived : Base { Derived(int t):Base(t){} Derived(Derived const&amp; o):Base(o.tag_){} int get() const { return tag_; } };</code> Verify copy preserves <code>tag_</code>.</p>
+<button type="button" onclick="toggleSolution('cs6')">Show solution</button>
+<div class="solution" id="cs6">
+<pre>struct Base {
+protected:
+    int tag_;
+    explicit Base(int t = 0) : tag_(t) {}
+};
+
+struct Derived : Base {
+    explicit Derived(int t) : Base(t) {}
+    Derived(Derived const&amp; o) : Base(o.tag_) {}
+    int get() const { return tag_; }
+};
+
+int main() {
+    Derived a(42);
+    Derived b(a);
+    return b.get() == 42 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">7</span> Threads (basics only)</h2>
+<p><strong>Task:</strong> Same pattern as Batch 2: two threads, each writes into its own <code>int</code> through a distinct <code>int*</code> (e.g. compute a small sum). Join both; no mutex. Confirms <code>std::thread</code> + <code>join</code> only.</p>
+<button type="button" onclick="toggleSolution('cs7')">Show solution</button>
+<div class="solution" id="cs7">
+<pre>#include &lt;thread&gt;
+
+void triple(int* out) { *out = 3 * 4; }
+
+int main() {
+    int a = 0, b = 0;
+    std::thread t1(triple, &amp;a);
+    std::thread t2(triple, &amp;b);
+    t1.join();
+    t2.join();
+    return (a == 12 &amp;&amp; b == 12) ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">8</span> Fold + function pointer table</h2>
+<p><strong>Task:</strong> <code>template&lt;typename... Ts&gt; constexpr int typeCount()</code> as <code>sizeof...(Ts)</code>. C array of two <code>int(*)(int,int)</code> for add/mul; dispatch by index. <code>static_assert(typeCount&lt;int,char,double&gt;() == 3);</code></p>
+<button type="button" onclick="toggleSolution('cs8')">Show solution</button>
+<div class="solution" id="cs8">
+<pre>template &lt;typename... Ts&gt;
+constexpr int typeCount() {
+    return sizeof...(Ts);
+}
+
+static_assert(typeCount&lt;int, char, double&gt;() == 3);
+
+int add(int a, int b) { return a + b; }
+int mul(int a, int b) { return a * b; }
+
+using BinOp = int (*)(int, int);
+
+int dispatch(BinOp const ops[2], int idx, int x, int y) {
+    return ops[idx](x, y);
+}
+
+int main() {
+    BinOp ops[2] = {add, mul};
+    return dispatch(ops, 0, 2, 3) == 5 &amp;&amp; dispatch(ops, 1, 2, 3) == 6 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+<div class="exercise">
+<h2><span class="tag">9</span> Polymorphism + const + raw pointers (fixed small chain)</h2>
+<p><strong>Task:</strong> Abstract <code>struct Stage { virtual double run(double x) const = 0; virtual ~Stage() = default; };</code> <code>GainStage</code> returns <code>g*x</code>. <code>ClipStage</code> clamps to <code>[-1,1]</code> with plain comparisons (no <code>std::clamp</code>). Build a chain of exactly two stages using <code>Stage const* chain[2]</code> (or two locals and pointers). Pass <code>0.5</code> through both; delete any <code>new</code>’d objects. Const-correct <code>run</code>.</p>
+<button type="button" onclick="toggleSolution('cs9')">Show solution</button>
+<div class="solution" id="cs9">
+<pre>struct Stage {
+    virtual double run(double x) const = 0;
+    virtual ~Stage() = default;
+};
+
+struct GainStage : Stage {
+    double g;
+    explicit GainStage(double gain) : g(gain) {}
+    double run(double x) const override { return g * x; }
+};
+
+struct ClipStage : Stage {
+    double run(double x) const override {
+        if (x &lt; -1.0) return -1.0;
+        if (x &gt; 1.0) return 1.0;
+        return x;
+    }
+};
+
+double runChain(Stage const* const stages[], int n, double x) {
+    double y = x;
+    for (int i = 0; i &lt; n; ++i)
+        y = stages[i]-&gt;run(y);
+    return y;
+}
+
+int main() {
+    GainStage* g = new GainStage(2.0);
+    ClipStage* c = new ClipStage();
+    Stage const* chain[2] = {g, c};
+    double out = runChain(chain, 2, 0.5); // 0.5*2 = 1.0, clip stays 1.0
+    delete g;
+    delete c;
+    return out == 1.0 ? 0 : 1;
+}</pre>
+</div>
+</div>
+
+</body>
+</html>

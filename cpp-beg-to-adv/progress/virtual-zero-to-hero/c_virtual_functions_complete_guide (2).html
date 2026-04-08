@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ Virtual Functions: From Zero to Hero</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.75; margin: 40px; background: #f7f7f7; }
+h1, h2, h3 { color: #2c3e50; }
+code { background: #eee; padding: 3px 6px; border-radius: 4px; }
+pre { background: #222; color: #0f0; padding: 12px; overflow-x: auto; border-radius: 6px; }
+.section { background: white; padding: 22px; margin-bottom: 22px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+button { padding: 8px 12px; margin-top: 10px; cursor: pointer; }
+.solution { display: none; background: #eef; padding: 10px; margin-top: 10px; border-radius: 6px; }
+.note { background: #fff8dc; padding: 10px; border-left: 4px solid #f1c40f; margin-top: 10px; }
+.deep { background: #eefaf1; padding: 10px; border-left: 4px solid #27ae60; margin-top: 10px; }
+.warn { background: #ffecec; padding: 10px; border-left: 4px solid #e74c3c; margin-top: 10px; }
+</style>
+<script>
+function toggleSolution(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</head>
+<body>
+
+<h1>C++ Virtual Functions — Complete Beginner to Advanced Guide</h1>
+
+<div class="section">
+<h2>Step 1: The Core Problem — Static Binding</h2>
+<p>By default, C++ decides which function to call at <b>compile time</b>. This is called <b>static binding</b>.</p>
+
+<p>The rule is simple but dangerous:</p>
+<ul>
+<li>The function is chosen based on the <b>type of the pointer/reference</b></li>
+<li>NOT based on the actual object in memory</li>
+</ul>
+
+<pre>
+class Base {
+public:
+    void speak() { std::cout << "Base" << std::endl; }
+};
+
+class Derived : public Base {
+public:
+    void speak() { std::cout << "Derived" << std::endl; }
+};
+
+Base* obj = new Derived();
+obj->speak(); // Base ❌
+</pre>
+
+<div class="deep">
+<b>Mental Model:</b><br>
+The compiler sees: "obj is Base* → call Base::speak"<br>
+It completely ignores the fact that the real object is Derived.
+</div>
+
+<p>This breaks one of the most important ideas in OOP:</p>
+<ul>
+<li>"Treat derived objects as base objects"</li>
+<li>But still get correct behavior</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Step 2: virtual = Runtime Decision</h2>
+<p>The <code>virtual</code> keyword changes everything:</p>
+
+<ul>
+<li>Function resolution is delayed to <b>runtime</b></li>
+<li>The program checks the <b>actual object type</b></li>
+</ul>
+
+<pre>
+class Base {
+public:
+    virtual void speak() { std::cout << "Base" << std::endl; }
+};
+
+class Derived : public Base {
+public:
+    void speak() override { std::cout << "Derived" << std::endl; }
+};
+
+Base* obj = new Derived();
+obj->speak(); // Derived ✅
+</pre>
+
+<div class="deep">
+<b>Key Idea:</b><br>
+virtual enables <b>runtime polymorphism</b> → one interface, many behaviors.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 3: override — Your Safety Net</h2>
+<p><code>override</code> ensures you're actually overriding something.</p>
+
+<pre>
+class Derived : public Base {
+public:
+    void speak(int x) override; // ❌ compiler error
+};
+</pre>
+
+<div class="deep">
+Without override:
+<ul>
+<li>This would compile</li>
+<li>But NOT override → creates a new function</li>
+<li>Leads to silent bugs</li>
+</ul>
+</div>
+
+<div class="note">Always use override. Treat it as mandatory.</div>
+</div>
+
+<div class="section">
+<h2>Step 4: Virtual Destructors — Critical Rule</h2>
+<p>If a class has ANY virtual function → destructor should be virtual.</p>
+
+<pre>
+class Base {
+public:
+    virtual ~Base() {}
+};
+</pre>
+
+<div class="deep">
+What happens without it?
+<ul>
+<li>delete base_ptr;</li>
+<li>Only Base destructor runs</li>
+<li>Derived part is NOT destroyed</li>
+<li>→ memory leaks / undefined behavior</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 5: Pure Virtual Functions</h2>
+<p>A pure virtual function forces derived classes to implement behavior.</p>
+
+<pre>
+class Shape {
+public:
+    virtual void draw() = 0;
+};
+</pre>
+
+<div class="deep">
+This creates an <b>abstract class</b>:
+<ul>
+<li>Cannot instantiate Shape</li>
+<li>Used as an interface</li>
+<li>Defines a contract</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 6: Under the Hood — vtable Deep Dive</h2>
+<p>When a class has virtual functions, the compiler builds a <b>vtable</b>.</p>
+
+<div class="deep">
+<b>What is inside a vtable?</b>
+<ul>
+<li>Function pointers</li>
+<li>One entry per virtual function</li>
+</ul>
+</div>
+
+<pre>
+Base vtable:
+[ &Base::speak ]
+
+Derived vtable:
+[ &Derived::speak ]
+</pre>
+
+<div class="deep">
+<b>What happens at runtime?</b>
+<ol>
+<li>Object contains hidden pointer (vptr)</li>
+<li>vptr → points to correct vtable</li>
+<li>Call goes through vtable</li>
+<li>Correct function is executed</li>
+</ol>
+</div>
+
+<div class="note">
+Important: This mechanism is NOT in the C++ standard formally, but all major compilers use it.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 7: Memory Layout Explained</h2>
+<pre>
+Derived object in memory:
+
+[ vptr ] → Derived vtable
+[ Base data ]
+[ Derived data ]
+</pre>
+
+<div class="deep">
+Observations:
+<ul>
+<li>vptr is usually the first field</li>
+<li>Added automatically</li>
+<li>Invisible in your code</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 8: Function Call Breakdown</h2>
+<p>Calling a virtual function roughly becomes:</p>
+
+<pre>
+obj->speak();
+</pre>
+
+<p>Internally behaves like:</p>
+
+<pre>
+obj->vptr[0](obj);
+</pre>
+
+<div class="deep">
+This is why:
+<ul>
+<li>Calls are slightly slower</li>
+<li>But extremely flexible</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 9: Multiple Inheritance Complexity</h2>
+<p>With multiple base classes:</p>
+<ul>
+<li>Each base may introduce its own vptr</li>
+<li>Object layout becomes more complex</li>
+</ul>
+
+<div class="warn">
+This is one reason multiple inheritance is considered advanced.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 10: Performance Reality</h2>
+<ul>
+<li>vptr = +8 bytes (typically)</li>
+<li>Indirect call = tiny overhead</li>
+<li>Branch prediction usually makes it fast</li>
+</ul>
+
+<div class="deep">
+In real systems:
+<ul>
+<li>Cost is negligible</li>
+<li>Design clarity is more important</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Step 11: Common Mistakes</h2>
+<ul>
+<li>Forgetting virtual destructor</li>
+<li>Not using override</li>
+<li>Calling virtual functions in constructors/destructors</li>
+</ul>
+
+<div class="warn">
+Virtual calls inside constructors behave like NON-virtual calls.
+</div>
+</div>
+
+<div class="section">
+<h2>Step 12: When NOT to Use virtual</h2>
+<ul>
+<li>Performance-critical inner loops</li>
+<li>When behavior is known at compile time</li>
+<li>Use templates instead (compile-time polymorphism)</li>
+</ul>
+</div>
+
+<h1>Exercises (Progressive Difficulty)</h1>
+
+<div class="section">
+<h3>Exercise 1</h3>
+<p>Create a base class Animal with virtual sound().</p>
+<button onclick="toggleSolution('s1')">Show Solution</button>
+<div id="s1" class="solution">
+<pre>
+class Animal { public: virtual void sound() {} };
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 2</h3>
+<p>Override in Dog and Cat.</p>
+<button onclick="toggleSolution('s2')">Show Solution</button>
+<div id="s2" class="solution">
+<pre>
+class Dog : public Animal { void sound() override {} };
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 3</h3>
+<p>Call via base pointer.</p>
+<button onclick="toggleSolution('s3')">Show Solution</button>
+<div id="s3" class="solution">
+<pre>
+Animal* a = new Dog(); a->sound();
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 4</h3>
+<p>Add destructor.</p>
+<button onclick="toggleSolution('s4')">Show Solution</button>
+<div id="s4" class="solution">
+<pre>
+virtual ~Animal() {}
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 5</h3>
+<p>Create abstract Shape.</p>
+<button onclick="toggleSolution('s5')">Show Solution</button>
+<div id="s5" class="solution">
+<pre>
+class Shape { public: virtual void draw() = 0; };
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 6</h3>
+<p>Implement derived shapes.</p>
+<button onclick="toggleSolution('s6')">Show Solution</button>
+<div id="s6" class="solution">
+<pre>
+class Circle : public Shape { void draw() override {} };
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 7</h3>
+<p>Use vector of base pointers.</p>
+<button onclick="toggleSolution('s7')">Show Solution</button>
+<div id="s7" class="solution">
+<pre>
+std::vector<Shape*> shapes;
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 8</h3>
+<p>Test multiple inheritance.</p>
+<button onclick="toggleSolution('s8')">Show Solution</button>
+<div id="s8" class="solution">
+<pre>
+class A { virtual void f(); };
+class B { virtual void g(); };
+class C : public A, public B {};
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 9</h3>
+<p>Inspect vptr manually.</p>
+<button onclick="toggleSolution('s9')">Show Solution</button>
+<div id="s9" class="solution">
+<pre>
+void** vptr = *(void***)obj;
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>Exercise 10 (Expert)</h3>
+<p>Simulate a vtable.</p>
+<button onclick="toggleSolution('s10')">Show Solution</button>
+<div id="s10" class="solution">
+<pre>
+struct VTable { void (*fn)(); };
+</pre>
+</div>
+</div>
+
+</body>
+</html>

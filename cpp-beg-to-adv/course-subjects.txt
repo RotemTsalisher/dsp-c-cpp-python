@@ -30,6 +30,15 @@
 - Classes: Base Class access specifiers
 - Classes: 'friend' in inharitance
 - Classes: resurrect members in a more relaxed access level in inheritance
-- Classes: Copy Contructors and inharitance
+- Classes: Copy Contructors and inheritance
+- Classes: Virtual keyword and Polymorphism
+- Classes: Overload, Override and hiding
+- Classes: Polymorphism at different levels
+- Classes: "final" specifier
+- Classes: virtual override w/ default args
 
-01:02:06 -> inheritance with destructors
+MISSING FOR NOW:
+- STL Library
+- std::string vs std::string_view
+
+01:04:33:09 -> inheritance and polymorphism with static members
