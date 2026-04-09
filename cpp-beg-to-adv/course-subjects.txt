@@ -36,9 +36,10 @@
 - Classes: Polymorphism at different levels
 - Classes: "final" specifier
 - Classes: virtual override w/ default args
+- Classes: Static Binding
 
 MISSING FOR NOW:
 - STL Library
 - std::string vs std::string_view
 
-01:04:33:09 -> inheritance and polymorphism with static members
+01:06:08:21 -> don't call virtual functions from destructors
