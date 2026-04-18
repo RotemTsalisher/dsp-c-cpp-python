@@ -40,9 +40,9 @@
 - Classes: Abstract class and pure virtual functions
 - Classes: Abstract classes as interfaces
 - Classes: operator overloading (left and right, inheritance)
+- Classes: friends and operators
 
 MISSING FOR NOW:
 - STL Library
 - std::string vs std::string_view
 
-01:06:24:48 -> pure virtual functions and abstract classes 

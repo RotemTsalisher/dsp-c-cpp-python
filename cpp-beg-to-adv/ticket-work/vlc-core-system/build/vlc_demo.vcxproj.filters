@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work\vlc-core-system\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work\vlc-core-system\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2C1D07B2-646B-3C86-ABF2-3482D85E6FC9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

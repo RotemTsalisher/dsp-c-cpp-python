@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work — Entry Level DSP / C++</title>
+  <style>
+    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#1a7f37; --qa:#8250df; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+    .system { background:#ddf4ff; border-left:4px solid #0969da; padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .system h2 { margin:0 0 8px 0; font-size:1rem; color:#0550ae; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; box-shadow:0 1px 2px rgba(31,35,40,.06); }
+    .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .prio { font-size:.75rem; background:#fff8c5; border:1px solid #d4a72c; padding:2px 8px; border-radius:4px; }
+    .ticket h3 { margin:4px 0 10px; font-size:1.05rem; }
+    .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .body { white-space:pre-wrap; font-size:.93rem; margin:0 0 12px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
+    .btn-hint { background:#bf8700; color:#fff; }
+    .btn-hint:hover { background:#9a6d00; }
+    .btn-sol { background:#0969da; color:#fff; }
+    .btn-sol:hover { background:#0550ae; }
+    .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    .hint-panel { background:#fff8c5; border:1px solid #d4a72c; }
+    .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:10px 0 0; }
+    pre code { background:transparent; color:inherit; }
+    .why { margin-top:10px; color:#424a53; font-size:.86rem; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
+    footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+
+  <h1><span class="badge">ENTRY</span> DSP ticket notebook</h1>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · difficulty increases · C++20 training subset (no STL containers)</p>
+
+  <div class="system">
+    <h2>System under maintenance — VoiceLink Core (VLC)</h2>
+    <p><strong>What it is:</strong> Embedded voice uplink path for a duplex intercom product. 48 kHz PCM in, optional stereo-to-mono mix before narrowband wind PSD, software trims on an AFE register block, and a small <code>HeapBins</code>-style scratch buffer for PSD bins.</p>
+    <p><strong>Your role (entry):</strong> QA files straightforward defects—wrong constants, obvious leaks, missing returns on chained configurators, and arithmetic slip-ups in scaling helpers. You read the ticket, reproduce mentally from the snippet, patch the C++, and explain the fix in the review comment.</p>
+    <p><strong>Reference codebase:</strong> the buildable VLC tree lives in <code>../vlc-core-system/</code> (<code>include/vlc/</code>, <code>src/</code>, <code>CMakeLists.txt</code>). Open the matching headers and sources while working each ticket.</p>
+  </div>
+
+  <!-- T1 -->
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-ENTRY-101</span>
+      <span class="prio">P3 · Minor</span>
+      <span class="qa">Opened by QA · Field soak</span>
+    </div>
+    <h3>Mono mix sounds 6 dB hot on uplink</h3>
+    <p class="body"><strong>Summary:</strong> Uplink mono downmix from L/R appears louder than lab reference when both channels carry the same tone.
+
+<strong>Steps:</strong> (1) Play 1 kHz −20 dBFS identical on L and R. (2) Enable uplink mono mix. (3) Measure uplink level.
+
+<strong>Expected:</strong> Same RMS as single-channel reference within 0.2 dB.
+
+<strong>Actual:</strong> ~+6 dB vs reference.
+
+<strong>Component:</strong> <code>monoMixDown()</code> in <code>uplink_mix.cpp</code>.</p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h101')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s101')">Complete solution</button>
+    </div>
+    <div id="h101" class="panel hint-panel"><strong>Hint:</strong> When L and R are equal, what coefficient on <code>(L+R)</code> keeps energy invariant?</div>
+    <div id="s101" class="panel sol-panel">
+      <p><strong>Root cause:</strong> Summing L+R without halving doubles amplitude for correlated signals.</p>
+      <pre><code>double monoMixDown(double const left, double const right)
+{
+    return 0.5 * (left + right);
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> Plain <code>functions</code> / simple arithmetic—coefficient must be 0.5 for energy-preserving mono mix of floating PCM.</p>
+    </div>
+  </article>
+
+  <!-- T2 -->
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-ENTRY-102</span>
+      <span class="prio">P3 · Minor</span>
+      <span class="qa">Opened by QA · Bench</span>
+    </div>
+    <h3>ADC full-scale mapping reads 2× high</h3>
+    <p class="body"><strong>Summary:</strong> Calibrated voltage readout from 12-bit ADC counts is systematically ~2× high vs DMM on DC input.
+
+<strong>Steps:</strong> Apply 1.25 V known DC, read driver output.
+
+<strong>Expected:</strong> 1.25 V ± tolerance.
+
+<strong>Actual:</strong> ~2.5 V.
+
+<strong>Component:</strong> <code>countsToVolts()</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h102')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s102')">Complete solution</button>
+    </div>
+    <div id="h102" class="panel hint-panel"><strong>Hint:</strong> Check the denominator: is it <code>2^bits</code> or <code>2^bits - 1</code> for a unipolar ADC spanning 0…full scale?</div>
+    <div id="s102" class="panel sol-panel">
+      <p><strong>Root cause:</strong> Used <code>1 &lt;&lt; bits</code> as scale; last code is <code>2^bits - 1</code>.</p>
+      <pre><code>#include &lt;cmath&gt;
+
+double countsToVolts(double const counts, double const fullScaleVolts, int const bits)
+{
+    double const denom = std::ldexp(1.0, bits) - 1.0;
+    return (counts / denom) * fullScaleVolts;
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>constexpr</code>-friendly pattern often uses <code>ldexp</code> for the denominator; this is a classic off-by-one-scale bug in <code>functions</code>.</p>
+    </div>
+  </article>
+
+  <!-- T3 -->
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-ENTRY-103</span>
+      <span class="prio">P2 · Major</span>
+      <span class="qa">Opened by QA · Long-run soak</span>
+    </div>
+    <h3>PSD soak test leaks memory (heap growth)</h3>
+    <p class="body"><strong>Summary:</strong> Overnight PSD logging soak shows slow RSS climb on host HIL; embedded counterpart shows allocator failures after ~6 h.
+
+<strong>Steps:</strong> Cycle wind PSD capture 1e6 times with fixed bin count.
+
+<strong>Expected:</strong> Stable heap.
+
+<strong>Actual:</strong> Linear growth.
+
+<strong>Component:</strong> class <code>HeapBins</code> (constructor allocates; suspect destructor).</p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h103')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s103')">Complete solution</button>
+    </div>
+    <div id="h103" class="panel hint-panel"><strong>Hint:</strong> Every <code>new[]</code> needs a matching cleanup in the object lifetime end.</div>
+    <div id="s103" class="panel sol-panel">
+      <p><strong>Root cause:</strong> Destructor empty or missing <code>delete[]</code>.</p>
+      <pre><code>#include &lt;cstddef&gt;
+
+class HeapBins
+{
+public:
+    explicit HeapBins(std::size_t const n) : bins_{new double[n]{}} {}
+    ~HeapBins() { delete[] bins_; }
+    HeapBins(HeapBins const&amp;) = delete;
+    HeapBins&amp; operator=(HeapBins const&amp;) = delete;
+    double* data() { return bins_; }
+private:
+    double* bins_{};
+};
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>Classes: Destructors</code> + <code>managing class objects through pointers</code> hygiene—RAII lesson before smart pointers enter the curriculum.</p>
+    </div>
+  </article>
+
+  <!-- T4 -->
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-ENTRY-104</span>
+      <span class="prio">P3 · Minor</span>
+      <span class="qa">Opened by QA · UI automation</span>
+    </div>
+    <h3>Fluent mic gain API no longer chains</h3>
+    <p class="body"><strong>Summary:</strong> Factory test calls <code>g.setDb(-6).setDb(-3)</code> but second call does not apply; only first sticks.
+
+<strong>Steps:</strong> See attached one-liner repro.
+
+<strong>Expected:</strong> Final gain matches last <code>setDb</code>.
+
+<strong>Actual:</strong> Intermediate value frozen.
+
+<strong>Component:</strong> <code>MicGainChain</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h104')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s104')">Complete solution</button>
+    </div>
+    <div id="h104" class="panel hint-panel"><strong>Hint:</strong> Fluent setters must return a reference to the same object.</div>
+    <div id="s104" class="panel sol-panel">
+      <p><strong>Root cause:</strong> <code>setDb</code> returned <code>void</code> or a temporary copy instead of <code>*this</code>.</p>
+      <pre><code>#include &lt;cmath&gt;
+
+class MicGainChain
+{
+public:
+    MicGainChain&amp; setDb(double const db)
+    {
+        linear_ = std::pow(10.0, db / 20.0);
+        return *this;
+    }
+    double linear() const { return linear_; }
+private:
+    double linear_{1.0};
+};
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>this</code> pointer / <code>chaining class functions</code>—return type must be <code>MicGainChain&amp;</code>.</p>
+    </div>
+  </article>
+
+  <!-- T5 -->
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-ENTRY-105</span>
+      <span class="prio">P2 · Major</span>
+      <span class="qa">Opened by QA · Regression</span>
+    </div>
+    <h3>Wind PSD bin #0 always zero after “const cleanup”</h3>
+    <p class="body"><strong>Summary:</strong> After a const-correctness refactor, DC bin of PSD never updates; higher bins OK.
+
+<strong>Steps:</strong> White noise input, dump bin 0 vs bin 4.
+
+<strong>Expected:</strong> Bin 0 tracks low-frequency energy.
+
+<strong>Actual:</strong> Bin 0 stuck at 0.
+
+<strong>Component:</strong> <code>WindPsdScratch::writeBin(int i, double v)</code> marked <code>const</code> by mistake.</p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h105')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s105')">Complete solution</button>
+    </div>
+    <div id="h105" class="panel hint-panel"><strong>Hint:</strong> Mutating member state is not allowed on a <code>const</code> member function.</div>
+    <div id="s105" class="panel sol-panel">
+      <p><strong>Root cause:</strong> <code>writeBin</code> incorrectly declared <code>const</code> while writing <code>bins_[i]</code>.</p>
+      <pre><code>#include &lt;cstddef&gt;
+
+class WindPsdScratch
+{
+public:
+    void writeBin(int const i, double const v)
+    {
+        bins_[static_cast&lt;std::size_t&gt;(i)] = v;
+    }
+    double readBin(int const i) const
+    {
+        return bins_[static_cast&lt;std::size_t&gt;(i)];
+    }
+private:
+    double bins_[64]{};
+};
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>Classes: const correctness</code>—writers are non-<code>const</code>; readers stay <code>const</code>.</p>
+    </div>
+  </article>
+
+  <footer>VoiceLink Core · Entry ticket notebook · 5 tickets</footer>
+
+  <script>
+    function toggle(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

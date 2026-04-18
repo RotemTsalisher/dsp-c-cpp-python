@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++20 Workbook — First Half of Curriculum</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #1f6feb; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #ddf4ff; border-left: 4px solid #1f6feb; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #1a7f37; color: #fff; }
+    .lvl-2 { background: #bf8700; color: #fff; }
+    .lvl-3 { background: #bc4c00; color: #fff; }
+    .lvl-4 { background: #a40e26; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .hint { color: #656d76; font-size: 0.88rem; margin-top: 12px; border-top: 1px dashed #d8dee4; padding-top: 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #1f6feb; color: #fff; }
+    button.reveal-btn:hover { background: #1158c7; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.meta { font-size: 0.88rem; color: #444; margin: 8px 0 0 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>C++20 Workbook — First Half of Curriculum</h1>
+  <p class="subtitle">Electronic Engineering framing · Subjects 1–21 from <code>course-subjects.txt</code> · C++20 · No STL containers</p>
+
+  <div class="scope">
+    <strong>Scope (first half):</strong> functions through classes (intro, encapsulation, constructors, multi-file discipline, include guards, pointer-managed objects, destructors). Problems mix earlier topics for retention. Use formal function-pointer syntax where a function is passed (not <code>std::function</code>).
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Exercise 1 — Warm-up</span>
+    <p><strong>Context:</strong> A front-end scales raw ADC counts to volts before PSD estimation.</p>
+    <p>Implement a plain function <code>countsToVolts(double counts, double fullScaleVolts, int resolutionBits)</code> that returns <code>counts / (2^resolutionBits - 1) * fullScaleVolts</code>.</p>
+    <p><strong>Overload</strong> the name <code>countsToVolts</code> with a second version that takes <code>(double countsLeft, double countsRight, double fullScaleVolts, int resolutionBits)</code> and returns the mono mix <code>0.5 * (L + R)</code> after conversion (still a single <code>double</code>).</p>
+    <p class="hint">Topics: functions; function overloading.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>// g++ -std=c++20 -Wall -Wextra -O2 -pedantic
+#include &lt;cstdint&gt;
+#include &lt;cmath&gt;
+
+double countsToVolts(double const counts, double const fullScaleVolts, int const resolutionBits)
+{
+    double const denom = std::ldexp(1.0, resolutionBits) - 1.0;
+    return (counts / denom) * fullScaleVolts;
+}
+
+double countsToVolts(double const countsLeft, double const countsRight,
+                     double const fullScaleVolts, int const resolutionBits)
+{
+    double const monoCounts = 0.5 * (countsLeft + countsRight);
+    return countsToVolts(monoCounts, fullScaleVolts, resolutionBits);
+}
+
+// Example-only entry (not required for library use)
+#if defined(DSP_DEMO_MAIN)
+int main()
+{
+    double const v = countsToVolts(2047.0, 2.5, 12);
+    double const m = countsToVolts(1000.0, 3000.0, 2.5, 12);
+    (void)v;
+    (void)m;
+    return 0;
+}
+#endif
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Overloading keeps one technical name (<code>countsToVolts</code>) while selecting mono vs stereo preprocessing. <code>ldexp</code> avoids relying on integer pow for the denominator and stays numerically stable for typical ADC bit widths.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Exercise 2</span>
+    <p><strong>Context:</strong> Fixed-point audio samples are promoted to <code>double</code> for analysis.</p>
+    <p>Write a function template <code>promoteToDouble(T value)</code> that returns <code>static_cast&lt;double&gt;(value)</code>. Add a <strong>template specialization</strong> for <code>bool</code> that maps <code>false</code> to <code>0.0</code> and <code>true</code> to <code>1.0</code> (gate line).</p>
+    <p>Add a <code>requires</code> clause so the primary template only instantiates for arithmetic types (use <code>std::is_arithmetic_v&lt;T&gt;</code>). The <code>bool</code> specialization does not use that constraint.</p>
+    <p class="hint">Topics: function templates; template specialization; <code>requires</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_arithmetic_v&lt;T&gt;
+constexpr double promoteToDouble(T const value)
+{
+    return static_cast&lt;double&gt;(value);
+}
+
+template &lt;&gt;
+constexpr double promoteToDouble&lt;bool&gt;(bool const value)
+{
+    return value ? 1.0 : 0.0;
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>requires</code> keeps mistaken instantiations (for example user-defined types) from silently compiling. Explicit specialization handles <code>bool</code> as a gate signal without treating it as a numeric promotion.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-2">Exercise 3</span>
+    <p><strong>Context:</strong> A comb-style delay path compares a tap against a noise floor.</p>
+    <p>Define a non-template function <code>bool exceedsFloor(double sample, double (*predicate)(double))</code> that returns <code>predicate(sample)</code> interpreted as true if nonzero.</p>
+    <p>In <code>main</code> (or a test harness), pass a <strong>lambda</strong> by first storing it in a named variable, then obtain a function pointer only if you can justify the conversion; otherwise wrap the lambda in a named free function and pass that address to document static dispatch. Implement <code>static bool noiseFloorPredicate(double x)</code> that returns <code>(x &gt; floor)</code> with <code>floor</code> captured by making it a constexpr threshold inside the function for this exercise.</p>
+    <p class="hint">Topics: lambda functions; function pointers; passing functions as arguments (no <code>std::function</code>).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>#include &lt;cstddef&gt;
+
+bool exceedsFloor(double const sample, bool (*predicate)(double))
+{
+    return predicate(sample);
+}
+
+static bool noiseFloorPredicate(double const x)
+{
+    static constexpr double floor = 1.0e-6;
+    return x &gt; floor;
+}
+
+int main()
+{
+    double const tap = 3.5e-5;
+    bool const hot = exceedsFloor(tap, &amp;noiseFloorPredicate);
+    (void)hot;
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> A formal pointer type <code>bool (*)(double)</code> documents the ABI-level callback without pulling in STL function wrappers. A named static predicate keeps the address stable for teaching static dispatch; a stateful lambda would require a different interface (not required here).</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Exercise 4</span>
+    <p><strong>Context:</strong> A quick PSD panel sums narrowband energy estimates at compile time where possible.</p>
+    <p>Write a variadic function template <code>constexpr double sumBands(double... bands)</code> that uses a <strong>fold expression</strong> to sum an arbitrary number of <code>double</code> arguments. Write <code>constexpr double averageBands(double... bands)</code> that divides the fold-sum by <code>sizeof...(bands)</code> (guard zero-size packs with <code>static_assert</code> in the function body).</p>
+    <p>Add <code>constexpr double nyquistHz(double sampleRate)</code> and use it only at compile time to initialize a <code>constexpr</code> object in an anonymous namespace.</p>
+    <p class="hint">Topics: fold expressions and parameter packs; <code>constexpr</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+namespace
+{
+    constexpr double nyquistHz(double const sampleRate)
+    {
+        return 0.5 * sampleRate;
+    }
+
+    constexpr double kNyquist_48k = nyquistHz(48000.0);
+}
+
+template &lt;typename... Ts&gt;
+constexpr double sumBands(Ts const... bands)
+{
+    static_assert((std::is_same_v&lt;Ts, double&gt; &amp;&amp; ...));
+    return (bands + ... + 0.0);
+}
+
+template &lt;typename... Ts&gt;
+constexpr double averageBands(Ts const... bands)
+{
+    static_assert(sizeof...(bands) &gt; 0);
+    static_assert((std::is_same_v&lt;Ts, double&gt; &amp;&amp; ...));
+    return sumBands(bands...) / static_cast&lt;double&gt;(sizeof...(bands));
+}
+
+static_assert(averageBands(1.0, 3.0, 5.0) == 3.0);
+static_assert(kNyquist_48k == 24000.0);
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Fold expressions give a single idiomatic sum over a parameter pack. <code>constexpr</code> lets the compiler prove simple spectral bookkeeping without runtime cost. Include <code>&lt;type_traits&gt;</code> for the pack checks if you extend the snippet.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-3">Exercise 5</span>
+    <p><strong>Context:</strong> Register fields share one 32-bit word on a DSP peripheral.</p>
+    <p>Introduce a namespace <code>dsp::afe</code>. Inside it, define a variable template trait <code>template&lt;typename T&gt; inline constexpr bool is_register_word_v = std::is_same_v&lt;T, std::uint32_t&gt;;</code></p>
+    <p>Provide a function template <code>constexpr std::uint32_t maskedWrite(std::uint32_t word, std::uint32_t mask, T field)</code> that is constrained by a C++20 <strong>concept</strong> requiring <code>is_register_word_v&lt;T&gt;</code> plus that <code>T</code> is an integral type. Apply the mask, OR in the field, return the updated word.</p>
+    <p class="hint">Topics: traits via variable templates; namespaces; concepts and type-constrained templates.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+#include &lt;type_traits&gt;
+
+namespace dsp::afe
+{
+template &lt;typename T&gt;
+inline constexpr bool is_register_word_v = std::is_same_v&lt;T, std::uint32_t&gt;;
+
+template &lt;typename T&gt;
+concept RegisterWord = std::is_integral_v&lt;T&gt; &amp;&amp; is_register_word_v&lt;T&gt;;
+
+template &lt;RegisterWord T&gt;
+constexpr std::uint32_t maskedWrite(std::uint32_t const word, std::uint32_t const mask, T const field)
+{
+    return (word &amp; ~mask) | (static_cast&lt;std::uint32_t&gt;(field) &amp; mask);
+}
+}
+
+static_assert(dsp::afe::maskedWrite(0xFFFF'0000u, 0x0000'FFFFu, 0x0A0Au) == 0xFFFF'0A0Au);
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Variable templates express portable traits without macros. A named <code>concept</code> keeps register updates readable and fails early if someone passes a wrong-width word type.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Exercise 6</span>
+    <p><strong>Context:</strong> A capture buffer holds interleaved samples for a Hann window step.</p>
+    <p>Design a class <code>InterleavedCapture</code> in a header/source split described in the solution: public interface for allocation, private buffer pointer, destructor frees memory, constructor takes channel count and frame count (product gives sample count). Provide accessors; avoid STL containers: use <code>new double[]</code> / <code>delete[]</code>.</p>
+    <p>Demonstrate managing an object through a pointer (<code>InterleavedCapture*</code>) in example code. Mention include guards in the header comment.</p>
+    <p class="hint">Topics: class introduction; encapsulation; constructors; spreading across files (described); include guards (described); pointers to class objects; destructors.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <p><strong>Multi-file layout (production):</strong> <code>InterleavedCapture.h</code> uses <code>#ifndef INTERLEAVED_CAPTURE_H</code> / <code>#define</code> / <code>#endif</code> include guards (or <code>#pragma once</code> if your toolchain allows). Implementation lives in <code>InterleavedCapture.cpp</code>.</p>
+      <pre><code>// ---- InterleavedCapture.h (sketch) ----
+#ifndef INTERLEAVED_CAPTURE_H
+#define INTERLEAVED_CAPTURE_H
+
+#include &lt;cstddef&gt;
+
+class InterleavedCapture
+{
+public:
+    InterleavedCapture(int channels, std::size_t frames);
+    ~InterleavedCapture();
+
+    InterleavedCapture(InterleavedCapture const&amp;) = delete;
+    InterleavedCapture&amp; operator=(InterleavedCapture const&amp;) = delete;
+
+    std::size_t sampleCount() const;
+    double&amp; at(std::size_t index);
+    double const&amp; at(std::size_t index) const;
+
+private:
+    int const channels_;
+    std::size_t const frames_;
+    std::size_t const samples_;
+    double* buffer_;
+};
+
+#endif
+
+// ---- InterleavedCapture.cpp ----
+#include "InterleavedCapture.h"
+#include &lt;new&gt;
+#include &lt;stdexcept&gt;
+
+InterleavedCapture::InterleavedCapture(int const channels, std::size_t const frames)
+    : channels_{channels}
+    , frames_{frames}
+    , samples_{static_cast&lt;std::size_t&gt;(channels) * frames}
+    , buffer_{nullptr}
+{
+    if (channels &lt;= 0) {
+        throw std::invalid_argument("channels");
+    }
+    buffer_ = new double[samples_]{};
+}
+
+InterleavedCapture::~InterleavedCapture()
+{
+    delete[] buffer_;
+}
+
+std::size_t InterleavedCapture::sampleCount() const
+{
+    return samples_;
+}
+
+double&amp; InterleavedCapture::at(std::size_t const index)
+{
+    return buffer_[index];
+}
+
+double const&amp; InterleavedCapture::at(std::size_t const index) const
+{
+    return buffer_[index];
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> A class bundles invariant checks with resource ownership. Explicit destructor teaching pairs naturally with raw allocation before smart pointers appear in a later course stage. Deleted copy operations avoid double-free until rule-of-five teaching is complete.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff lvl-4">Exercise 7 — Integration</span>
+    <p><strong>Context:</strong> A background worker integrates a short chunk of PSD bins while the foreground thread prepares the next FFT window.</p>
+    <p>Using <code>&lt;thread&gt;</code>, spawn a thread that computes <code>sumBands</code> (from Exercise 4 style) over exactly three <code>double</code> literals passed as arguments to the thread function. The foreground thread must <code>join()</code> before exit. Keep all storage in fixed <code>double</code> variables or a small stack array—no STL containers.</p>
+    <p>Wrap the worker entry in namespace <code>dsp::workers</code>. Use a named function <code>void integrateTriple(double a, double b, double c, double&amp; out)</code> for the body.</p>
+    <p class="hint">Topics: &lt;thread&gt; basics; namespaces; constexpr/fold review inside the worker.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7')">Reveal solution</button>
+    <div id="sol7" class="solution">
+      <pre><code>#include &lt;thread&gt;
+
+template &lt;typename... Ts&gt;
+constexpr double sumBands(Ts const... bands)
+{
+    return (bands + ... + 0.0);
+}
+
+namespace dsp::workers
+{
+void integrateTriple(double const a, double const b, double const c, double&amp; out)
+{
+    out = sumBands(a, b, c);
+}
+}
+
+int main()
+{
+    double result = 0.0;
+    std::thread worker([&amp;result]() {
+        dsp::workers::integrateTriple(0.25, 0.50, 0.125, result);
+    });
+
+    worker.join();
+    return result &gt; 0.0 ? 0 : 1;
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>std::thread</code> with <code>join</code> documents lifetime coupling to the output slot. The lambda here only forwards to a function pointer–compatible free function; production code would factor threading policy out of DSP math.</div>
+    </div>
+  </div>
+
+  <p style="margin-top:28px;font-size:0.88rem;color:#57606a;">End of workbook — first half subjects (1–21).</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

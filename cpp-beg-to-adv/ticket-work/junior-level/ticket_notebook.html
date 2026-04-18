@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work — Junior Level DSP / C++</title>
+  <style>
+    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#bf8700; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+    .system { background:#fff8c5; border-left:4px solid #bf8700; padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .system h2 { margin:0 0 8px 0; font-size:1rem; color:#9a6700; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; box-shadow:0 1px 2px rgba(31,35,40,.06); }
+    .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .prio { font-size:.75rem; background:#ffebe9; border:1px solid #ff8182; padding:2px 8px; border-radius:4px; }
+    .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .body { white-space:pre-wrap; font-size:.93rem; margin:0 0 12px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
+    .btn-hint { background:#6e7781; color:#fff; }
+    .btn-hint:hover { background:#57606a; }
+    .btn-sol { background:#bf8700; color:#fff; }
+    .btn-sol:hover { background:#9a6d00; }
+    .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    .hint-panel { background:#eaeef2; border:1px solid var(--border); }
+    .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:10px 0 0; }
+    pre code { background:transparent; color:inherit; }
+    .why { margin-top:10px; color:#424a53; font-size:.86rem; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
+    footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+
+  <h1><span class="badge">JUNIOR</span> DSP ticket notebook</h1>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · difficulty increases · templates, threads, virtuals, constraints</p>
+
+  <div class="system">
+    <h2>System under maintenance — VoiceLink Core (VLC)</h2>
+    <p><strong>What it is:</strong> Same VLC stack as entry: uplink mono mix, wind PSD (64-bin scratch), AFE register writes, optional background <code>std::thread</code> workers for slow telemetry. Training code avoids STL containers.</p>
+    <p><strong>Your role (junior):</strong> Tickets span generic numeric policy mistakes, threading lifetime bugs, missing <code>virtual</code> on extension points, and template constraint gaps. You own the fix end-to-end in C++20.</p>
+    <p><strong>Reference codebase:</strong> <code>../vlc-core-system/</code> — library <code>vlc_core</code> and demo <code>vlc_demo</code>; see <code>README.md</code> for the module map.</p>
+  </div>
+
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-JR-201</span>
+      <span class="prio">P2 · Major</span>
+      <span class="qa">Opened by QA · CI fuzz</span>
+    </div>
+    <h3><code>quantizeSample&lt;T&gt;</code> instantiates for user-defined types and corrupts bins</h3>
+    <p class="body"><strong>Summary:</strong> Fuzz harness passed a small POD <code>struct BinTag { int x; }</code> into <code>quantizeSample</code>; build succeeded and garbage landed in PSD path.
+
+<strong>Expected:</strong> Compile-time rejection for non-arithmetic <code>T</code>.
+
+<strong>Actual:</strong> Template accepts anything.
+
+<strong>Component:</strong> <code>dsp/quantize.h</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h201')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s201')">Complete solution</button>
+    </div>
+    <div id="h201" class="panel hint-panel"><strong>Hint:</strong> Add a C++20 <code>requires</code> (or a <code>concept</code>) tied to <code>std::is_arithmetic_v&lt;T&gt;</code>.</div>
+    <div id="s201" class="panel sol-panel">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_arithmetic_v&lt;T&gt;
+constexpr T quantizeSample(T const v, T const step)
+{
+    T const q = v / step;
+    return static_cast&lt;T&gt;(static_cast&lt;int&gt;(q)) * step;
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>requires</code> + <code>function templates</code>—narrows the API surface before fuzz can drive invalid types in.</p>
+    </div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-JR-202</span>
+      <span class="prio">P1 · Critical</span>
+      <span class="qa">Opened by QA · Stress HIL</span>
+    </div>
+    <h3>Intermittent garbage in uplink PSD summary after telemetry thread lands</h3>
+    <p class="body"><strong>Summary:</strong> Main thread reads <code>summary</code> double immediately after starting worker; ~1% runs show stale or torn values.
+
+<strong>Steps:</strong> Spawn thread writing <code>summary</code>, main reads without synchronization (intentional minimal repro).
+
+<strong>Expected:</strong> Join worker before read, or document single-writer contract (here: fix join).
+
+<strong>Actual:</strong> Missing <code>join()</code> in one code path.
+
+<strong>Component:</strong> <code>TelemetrySlice::runOnce()</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h202')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s202')">Complete solution</button>
+    </div>
+    <div id="h202" class="panel hint-panel"><strong>Hint:</strong> <code>std::thread</code> destructor calls <code>std::terminate</code> if still joinable—always pair start with <code>join</code> (or a documented policy).</div>
+    <div id="s202" class="panel sol-panel">
+      <pre><code>#include &lt;thread&gt;
+
+void runOnce(double&amp; summary)
+{
+    std::thread worker([&amp;summary]() {
+        summary = 0.125; // model slow PSD slice integration
+    });
+    worker.join();
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>threads (&lt;thread&gt; basics)</code>—lifetime of <code>summary</code> must extend past <code>join()</code>; here reference capture is OK because caller blocks until join completes.</p>
+    </div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-JR-203</span>
+      <span class="prio">P2 · Major</span>
+      <span class="qa">Opened by QA · Plugin SDK</span>
+    </div>
+    <h3>Third-party notch filter registered as <code>Source*</code> always returns silence</h3>
+    <p class="body"><strong>Summary:</strong> Vendor ships <code>NotchSource : public Source</code>. Factory stores pointer as <code>Source*</code> and calls <code>next()</code>. Notch path never runs.
+
+<strong>Expected:</strong> Dynamic dispatch into <code>NotchSource::next()</code>.
+
+<strong>Actual:</strong> Base <code>Source::next()</code> always executes.
+
+<strong>Component:</strong> class <code>Source</code> declaration</p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h203')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s203')">Complete solution</button>
+    </div>
+    <div id="h203" class="panel hint-panel"><strong>Hint:</strong> Without <code>virtual</code>, the call resolves statically to the base type.</div>
+    <div id="s203" class="panel sol-panel">
+      <pre><code>class Source
+{
+public:
+    virtual double next() { return 0.0; }
+    virtual ~Source() = default;
+};
+
+class NotchSource : public Source
+{
+public:
+    double next() override { return 0.1; }
+};
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>Virtual keyword and Polymorphism</code> / <code>Inheritance and Method Overriding</code>—extension points for DSP sources must be virtual.</p>
+    </div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-JR-204</span>
+      <span class="prio">P2 · Major</span>
+      <span class="qa">Opened by QA · HAL review</span>
+    </div>
+    <h3>Register write helper accepts 16-bit field and corrupts AFE word</h3>
+    <p class="body"><strong>Summary:</strong> <code>maskedOr(word, mask, field)</code> compiled when <code>field</code> was <code>std::uint16_t</code>, shifted garbage into upper bits after promotion.
+
+<strong>Expected:</strong> Only 32-bit register words accepted at compile time.
+
+<strong>Actual:</strong> Too-generic template.
+
+<strong>Component:</strong> <code>dsp::afe::maskedOr</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h204')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s204')">Complete solution</button>
+    </div>
+    <div id="h204" class="panel hint-panel"><strong>Hint:</strong> Combine a variable-template trait (<code>is_word32_v</code>) with a <code>concept</code> so only <code>std::uint32_t</code> fields compile.</div>
+    <div id="s204" class="panel sol-panel">
+      <pre><code>#include &lt;cstdint&gt;
+#include &lt;type_traits&gt;
+
+namespace dsp::afe
+{
+template &lt;typename T&gt;
+inline constexpr bool is_word32_v = std::is_same_v&lt;T, std::uint32_t&gt;;
+
+template &lt;typename T&gt;
+concept Word32 = is_word32_v&lt;T&gt;;
+
+template &lt;Word32 T&gt;
+constexpr std::uint32_t maskedOr(std::uint32_t const base, std::uint32_t const mask, T const field)
+{
+    return base | (static_cast&lt;std::uint32_t&gt;(field) &amp; mask);
+}
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>traits</code> via variable templates + <code>concepts</code>—mirrors how HAL reviews block accidental widths.</p>
+    </div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head">
+      <span class="id">VLC-JR-205</span>
+      <span class="prio">P1 · Critical</span>
+      <span class="qa">Opened by QA · Release gate</span>
+    </div>
+    <h3>Comb-delay tap energy gate never trips (always passes audio)</h3>
+    <p class="body"><strong>Summary:</strong> QA passes <code>double (*pred)(double)</code> into <code>gateTap</code> but the engineer stored a capturing lambda in a temporary and tried to decay it to function pointer—build hack forces wrong predicate.
+
+<strong>Expected:</strong> Stable function pointer to a named predicate with explicit signature.
+
+<strong>Actual:</strong> Undefined behavior / wrong linkage in integration branch.
+
+<strong>Component:</strong> <code>gateTap(double x, bool (*p)(double))</code></p>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h205')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s205')">Complete solution</button>
+    </div>
+    <div id="h205" class="panel hint-panel"><strong>Hint:</strong> Capturing lambdas cannot become plain C function pointers—use a free function or a static non-capturing lambda assigned to a named <code>bool (*)(double)</code>.</div>
+    <div id="s205" class="panel sol-panel">
+      <pre><code>using TapPred = bool (*)(double);
+
+bool overNoiseFloor(double const x)
+{
+    static constexpr double floor = 1e-5;
+    return x &gt; floor;
+}
+
+bool gateTap(double const x, TapPred pred)
+{
+    return pred(x);
+}
+
+bool demo(double const x)
+{
+    return gateTap(x, &amp;overNoiseFloor);
+}
+</code></pre>
+      <p class="why"><strong>Review note:</strong> <code>function pointers</code> + <code>passing functions as arguments</code>—DSP gates in bare-metal code paths often require explicit function pointer ABI, not ad-hoc lambda decay.</p>
+    </div>
+  </article>
+
+  <footer>VoiceLink Core · Junior ticket notebook · 5 tickets</footer>
+
+  <script>
+    function toggle(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

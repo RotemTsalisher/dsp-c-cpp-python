@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++20 Workbook — Interview-Style Drills</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #0d419d; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #dff6ff; border-left: 4px solid #0d419d; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #1a7f37; color: #fff; }
+    .lvl-2 { background: #bf8700; color: #fff; }
+    .lvl-3 { background: #bc4c00; color: #fff; }
+    .lvl-4 { background: #a40e26; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .hint { color: #656d76; font-size: 0.88rem; margin-top: 12px; border-top: 1px dashed #d8dee4; padding-top: 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #0d419d; color: #fff; }
+    button.reveal-btn:hover { background: #0a306f; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    .q { font-weight: 600; color: #0d419d; }
+  </style>
+</head>
+<body>
+  <h1>C++20 Workbook — Interview-Style Drills</h1>
+  <p class="subtitle">Short prompts resembling technical interviews · Full curriculum from <code>course-subjects.txt</code> · C++20 · No STL containers</p>
+
+  <div class="scope">
+    <strong>How to use:</strong> Each item states a focused question, then asks for a minimal but correct C++20 sketch. Reveal solutions compare a good answer with a concise rationale. Comb-filter and PSD themes appear where they clarify the engineering story.
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Question 1</span>
+    <p class="q">“You have two ADC paths that both produce a PSD bin as <code>double</code>. How do you share one function name but keep compile-time type checks for integer versus floating accumulators?”</p>
+    <p>Answer with overloaded free functions plus a constrained template using <code>requires</code> (no STL containers). Frame the example as summing narrowband energy contributions.</p>
+    <p class="hint">Touches: overloading; templates; <code>requires</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+double accumulateBin(double const a, double const b)
+{
+    return a + b;
+}
+
+int accumulateBin(int const a, int const b)
+{
+    return a + b;
+}
+
+template &lt;typename T&gt;
+requires std::is_floating_point_v&lt;T&gt;
+constexpr T accumulateBin(T const a, T const b)
+{
+    return a + b;
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> Overloading handles the non-template double path explicitly; the constrained template documents that only floating policies participate in the generic lane, catching mistaken integer use at compile time.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Question 2</span>
+    <p class="q">“Explain how you would pass a gain stage into a sample routine without <code>std::function</code>.”</p>
+    <p>Provide a typedef for <code>double (*GainFn)(double)</code> and a function <code>double applyStage(double x, GainFn fn)</code>. Add a second path that accepts a lambda only by wrapping its behavior in a named static function if you need a stable address.</p>
+    <p class="hint">Touches: function pointers; passing functions as arguments; lambdas (as factories of logic, not necessarily stored).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>using GainFn = double (*)(double);
+
+double applyStage(double const x, GainFn fn)
+{
+    return fn(x);
+}
+
+static double sixDbBoost(double const x)
+{
+    return x * 1.99526231497; // ~ +6 dB linear
+}
+
+int main()
+{
+    double const y = applyStage(0.5, &amp;sixDbBoost);
+    (void)y;
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> A function pointer type is explicit in mangling and ABI reviews. Teaching code keeps the address stable; lambdas with captures cannot convert to plain <code>GainFn</code> without thunks.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-2">Question 3</span>
+    <p class="q">“How can you prove a Hann window length at compile time for a fixed FFT, and combine that with a fold expression?”</p>
+    <p>Write <code>constexpr int hannLength(int order)</code> returning <code>1 &lt;&lt; order</code>, then a variadic <code>constexpr double sumBins(double...)</code> using a right fold.</p>
+    <p class="hint">Touches: <code>constexpr</code>; fold expressions and parameter packs.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>constexpr int hannLength(int const order)
+{
+    return 1 &lt;&lt; order;
+}
+
+template &lt;typename... Ts&gt;
+constexpr double sumBins(Ts... values)
+{
+    return (values + ... + 0.0);
+}
+
+static_assert(hannLength(10) == 1024);
+static_assert(sumBins(1.0, 2.0, 3.0) == 6.0);
+</code></pre>
+      <div class="why"><strong>Why:</strong> <code>constexpr</code> lets the compiler verify FFT sizing. Folds express the energy sum without manual recursion for teaching clarity.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Question 4</span>
+    <p class="q">“You must log PSD slices from a worker thread while the UI thread prints status. What is the minimal <code>&lt;thread&gt;</code> usage you expect in production review?”</p>
+    <p>Show construction with a free function target, <code>join()</code> before reading shared scalar results, and a namespace <code>dsp::trace</code> wrapping the worker entry. No containers.</p>
+    <p class="hint">Touches: threads; namespaces.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>#include &lt;thread&gt;
+
+namespace dsp::trace
+{
+void logSlice(double const psdValue, double&amp; sink)
+{
+    sink = psdValue;
+}
+}
+
+int main()
+{
+    double sink = 0.0;
+    std::thread worker([&amp;sink]() {
+        dsp::trace::logSlice(0.25, sink);
+    });
+
+    worker.join();
+    return sink &gt; 0.0 ? 0 : 1;
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> Reviewers expect explicit <code>join</code> or <code>detach</code> policy; here <code>join</code> couples lifetime to the scalar sink. The lambda captures the output by reference so no wrapper from <code>&lt;functional&gt;</code> is required.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-3">Question 5</span>
+    <p class="q">“What is the difference between a variable template trait and a constexpr function when you want to branch on whether a register width is 32-bit?”</p>
+    <p>Show <code>template&lt;typename T&gt; inline constexpr bool is_word32_v = ...</code> plus a <code>concept</code> that gates a <code>maskedOr</code> helper. Keep the arithmetic in <code>&lt;cstdint&gt;</code>.</p>
+    <p class="hint">Touches: traits via variable templates; concepts.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+inline constexpr bool is_word32_v = std::is_same_v&lt;T, std::uint32_t&gt;;
+
+template &lt;typename T&gt;
+concept Word32 = is_word32_v&lt;T&gt;;
+
+template &lt;Word32 T&gt;
+constexpr std::uint32_t maskedOr(std::uint32_t const base, std::uint32_t const mask, T const field)
+{
+    return base | (static_cast&lt;std::uint32_t&gt;(field) &amp; mask);
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> Variable templates read like constexpr values at template scope, which interviewers often contrast with <code>constexpr bool foo()</code> functions. Concepts consume those predicates without macros.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Question 6</span>
+    <p class="q">“Walk through why a polymorphic audio node needs a virtual destructor when a factory returns <code>IAudioNode*</code>.”</p>
+    <p>Sketch an interface with a pure virtual <code>process(double)</code>, a derived FIR stage, and <code>delete</code> through the base pointer in a commented example. Mention static binding when calling a non-virtual helper on the derived object directly.</p>
+    <p class="hint">Touches: abstract classes; virtual destructor; static binding vs polymorphism.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <pre><code>class IAudioNode
+{
+public:
+    virtual double process(double const sample) = 0;
+    virtual ~IAudioNode() = default;
+};
+
+class FirStage final : public IAudioNode
+{
+public:
+    double process(double const sample) override
+    {
+        return sample * 0.5;
+    }
+
+    double latencySamples() const
+    {
+        return 32.0;
+    }
+};
+
+void demo()
+{
+    IAudioNode* node = new FirStage{};
+    double const y = node-&gt;process(1.0);
+    delete node; // requires virtual ~IAudioNode
+    (void)y;
+
+    FirStage direct{};
+    double const lat = direct.latencySamples(); // static binding, no vtable
+    (void)lat;
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> Deletion through a base pointer without a virtual destructor is undefined behavior once subclasses own resources. Non-virtual helpers illustrate static binding when the concrete type is known.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff lvl-4">Question 7</span>
+    <p class="q">“How do you implement symmetric <code>operator+</code> for mono and stereo PSD contributions without duplicating friend declarations everywhere?”</p>
+    <p>Provide a minimal two-level hierarchy: base holds mono energy, derived adds a right channel. Implement two free <code>operator+</code> overloads and mark where friendship is required.</p>
+    <p class="hint">Touches: operator overloading with inheritance; encapsulation boundaries.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7')">Reveal solution</button>
+    <div id="sol7" class="solution">
+      <pre><code>class MonoPsd
+{
+public:
+    explicit MonoPsd(double const value)
+        : value_{value}
+    {
+    }
+
+    double value() const { return value_; }
+
+    friend MonoPsd operator+(MonoPsd const&amp; a, MonoPsd const&amp; b);
+
+private:
+    double value_;
+};
+
+class StereoPsd : public MonoPsd
+{
+public:
+    StereoPsd(double const left, double const right)
+        : MonoPsd{left}
+        , right_{right}
+    {
+    }
+
+    double right() const { return right_; }
+
+    friend StereoPsd operator+(StereoPsd const&amp; a, StereoPsd const&amp; b);
+
+private:
+    double right_;
+};
+
+MonoPsd operator+(MonoPsd const&amp; a, MonoPsd const&amp; b)
+{
+    return MonoPsd{a.value_ + b.value_};
+}
+
+StereoPsd operator+(StereoPsd const&amp; a, StereoPsd const&amp; b)
+{
+    return StereoPsd{a.value() + b.value(), a.right() + b.right()};
+}
+</code></pre>
+      <div class="why"><strong>Why:</strong> Symmetric free operators keep commutative intuition for energy sums. Friends stay scoped to the classes that actually need private field access, which is a common whiteboard talking point.</div>
+    </div>
+  </div>
+
+  <p style="margin-top:28px;font-size:0.88rem;color:#57606a;">End of interview-style workbook.</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

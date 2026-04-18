@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Everyday Practice — One Exercise per Subject</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.5; color: #24292f; max-width: 920px; margin: 0 auto; padding: 32px 20px 48px; background: #f6f8fa; }
+    h1 { text-align: center; border-bottom: 3px solid #0969da; padding-bottom: 10px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.92rem; margin-bottom: 24px; }
+    .note { background: #fff8c5; border-left: 4px solid #bf8700; padding: 12px 14px; margin-bottom: 22px; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+    section.subject { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+    .subj-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .num { font-weight: 800; color: #0969da; font-size: 0.85rem; }
+    .title { font-weight: 600; color: #1f2328; }
+    p.task { margin: 6px 0 10px 0; font-size: 0.95rem; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 0.78rem; line-height: 1.4; margin: 8px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { padding: 6px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #0969da; color: #fff; }
+    button.reveal-btn:hover { background: #0550ae; }
+    .solution { display: none; margin-top: 10px; }
+    .solution.visible { display: block; }
+    .why { font-size: 0.85rem; color: #424a53; margin-top: 8px; }
+    nav.toc { font-size: 0.82rem; columns: 2; margin: 16px 0 8px 0; padding: 12px; background: #eaeef2; border-radius: 6px; }
+    nav.toc a { color: #0969da; text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h1>Everyday Practice</h1>
+  <p class="subtitle">Straight-ahead drills · One short exercise per line in <code>course-subjects.txt</code> (42 subjects) · C++20 · No STL containers</p>
+
+  <div class="note">
+    Each block is independent. Use <strong>Reveal solution</strong> to see a minimal sketch you can type in a single translation unit unless the subject asks for multiple files. Prefer <code>double</code> for samples and fixed-size raw storage where buffers appear.
+  </div>
+
+  <nav class="toc" aria-label="Subjects">
+    <a href="#s01">1</a> · <a href="#s02">2</a> · <a href="#s03">3</a> · <a href="#s04">4</a> · <a href="#s05">5</a> · <a href="#s06">6</a> · <a href="#s07">7</a> · <a href="#s08">8</a> · <a href="#s09">9</a> · <a href="#s10">10</a> · <a href="#s11">11</a> · <a href="#s12">12</a> · <a href="#s13">13</a> · <a href="#s14">14</a> · <a href="#s15">15</a> · <a href="#s16">16</a> · <a href="#s17">17</a> · <a href="#s18">18</a> · <a href="#s19">19</a> · <a href="#s20">20</a> · <a href="#s21">21</a><br>
+    <a href="#s22">22</a> · <a href="#s23">23</a> · <a href="#s24">24</a> · <a href="#s25">25</a> · <a href="#s26">26</a> · <a href="#s27">27</a> · <a href="#s28">28</a> · <a href="#s29">29</a> · <a href="#s30">30</a> · <a href="#s31">31</a> · <a href="#s32">32</a> · <a href="#s33">33</a> · <a href="#s34">34</a> · <a href="#s35">35</a> · <a href="#s36">36</a> · <a href="#s37">37</a> · <a href="#s38">38</a> · <a href="#s39">39</a> · <a href="#s40">40</a> · <a href="#s41">41</a> · <a href="#s42">42</a>
+  </nav>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+
+  <!-- 1 -->
+  <section class="subject" id="s01">
+    <div class="subj-head"><span class="num">01</span><span class="title">functions</span></div>
+    <p class="task">Write a free function <code>double radianFrequencyHz(double fHz)</code> that returns <code>2π·fHz</code> using <code>&lt;numbers&gt;</code> for π (C++20).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol01')">Reveal solution</button>
+    <div id="sol01" class="solution">
+      <pre><code>#include &lt;numbers&gt;
+
+double radianFrequencyHz(double const fHz)
+{
+    return 2.0 * std::numbers::pi_v&lt;double&gt; * fHz;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> A single named function with a clear contract is the simplest “function” drill.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="subject" id="s02">
+    <div class="subj-head"><span class="num">02</span><span class="title">functions overloading</span></div>
+    <p class="task">Overload <code>linearTodB</code>: one version takes <code>double linearPower</code>; another takes <code>double linearPower</code> and <code>double refPower</code> and returns <code>10·log10(linearPower/refPower)</code> (guard <code>refPower &gt; 0</code>).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol02')">Reveal solution</button>
+    <div id="sol02" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+
+double linearTodB(double const linearPower)
+{
+    return 10.0 * std::log10(linearPower);
+}
+
+double linearTodB(double const linearPower, double const refPower)
+{
+    if (refPower &lt;= 0.0) {
+        return 0.0;
+    }
+    return 10.0 * std::log10(linearPower / refPower);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="subject" id="s03">
+    <div class="subj-head"><span class="num">03</span><span class="title">functions templates</span></div>
+    <p class="task">Write a function template <code>clampAbs(T value, T limit)</code> that returns <code>value</code> clamped to <code>[-limit, limit]</code> with simple comparisons (no STL containers or algorithms).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol03')">Reveal solution</button>
+    <div id="sol03" class="solution">
+      <pre><code>template &lt;typename T&gt;
+T clampAbs(T const value, T const limit)
+{
+    if (value &lt; -limit) {
+        return -limit;
+    }
+    if (value &gt; limit) {
+        return limit;
+    }
+    return value;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="subject" id="s04">
+    <div class="subj-head"><span class="num">04</span><span class="title">template specialization</span></div>
+    <p class="task">Provide a primary template <code>template&lt;typename T&gt; struct SampleTraits { static int bits(); };</code> returning <code>32</code>. Specialize for <code>float</code> to return <code>24</code> and for <code>double</code> to return <code>53</code> (mantissa bits as a mnemonic).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol04')">Reveal solution</button>
+    <div id="sol04" class="solution">
+      <pre><code>template &lt;typename T&gt;
+struct SampleTraits
+{
+    static int bits()
+    {
+        return 32;
+    }
+};
+
+template &lt;&gt;
+struct SampleTraits&lt;float&gt;
+{
+    static int bits()
+    {
+        return 24;
+    }
+};
+
+template &lt;&gt;
+struct SampleTraits&lt;double&gt;
+{
+    static int bits()
+    {
+        return 53;
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="subject" id="s05">
+    <div class="subj-head"><span class="num">05</span><span class="title">lambda functions</span></div>
+    <p class="task">Create a lambda <code>auto muteIfSmall = ...</code> capturing a <code>double floor</code> by value that returns <code>0.0</code> if <code>|x| &lt; floor</code>, else returns <code>x</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol05')">Reveal solution</button>
+    <div id="sol05" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+
+double demo(double const floor, double const x)
+{
+    auto const muteIfSmall = [floor](double const v) {
+        return std::fabs(v) &lt; floor ? 0.0 : v;
+    };
+    return muteIfSmall(x);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="subject" id="s06">
+    <div class="subj-head"><span class="num">06</span><span class="title">requires</span></div>
+    <p class="task">Write <code>template&lt;typename T&gt; T averageTwo(T a, T b)</code> with a <code>requires</code> clause that only allows arithmetic types.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol06')">Reveal solution</button>
+    <div id="sol06" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_arithmetic_v&lt;T&gt;
+constexpr T averageTwo(T const a, T const b)
+{
+    return (a + b) / static_cast&lt;T&gt;(2);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="subject" id="s07">
+    <div class="subj-head"><span class="num">07</span><span class="title">functions pointers</span></div>
+    <p class="task">Declare a type alias <code>using GainFn = double (*)(double);</code> and set it to point at <code>double unity(double x) { return x; }</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol07')">Reveal solution</button>
+    <div id="sol07" class="solution">
+      <pre><code>using GainFn = double (*)(double);
+
+double unity(double const x)
+{
+    return x;
+}
+
+GainFn pickUnity()
+{
+    return &amp;unity;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="subject" id="s08">
+    <div class="subj-head"><span class="num">08</span><span class="title">passing functions as arguments</span></div>
+    <p class="task">Implement <code>double mapSample(double x, GainFn fn)</code> that returns <code>fn(x)</code>, where <code>GainFn</code> is <code>double (*)(double)</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol08')">Reveal solution</button>
+    <div id="sol08" class="solution">
+      <pre><code>using GainFn = double (*)(double);
+
+double mapSample(double const x, GainFn const fn)
+{
+    return fn(x);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="subject" id="s09">
+    <div class="subj-head"><span class="num">09</span><span class="title">fold expressions and arg packs</span></div>
+    <p class="task">Write <code>template&lt;typename... Ts&gt; constexpr double sum(Ts... v)</code> that sums any number of <code>double</code>s using a fold expression.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol09')">Reveal solution</button>
+    <div id="sol09" class="solution">
+      <pre><code>template &lt;typename... Ts&gt;
+constexpr double sum(Ts... v)
+{
+    return (v + ... + 0.0);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="subject" id="s10">
+    <div class="subj-head"><span class="num">10</span><span class="title">constexpr</span></div>
+    <p class="task">Write <code>constexpr int fftBins(int order)</code> returning <code>1 &lt;&lt; order</code>. Use it in a <code>static_assert</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10')">Reveal solution</button>
+    <div id="sol10" class="solution">
+      <pre><code>constexpr int fftBins(int const order)
+{
+    return 1 &lt;&lt; order;
+}
+
+static_assert(fftBins(11) == 2048);
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="subject" id="s11">
+    <div class="subj-head"><span class="num">11</span><span class="title">traits (variable template or struct)</span></div>
+    <p class="task">Define <code>template&lt;typename T&gt; inline constexpr bool is_ieee754_v = ...</code> true for <code>float</code> and <code>double</code> only (use <code>std::is_same_v</code> and <code>||</code>).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11')">Reveal solution</button>
+    <div id="sol11" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+inline constexpr bool is_ieee754_v =
+    std::is_same_v&lt;T, float&gt; || std::is_same_v&lt;T, double&gt;;
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="subject" id="s12">
+    <div class="subj-head"><span class="num">12</span><span class="title">threads (&lt;thread&gt; basics)</span></div>
+    <p class="task">Start a <code>std::thread</code> that assigns <code>42.0</code> into a <code>double result</code> via a lambda, then <code>join()</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12')">Reveal solution</button>
+    <div id="sol12" class="solution">
+      <pre><code>#include &lt;thread&gt;
+
+int main()
+{
+    double result = 0.0;
+    std::thread t([&amp;result]() { result = 42.0; });
+    t.join();
+    return 0;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="subject" id="s13">
+    <div class="subj-head"><span class="num">13</span><span class="title">namespace</span></div>
+    <p class="task">Put <code>double db10(double linear)</code> inside <code>namespace dsp::math</code> (nested namespace syntax).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13')">Reveal solution</button>
+    <div id="sol13" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+
+namespace dsp::math
+{
+inline double db10(double const linear)
+{
+    return 10.0 * std::log10(linear);
+}
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="subject" id="s14">
+    <div class="subj-head"><span class="num">14</span><span class="title">concepts and auto variables</span></div>
+    <p class="task">Define <code>template&lt;typename T&gt; concept Arithmetic = std::is_arithmetic_v&lt;T&gt;;</code> and a function template <code>void sink(Arithmetic auto x)</code> that assigns <code>x</code> to an <code>auto</code> local <code>y</code> (type deduced).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14')">Reveal solution</button>
+    <div id="sol14" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+concept Arithmetic = std::is_arithmetic_v&lt;T&gt;;
+
+void sink(Arithmetic auto const x)
+{
+    auto const y = x;
+    (void)y;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="subject" id="s15">
+    <div class="subj-head"><span class="num">15</span><span class="title">introduction to classes</span></div>
+    <p class="task">Define a class <code>Oscillator</code> with <code>public:</code> <code>double frequencyHz</code> data member only (minimal class definition).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15')">Reveal solution</button>
+    <div id="sol15" class="solution">
+      <pre><code>class Oscillator
+{
+public:
+    double frequencyHz{};
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="subject" id="s16">
+    <div class="subj-head"><span class="num">16</span><span class="title">Encapsulation (getters/setters)</span></div>
+    <p class="task">Class <code>GainStage</code> with private <code>double gainLinear_</code>, public <code>double gainLinear() const</code> and <code>void setGainLinear(double g)</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol16')">Reveal solution</button>
+    <div id="sol16" class="solution">
+      <pre><code>class GainStage
+{
+public:
+    double gainLinear() const
+    {
+        return gainLinear_;
+    }
+
+    void setGainLinear(double const g)
+    {
+        gainLinear_ = g;
+    }
+
+private:
+    double gainLinear_{1.0};
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="subject" id="s17">
+    <div class="subj-head"><span class="num">17</span><span class="title">constructors (with and without arguments)</span></div>
+    <p class="task">Class <code>BrickwallSpec</code>: default constructor sets <code>cutoffHz_ = 20000.0</code>; second constructor takes <code>double cutoffHz</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol17')">Reveal solution</button>
+    <div id="sol17" class="solution">
+      <pre><code>class BrickwallSpec
+{
+public:
+    BrickwallSpec()
+        : cutoffHz_{20000.0}
+    {
+    }
+
+    explicit BrickwallSpec(double const cutoffHz)
+        : cutoffHz_{cutoffHz}
+    {
+    }
+
+    double cutoffHz() const { return cutoffHz_; }
+
+private:
+    double cutoffHz_;
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="subject" id="s18">
+    <div class="subj-head"><span class="num">18</span><span class="title">Classes: spreading across multiple files</span></div>
+    <p class="task">Describe the split: which parts of a class typically go in <code>.h</code> vs <code>.cpp</code>? Then show a tiny <code>DelayLine.h</code> declaration and a one-line <code>DelayLine.cpp</code> that includes the header and defines <code>std::size_t DelayLine::tapCount() const</code> (class has <code>std::size_t tapCount() const;</code> declared in the header).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol18')">Reveal solution</button>
+    <div id="sol18" class="solution">
+      <p class="why">Header: declarations, inline members, types. Source: non-inline member definitions, file-static helpers.</p>
+      <pre><code>// DelayLine.h
+#ifndef DELAY_LINE_H
+#define DELAY_LINE_H
+
+#include &lt;cstddef&gt;
+
+class DelayLine
+{
+public:
+    std::size_t tapCount() const;
+private:
+    std::size_t taps_{16};
+};
+
+#endif // DELAY_LINE_H
+
+// DelayLine.cpp
+#include "DelayLine.h"
+
+std::size_t DelayLine::tapCount() const
+{
+    return taps_;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section class="subject" id="s19">
+    <div class="subj-head"><span class="num">19</span><span class="title">Include Guards</span></div>
+    <p class="task">Write the classic three-macro include guard for <code>REGISTER_MAP_H</code> wrapping a forward declaration <code>struct AdcRegisterBlock;</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol19')">Reveal solution</button>
+    <div id="sol19" class="solution">
+      <pre><code>#ifndef REGISTER_MAP_H
+#define REGISTER_MAP_H
+
+struct AdcRegisterBlock;
+
+#endif // REGISTER_MAP_H
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="subject" id="s20">
+    <div class="subj-head"><span class="num">20</span><span class="title">managing class objects through pointers</span></div>
+    <p class="task">Allocate <code>GainStage</code> (from drill 16 pattern) with <code>new</code>, call <code>setGainLinear(2.0)</code> through pointer, <code>delete</code> when done.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol20')">Reveal solution</button>
+    <div id="sol20" class="solution">
+      <pre><code>class GainStage
+{
+public:
+    double gainLinear() const { return g_; }
+    void setGainLinear(double const x) { g_ = x; }
+private:
+    double g_{1.0};
+};
+
+void demo()
+{
+    GainStage* p = new GainStage{};
+    p-&gt;setGainLinear(2.0);
+    delete p;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 21 -->
+  <section class="subject" id="s21">
+    <div class="subj-head"><span class="num">21</span><span class="title">Destructors</span></div>
+    <p class="task">Class <code>HeapBins</code> owning <code>double* bins_</code>: constructor allocates <code>n</code> doubles with <code>new[]</code>; destructor <code>delete[] bins_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol21')">Reveal solution</button>
+    <div id="sol21" class="solution">
+      <pre><code>#include &lt;cstddef&gt;
+#include &lt;new&gt;
+
+class HeapBins
+{
+public:
+    explicit HeapBins(std::size_t const n)
+        : n_{n}
+        , bins_{new double[n]{}}
+    {
+    }
+
+    ~HeapBins()
+    {
+        delete[] bins_;
+    }
+
+    HeapBins(HeapBins const&amp;) = delete;
+    HeapBins&amp; operator=(HeapBins const&amp;) = delete;
+
+private:
+    std::size_t n_;
+    double* bins_;
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 22 -->
+  <section class="subject" id="s22">
+    <div class="subj-head"><span class="num">22</span><span class="title">'this' operator / chaining</span></div>
+    <p class="task">Class <code>ChainGain</code> with <code>double g_{1.0};</code> and methods <code>ChainGain&amp; mul(double m)</code> and <code>ChainGain&amp; reset()</code> returning <code>*this</code> for chaining.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol22')">Reveal solution</button>
+    <div id="sol22" class="solution">
+      <pre><code>class ChainGain
+{
+public:
+    ChainGain&amp; mul(double const m)
+    {
+        g_ *= m;
+        return *this;
+    }
+
+    ChainGain&amp; reset()
+    {
+        g_ = 1.0;
+        return *this;
+    }
+
+    double value() const { return g_; }
+
+private:
+    double g_;
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 23 -->
+  <section class="subject" id="s23">
+    <div class="subj-head"><span class="num">23</span><span class="title">Struct (resembles class)</span></div>
+    <p class="task">Define <code>struct ComplexSample { double re; double im; };</code> and a free function <code>double magnitude(ComplexSample c)</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol23')">Reveal solution</button>
+    <div id="sol23" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+
+struct ComplexSample
+{
+    double re;
+    double im;
+};
+
+double magnitude(ComplexSample const c)
+{
+    return std::sqrt(c.re * c.re + c.im * c.im);
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 24 -->
+  <section class="subject" id="s24">
+    <div class="subj-head"><span class="num">24</span><span class="title">Boundary alignment (memory)</span></div>
+    <p class="task">Declare <code>alignas(32) double fftWorkspace[256];</code> as a namespace-scope object and explain in one sentence why alignment matters for SIMD FFT kernels.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol24')">Reveal solution</button>
+    <div id="sol24" class="solution">
+      <pre><code>namespace
+{
+alignas(32) double fftWorkspace[256];
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Aligned storage lets vector loads/stores use wider SIMD instructions without crossing cache-line or lane boundaries incorrectly.</p>
+    </div>
+  </section>
+
+  <!-- 25 -->
+  <section class="subject" id="s25">
+    <div class="subj-head"><span class="num">25</span><span class="title">Inheritance and method overriding</span></div>
+    <p class="task"><code>class Source</code> with <code>virtual double next()</code> returning 0; <code>class SineSource : public Source</code> overriding to return <code>1.0</code> for practice.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol25')">Reveal solution</button>
+    <div id="sol25" class="solution">
+      <pre><code>class Source
+{
+public:
+    virtual double next()
+    {
+        return 0.0;
+    }
+
+    virtual ~Source() = default;
+};
+
+class SineSource : public Source
+{
+public:
+    double next() override
+    {
+        return 1.0;
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 26 -->
+  <section class="subject" id="s26">
+    <div class="subj-head"><span class="num">26</span><span class="title">const correctness</span></div>
+    <p class="task">Class <code>Meter</code> with <code>double rms_</code>; <code>double rms() const</code> and <code>void setRms(double v)</code> (non-const). Show correct <code>const</code> on <code>rms()</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol26')">Reveal solution</button>
+    <div id="sol26" class="solution">
+      <pre><code>class Meter
+{
+public:
+    double rms() const
+    {
+        return rms_;
+    }
+
+    void setRms(double const v)
+    {
+        rms_ = v;
+    }
+
+private:
+    double rms_{};
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 27 -->
+  <section class="subject" id="s27">
+    <div class="subj-head"><span class="num">27</span><span class="title">const member and reference member variables</span></div>
+    <p class="task">Class <code>ScaledRef</code> with <code>double const scale_</code> and <code>double const&amp; ref_</code>; constructor initializes both in the initializer list.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol27')">Reveal solution</button>
+    <div id="sol27" class="solution">
+      <pre><code>class ScaledRef
+{
+public:
+    ScaledRef(double const scale, double const&amp; ref)
+        : scale_{scale}
+        , ref_{ref}
+    {
+    }
+
+    double value() const
+    {
+        return ref_ * scale_;
+    }
+
+private:
+    double const scale_;
+    double const&amp; ref_;
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 28 -->
+  <section class="subject" id="s28">
+    <div class="subj-head"><span class="num">28</span><span class="title">chaining class functions</span></div>
+    <p class="task">Similar to 22 but emphasize named setters: <code>FilterSetup&amp; setOrder(int n);</code> and <code>FilterSetup&amp; setRipple(double r);</code> chaining on a trivial IIR setup stub.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol28')">Reveal solution</button>
+    <div id="sol28" class="solution">
+      <pre><code>class FilterSetup
+{
+public:
+    FilterSetup&amp; setOrder(int const n)
+    {
+        order_ = n;
+        return *this;
+    }
+
+    FilterSetup&amp; setRipple(double const r)
+    {
+        ripple_ = r;
+        return *this;
+    }
+
+    int order() const { return order_; }
+    double ripple() const { return ripple_; }
+
+private:
+    int order_{4};
+    double ripple_{0.1};
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 29 -->
+  <section class="subject" id="s29">
+    <div class="subj-head"><span class="num">29</span><span class="title">protected member variables</span></div>
+    <p class="task"><code>class Engine</code> with <code>protected: double sampleRate_;</code>; <code>class Plugin : public Engine</code> with a method that reads <code>sampleRate_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol29')">Reveal solution</button>
+    <div id="sol29" class="solution">
+      <pre><code>class Engine
+{
+protected:
+    double sampleRate_{48000.0};
+};
+
+class Plugin : public Engine
+{
+public:
+    double rate() const
+    {
+        return sampleRate_;
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 30 -->
+  <section class="subject" id="s30">
+    <div class="subj-head"><span class="num">30</span><span class="title">Base class access specifiers</span></div>
+    <p class="task">Show three classes: <code>class B {};</code> then <code>class D1 : public B {};</code>, <code>class D2 : protected B {};</code>, <code>class D3 : private B {};</code> (one line each). In a sentence, state how <code>B</code>’s public members appear in each derived class.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol30')">Reveal solution</button>
+    <div id="sol30" class="solution">
+      <pre><code>class B
+{
+public:
+    int x{};
+};
+
+class D1 : public B
+{
+};
+
+class D2 : protected B
+{
+};
+
+class D3 : private B
+{
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> With <code>public</code> inheritance, <code>B</code>’s public stays public in <code>D1</code>. With <code>protected</code> inheritance, <code>B</code>’s public becomes protected in <code>D2</code>. With <code>private</code> inheritance, <code>B</code>’s public becomes private in <code>D3</code>.</p>
+    </div>
+  </section>
+
+  <!-- 31 -->
+  <section class="subject" id="s31">
+    <div class="subj-head"><span class="num">31</span><span class="title">'friend' in inheritance</span></div>
+    <p class="task"><code>class CalibratedAmp : public GainStage</code> (reuse minimal base with <code>protected: double g_;</code>). Declare <code>friend void setInternalGain(CalibratedAmp&amp;, double);</code> that writes <code>g_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol31')">Reveal solution</button>
+    <div id="sol31" class="solution">
+      <pre><code>class GainStage
+{
+protected:
+    double g_{1.0};
+};
+
+class CalibratedAmp : public GainStage
+{
+    friend void setInternalGain(CalibratedAmp&amp; a, double const v);
+
+public:
+    double gain() const { return g_; }
+};
+
+void setInternalGain(CalibratedAmp&amp; a, double const v)
+{
+    a.g_ = v;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 32 -->
+  <section class="subject" id="s32">
+    <div class="subj-head"><span class="num">32</span><span class="title">resurrect members (relaxed access via using)</span></div>
+    <p class="task"><code>class Base { protected: int id_{0}; };</code> <code>class Leaf : public Base { public: using Base::id_; };</code> Show access to <code>id_</code> on <code>Leaf</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol32')">Reveal solution</button>
+    <div id="sol32" class="solution">
+      <pre><code>class Base
+{
+protected:
+    int id_{0};
+};
+
+class Leaf : public Base
+{
+public:
+    using Base::id_;
+};
+
+void demo()
+{
+    Leaf x;
+    x.id_ = 7;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 33 -->
+  <section class="subject" id="s33">
+    <div class="subj-head"><span class="num">33</span><span class="title">Copy constructors and inheritance</span></div>
+    <p class="task"><code>class Node { public: double v; explicit Node(double x):v(x){} };</code> <code>class TaggedNode : public Node { public: int tag; TaggedNode(double x,int t); TaggedNode(TaggedNode const&amp; o); };</code> Implement copy ctor forwarding <code>Node</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol33')">Reveal solution</button>
+    <div id="sol33" class="solution">
+      <pre><code>class Node
+{
+public:
+    double v;
+    explicit Node(double const x)
+        : v{x}
+    {
+    }
+};
+
+class TaggedNode : public Node
+{
+public:
+    int tag;
+
+    TaggedNode(double const x, int const t)
+        : Node{x}
+        , tag{t}
+    {
+    }
+
+    TaggedNode(TaggedNode const&amp; o)
+        : Node{o}
+        , tag{o.tag}
+    {
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 34 -->
+  <section class="subject" id="s34">
+    <div class="subj-head"><span class="num">34</span><span class="title">Virtual keyword and polymorphism</span></div>
+    <p class="task"><code>class Processor { public: virtual double tick(double)=0; virtual ~Processor()=default; };</code> and one concrete <code>class Passthrough : public Processor</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol34')">Reveal solution</button>
+    <div id="sol34" class="solution">
+      <pre><code>class Processor
+{
+public:
+    virtual double tick(double const x) = 0;
+    virtual ~Processor() = default;
+};
+
+class Passthrough : public Processor
+{
+public:
+    double tick(double const x) override
+    {
+        return x;
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 35 -->
+  <section class="subject" id="s35">
+    <div class="subj-head"><span class="num">35</span><span class="title">Overload, Override and hiding</span></div>
+    <p class="task">Show a derived class that declares <code>void work(int)</code> hiding a base <code>virtual void work(double)</code> (no <code>override</code>). Comment which mechanism applies.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol35')">Reveal solution</button>
+    <div id="sol35" class="solution">
+      <pre><code>class Base
+{
+public:
+    virtual void work(double)
+    {
+    }
+};
+
+class Derived : public Base
+{
+public:
+    void work(int)
+    {
+    } // hides Base::work(double) — not an override (different parameter type)
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Name hiding, not override, because the parameter types differ.</p>
+    </div>
+  </section>
+
+  <!-- 36 -->
+  <section class="subject" id="s36">
+    <div class="subj-head"><span class="num">36</span><span class="title">Polymorphism at different levels</span></div>
+    <p class="task">Given <code>Processor</code> from 34, write <code>double run(Processor&amp; p, double x)</code> and <code>double run(Passthrough&amp; p, double x)</code> to contrast dynamic dispatch vs static binding.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol36')">Reveal solution</button>
+    <div id="sol36" class="solution">
+      <pre><code>class Processor
+{
+public:
+    virtual double tick(double const x) = 0;
+    virtual ~Processor() = default;
+};
+
+class Passthrough : public Processor
+{
+public:
+    double tick(double const x) override { return x; }
+};
+
+double run(Processor&amp; p, double const x)
+{
+    return p.tick(x); // dynamic dispatch via vtable
+}
+
+double run(Passthrough&amp; p, double const x)
+{
+    return p.tick(x); // static resolution to Passthrough::tick
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 37 -->
+  <section class="subject" id="s37">
+    <div class="subj-head"><span class="num">37</span><span class="title">final specifier</span></div>
+    <p class="task">Mark <code>class FirKernel final : public Processor</code> (implement <code>tick</code>). Attempting to derive further should fail to compile—show in a comment.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol37')">Reveal solution</button>
+    <div id="sol37" class="solution">
+      <pre><code>class Processor
+{
+public:
+    virtual double tick(double const x) = 0;
+    virtual ~Processor() = default;
+};
+
+class FirKernel final : public Processor
+{
+public:
+    double tick(double const x) override
+    {
+        return x * 0.5;
+    }
+};
+
+// class More : public FirKernel {}; // ill-formed: FirKernel is final
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 38 -->
+  <section class="subject" id="s38">
+    <div class="subj-head"><span class="num">38</span><span class="title">virtual override w/ default args</span></div>
+    <p class="task">Base declares <code>virtual double eval(double x, bool norm = true) const;</code>; derived overrides with the same default. Add a comment: default args are resolved statically.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol38')">Reveal solution</button>
+    <div id="sol38" class="solution">
+      <pre><code>class Curve
+{
+public:
+    virtual double eval(double const x, bool const norm = true) const
+    {
+        return norm ? x : x * 2.0;
+    }
+
+    virtual ~Curve() = default;
+};
+
+class Flat : public Curve
+{
+public:
+    double eval(double const x, bool const norm = true) const override
+    {
+        (void)norm;
+        return x;
+    }
+};
+
+// Default argument values follow the static type of the pointer/ref used in the call.
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 39 -->
+  <section class="subject" id="s39">
+    <div class="subj-head"><span class="num">39</span><span class="title">Static binding</span></div>
+    <p class="task">Non-virtual <code>class Box { public: int id() const { return 1; } };</code> and <code>class FancyBox : public Box { public: int id() const { return 2; } };</code> Show <code>Box b = FancyBox{}; b.id();</code> result in a comment.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol39')">Reveal solution</button>
+    <div id="sol39" class="solution">
+      <pre><code>class Box
+{
+public:
+    int id() const
+    {
+        return 1;
+    }
+};
+
+class FancyBox : public Box
+{
+public:
+    int id() const
+    {
+        return 2;
+    }
+};
+
+void demo()
+{
+    Box b = FancyBox{};
+    int const x = b.id(); // x == 1: slicing + static binding on non-virtual id()
+    (void)x;
+}
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 40 -->
+  <section class="subject" id="s40">
+    <div class="subj-head"><span class="num">40</span><span class="title">Abstract class and pure virtual functions</span></div>
+    <p class="task">Abstract <code>class Codec</code> with <code>virtual void encodeFrame(double const*, int)=0;</code> and protected default ctor; cannot instantiate <code>Codec</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol40')">Reveal solution</button>
+    <div id="sol40" class="solution">
+      <pre><code>class Codec
+{
+public:
+    virtual void encodeFrame(double const* frame, int count) = 0;
+    virtual ~Codec() = default;
+
+protected:
+    Codec() = default;
+};
+
+// Codec c; // error: abstract type
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 41 -->
+  <section class="subject" id="s41">
+    <div class="subj-head"><span class="num">41</span><span class="title">Abstract classes as interfaces</span></div>
+    <p class="task">Define <code>struct IAudioSink</code> as an abstract interface: pure virtual <code>void push(double)</code> and virtual destructor. Implement <code>class NullSink : public IAudioSink</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol41')">Reveal solution</button>
+    <div id="sol41" class="solution">
+      <pre><code>struct IAudioSink
+{
+    virtual void push(double const x) = 0;
+    virtual ~IAudioSink() = default;
+};
+
+class NullSink : public IAudioSink
+{
+public:
+    void push(double const) override
+    {
+    }
+};
+</code></pre>
+    </div>
+  </section>
+
+  <!-- 42 -->
+  <section class="subject" id="s42">
+    <div class="subj-head"><span class="num">42</span><span class="title">operator overloading (left and right, inheritance)</span></div>
+    <p class="task">Base <code>class Mono</code> holds <code>double e_</code>; derived <code>class Stereo : public Mono</code> adds <code>double eR_</code>. Define <code>Stereo operator+(Stereo const&amp; a, Stereo const&amp; b)</code> summing both channels (use accessors or friends as you prefer).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol42')">Reveal solution</button>
+    <div id="sol42" class="solution">
+      <pre><code>class Mono
+{
+public:
+    explicit Mono(double const e)
+        : e_{e}
+    {
+    }
+
+    double energy() const { return e_; }
+
+protected:
+    double e_;
+};
+
+class Stereo : public Mono
+{
+public:
+    Stereo(double const left, double const right)
+        : Mono{left}
+        , eR_{right}
+    {
+    }
+
+    double right() const { return eR_; }
+
+    friend Stereo operator+(Stereo const&amp; a, Stereo const&amp; b);
+
+private:
+    double eR_;
+};
+
+Stereo operator+(Stereo const&amp; a, Stereo const&amp; b)
+{
+    return Stereo{a.energy() + b.energy(), a.right() + b.right()};
+}
+</code></pre>
+    </div>
+  </section>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:24px;">42 subjects · everyday practice</p>
+
+</body>
+</html>

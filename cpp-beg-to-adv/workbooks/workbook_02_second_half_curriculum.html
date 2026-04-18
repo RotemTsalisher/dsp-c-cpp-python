@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++20 Workbook — Second Half of Curriculum</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #8250df; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #fbefff; border-left: 4px solid #8250df; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #1a7f37; color: #fff; }
+    .lvl-2 { background: #bf8700; color: #fff; }
+    .lvl-3 { background: #bc4c00; color: #fff; }
+    .lvl-4 { background: #a40e26; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .hint { color: #656d76; font-size: 0.88rem; margin-top: 12px; border-top: 1px dashed #d8dee4; padding-top: 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #8250df; color: #fff; }
+    button.reveal-btn:hover { background: #6639ba; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>C++20 Workbook — Second Half of Curriculum</h1>
+  <p class="subtitle">Electronic Engineering framing · Subjects 22–42 from <code>course-subjects.txt</code> · C++20 · No STL containers</p>
+
+  <div class="scope">
+    <strong>Scope (second half):</strong> from <code>this</code>-based chaining through operator overloading with inheritance. Earlier-half ideas (templates, <code>constexpr</code>, namespaces) may appear as supporting machinery. Use explicit virtual overrides and show static versus dynamic binding where asked.
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Exercise 1 — Warm-up</span>
+    <p><strong>Context:</strong> A fractional delay line stores tap metadata.</p>
+    <p>Define a <code>struct Tap</code> with public <code>double delaySamples</code> and <code>double gain</code>. Define a <code>class FractionalDelayLine</code> that holds two taps in <code>alignas(16) double taps_[2][2]</code> (interpret as rows: delay, gain) to exercise <strong>boundary alignment</strong>.</p>
+    <p>Provide non-static methods <code>FractionalDelayLine&amp; setTap(int index, double delay, double gain)</code> that assign through <code>this</code> and <strong>return *this</strong> for chaining. Add <code>double const* data() const</code>.</p>
+    <p class="hint">Topics: <code>struct</code>; boundary alignment; <code>this</code> operator and chained calls.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>#include &lt;cstddef&gt;
+
+struct Tap
+{
+    double delaySamples;
+    double gain;
+};
+
+class FractionalDelayLine
+{
+public:
+    FractionalDelayLine&amp; setTap(int const index, double const delay, double const gain)
+    {
+        taps_[static_cast&lt;std::size_t&gt;(index)][0] = delay;
+        taps_[static_cast&lt;std::size_t&gt;(index)][1] = gain;
+        return *this;
+    }
+
+    double const* data() const
+    {
+        return &amp;taps_[0][0];
+    }
+
+private:
+    alignas(16) double taps_[2][2]{};
+};
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>alignas</code> documents SIMD-friendly layout assumptions. Returning <code>*this</code> from a non-static member illustrates how <code>this</code> enables fluent configuration without free helpers.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Exercise 2</span>
+    <p><strong>Context:</strong> A base band stores PSD bin gain; a derived stage applies a comb notch.</p>
+    <p>Create <code>class SpectrumBandBase</code> with a <code>protected double gain_</code>, constructor taking gain, and <code>virtual double process(double psdBin) const</code> returning <code>gain_ * psdBin</code>.</p>
+    <p>Derive <code>class CombNotchBand : public SpectrumBandBase</code>. Override <code>process</code> to subtract a fixed notch depth from the scaled bin (model as <code>gain_ * psdBin - notchDepth_</code>). Mark overrides explicitly. Demonstrate <code>const</code>-correct accessors for read-only gain.</p>
+    <p class="hint">Topics: inheritance and method overriding; protected members; const correctness; virtual keyword (first pass).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>class SpectrumBandBase
+{
+public:
+    explicit SpectrumBandBase(double const gain)
+        : gain_{gain}
+    {
+    }
+
+    virtual double process(double const psdBin) const
+    {
+        return gain_ * psdBin;
+    }
+
+    double gain() const
+    {
+        return gain_;
+    }
+
+    virtual ~SpectrumBandBase() = default;
+
+protected:
+    double gain_;
+};
+
+class CombNotchBand final : public SpectrumBandBase
+{
+public:
+    CombNotchBand(double const gain, double const notchDepth)
+        : SpectrumBandBase{gain}
+        , notchDepth_{notchDepth}
+    {
+    }
+
+    double process(double const psdBin) const override
+    {
+        return SpectrumBandBase::process(psdBin) - notchDepth_;
+    }
+
+private:
+    double notchDepth_;
+};
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>virtual</code> establishes dynamic dispatch for PSD shaping. <code>override</code> catches signature drift. <code>const</code> member functions document read-only observers on signal objects.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-3">Exercise 3</span>
+    <p><strong>Context:</strong> Calibration bypasses normal gain privacy for factory trim only.</p>
+    <p>Extend the hierarchy: <code>class SpectrumBandBase</code> keeps <code>gain_</code> protected. Add a derived <code>class TrimmedBand : public SpectrumBandBase</code> that declares <code>friend void factoryCalibrate(TrimmedBand&amp; band, double newGain);</code>. Implement the friend to assign <code>band.gain_</code> directly.</p>
+    <p>In another derived type (or the same file), use <code>using SpectrumBandBase::gain_;</code> in a <code>struct DiagnosticView : public SpectrumBandBase</code> to <strong>resurrect</strong> direct member access at <code>public</code> for a lab-only build—document why this is unsafe for production.</p>
+    <p class="hint">Topics: friend in inheritance; resurrecting member access with <code>using</code>; base-class access discipline.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>class SpectrumBandBase
+{
+public:
+    explicit SpectrumBandBase(double const gain)
+        : gain_{gain}
+    {
+    }
+
+    virtual ~SpectrumBandBase() = default;
+
+protected:
+    double gain_;
+};
+
+class TrimmedBand : public SpectrumBandBase
+{
+    friend void factoryCalibrate(TrimmedBand&amp; band, double newGain);
+
+public:
+    explicit TrimmedBand(double const gain)
+        : SpectrumBandBase{gain}
+    {
+    }
+};
+
+void factoryCalibrate(TrimmedBand&amp; band, double const newGain)
+{
+    band.gain_ = newGain;
+}
+
+struct DiagnosticView : public SpectrumBandBase
+{
+    using SpectrumBandBase::gain_;
+
+    explicit DiagnosticView(double const gain)
+        : SpectrumBandBase{gain}
+    {
+    }
+};
+
+// DiagnosticView exposes gain_ publicly via using — convenient for a lab harness,
+// but breaks encapsulation if shipped.
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>friend</code> localizes privileged writes for calibration. <code>using</code> adjusts access level deliberately when a diagnostic type is compiled only in test builds.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Exercise 4</span>
+    <p><strong>Context:</strong> Copying a filter bank must duplicate gains safely.</p>
+    <p>Implement <code>class BiquadCoefficients</code> with <code>double b0_, b1_, b2_</code> and a copy constructor that duplicates fields. Derive <code>class BankStage : public BiquadCoefficients</code> holding an extra <code>double stageGain_</code>. Write the copy constructor for <code>BankStage</code> that forwards base-class copying.</p>
+    <p>Also define a small helper <code>class ChannelMeter</code> (not necessarily derived from <code>BiquadCoefficients</code>) that stores a <strong>const data member</strong> <code>double const offset_</code> and a <strong>reference member</strong> <code>double const&amp; zeroRef_</code> bound in the constructor initializer list. Provide <code>double normalize(double sample) const</code> as <code>sample - zeroRef_ + offset_</code>.</p>
+    <p class="hint">Topics: copy constructors and inheritance; const member variables and reference member variables; const correctness on accessors.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>class BiquadCoefficients
+{
+public:
+    BiquadCoefficients(double const b0, double const b1, double const b2)
+        : b0_{b0}
+        , b1_{b1}
+        , b2_{b2}
+    {
+    }
+
+    BiquadCoefficients(BiquadCoefficients const&amp; other) = default;
+
+    double b0() const { return b0_; }
+    double b1() const { return b1_; }
+    double b2() const { return b2_; }
+
+private:
+    double b0_;
+    double b1_;
+    double b2_;
+};
+
+class BankStage : public BiquadCoefficients
+{
+public:
+    BankStage(double const b0, double const b1, double const b2, double const stageGain)
+        : BiquadCoefficients{b0, b1, b2}
+        , stageGain_{stageGain}
+    {
+    }
+
+    BankStage(BankStage const&amp; other)
+        : BiquadCoefficients{other}
+        , stageGain_{other.stageGain_}
+    {
+    }
+
+    double stageGain() const { return stageGain_; }
+
+private:
+    double stageGain_;
+};
+
+class ChannelMeter
+{
+public:
+    ChannelMeter(double const offset, double const&amp; liveZero)
+        : offset_{offset}
+        , zeroRef_{liveZero}
+    {
+    }
+
+    double normalize(double const sample) const
+    {
+        return sample - zeroRef_ + offset_;
+    }
+
+private:
+    double const offset_;
+    double const&amp; zeroRef_;
+};
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Delegating to the base copy subobject keeps invariants aligned when stages are duplicated for multirate banks. Const and reference members force explicit initialization and model a live calibration anchor without copying it.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-4">Exercise 5</span>
+    <p><strong>Context:</strong> A measurement pipeline exposes one polymorphic entry point.</p>
+    <p>Define an abstract interface <code>class ISpectrumMetric</code> with <code>virtual double evaluate(double const* bins, int count) const = 0;</code> and a protected non-virtual default constructor. Provide <code>virtual ~ISpectrumMetric() = default;</code>.</p>
+    <p>Implement <code>class TotalEnergy final : public ISpectrumMetric</code> that sums bins. Implement <code>class PeakHold final : public ISpectrumMetric</code> that returns the maximum.</p>
+    <p>Write a function <code>double dispatchMetric(ISpectrumMetric const&amp; metric, double const* bins, int count)</code> showing <strong>dynamic binding</strong>. Write a second overload <code>double dispatchMetric(TotalEnergy const&amp; metric, ...)</code> that calls <code>metric.evaluate</code> directly to illustrate <strong>static binding</strong> when the concrete type is known.</p>
+    <p class="hint">Topics: abstract classes; pure virtual functions; polymorphism at different levels; static binding vs virtual dispatch.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>class ISpectrumMetric
+{
+public:
+    virtual double evaluate(double const* bins, int count) const = 0;
+    virtual ~ISpectrumMetric() = default;
+
+protected:
+    ISpectrumMetric() = default;
+};
+
+class TotalEnergy final : public ISpectrumMetric
+{
+public:
+    double evaluate(double const* bins, int const count) const override
+    {
+        double acc = 0.0;
+        for (int i = 0; i &lt; count; ++i) {
+            acc += bins[i];
+        }
+        return acc;
+    }
+};
+
+class PeakHold final : public ISpectrumMetric
+{
+public:
+    double evaluate(double const* bins, int const count) const override
+    {
+        double peak = bins[0];
+        for (int i = 1; i &lt; count; ++i) {
+            if (bins[i] &gt; peak) {
+                peak = bins[i];
+            }
+        }
+        return peak;
+    }
+};
+
+double dispatchMetric(ISpectrumMetric const&amp; metric, double const* bins, int const count)
+{
+    return metric.evaluate(bins, count);
+}
+
+double dispatchMetric(TotalEnergy const&amp; metric, double const* bins, int const count)
+{
+    return metric.evaluate(bins, count);
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Pure virtuals define a narrow contract for EE metrics. Overloading <code>dispatchMetric</code> shows how static resolution avoids vtable indirection when the concrete type is fixed at compile time.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Exercise 6</span>
+    <p><strong>Context:</strong> A leaf analyzer must not be subclassed further; a base helper carries a default level offset.</p>
+    <p>Declare <code>class NarrowbandAnalyzer final : public ISpectrumMetric</code> (reuse the interface from Exercise 5 sketch) implementing <code>evaluate</code> as the average bin. In an abstract base <code>class LevelAdjustedMetric : public ISpectrumMetric</code>, add <code>virtual double evaluate(double const* bins, int count) const override</code> that applies <code>virtual double levelOffset() const = 0;</code>.</p>
+    <p>Add <code>virtual double evaluate(double const* bins, int count, bool applyOffset) const</code> with default argument <code>applyOffset = true</code> in <code>LevelAdjustedMetric</code>. Demonstrate that the default is bound statically for a pointer to <code>LevelAdjustedMetric</code> versus dynamically when called through <code>ISpectrumMetric const*</code> (commentary in solution).</p>
+    <p class="hint">Topics: <code>final</code>; virtual override with default arguments; overload vs override vs name hiding (commentary).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <pre><code>class ISpectrumMetric
+{
+public:
+    virtual double evaluate(double const* bins, int count) const = 0;
+    virtual ~ISpectrumMetric() = default;
+
+protected:
+    ISpectrumMetric() = default;
+};
+
+class LevelAdjustedMetric : public ISpectrumMetric
+{
+public:
+    double evaluate(double const* bins, int const count) const override
+    {
+        return evaluate(bins, count, true);
+    }
+
+    virtual double evaluate(double const* bins, int const count, bool const applyOffset) const
+    {
+        double acc = 0.0;
+        for (int i = 0; i &lt; count; ++i) {
+            acc += bins[i];
+        }
+        double const avg = acc / static_cast&lt;double&gt;(count);
+        return applyOffset ? avg + levelOffset() : avg;
+    }
+
+private:
+    virtual double levelOffset() const = 0;
+};
+
+class NarrowbandAnalyzer final : public LevelAdjustedMetric
+{
+public:
+    double levelOffset() const override
+    {
+        return 0.1;
+    }
+};
+
+// Default arguments are resolved using the static type of the pointer or reference.
+// Calling through ISpectrumMetric const* will not see the three-argument overload unless
+// you expose it virtually — this exercise keeps the footgun visible in comments instead.
+
+// Name hiding vs override (illustrative only):
+struct BaseTune
+{
+    virtual void tune(int bin) { (void)bin; }
+};
+
+struct DerivedTune : BaseTune
+{
+    void tune(double hz)
+    {
+        (void)hz;
+    } // hides BaseTune::tune — not an override because the parameter type differs
+};
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> <code>final</code> stops risky further virtual tables on certified DSP paths. Default arguments on non-interface helpers illustrate why core contracts should stay in pure virtuals without defaults.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff lvl-4">Exercise 7 — Integration</span>
+    <p><strong>Context:</strong> Mono and stereo mixers accumulate PSD contributions for a dashboard.</p>
+    <p>Define <code>class PsdContribution</code> with protected <code>double value_</code>, explicit constructor, <code>double value() const</code>.</p>
+    <p>Derive <code>class StereoPsdContribution : public PsdContribution</code> holding <code>double right_</code>. Implement <code>StereoPsdContribution operator+(StereoPsdContribution const&amp; a, StereoPsdContribution const&amp; b)</code> as a non-member friend if needed to read privates, and <code>PsdContribution operator+(PsdContribution const&amp; a, PsdContribution const&amp; b)</code> for mono sums.</p>
+    <p>Ensure at least one operator is implemented with explicit left/right symmetry called out in comments. No STL containers.</p>
+    <p class="hint">Topics: operator overloading (left and right forms); inheritance; abstract/interface ideas optional.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7')">Reveal solution</button>
+    <div id="sol7" class="solution">
+      <pre><code>class StereoPsdContribution;
+
+class PsdContribution
+{
+public:
+    explicit PsdContribution(double const value)
+        : value_{value}
+    {
+    }
+
+    double value() const
+    {
+        return value_;
+    }
+
+    friend PsdContribution operator+(PsdContribution const&amp; a, PsdContribution const&amp; b);
+
+protected:
+    double value_;
+};
+
+class StereoPsdContribution : public PsdContribution
+{
+public:
+    StereoPsdContribution(double const left, double const right)
+        : PsdContribution{left}
+        , right_{right}
+    {
+    }
+
+    double right() const
+    {
+        return right_;
+    }
+
+    friend StereoPsdContribution operator+(StereoPsdContribution const&amp; a, StereoPsdContribution const&amp; b);
+
+private:
+    double right_;
+};
+
+PsdContribution operator+(PsdContribution const&amp; a, PsdContribution const&amp; b)
+{
+    return PsdContribution{a.value_ + b.value_};
+}
+
+StereoPsdContribution operator+(StereoPsdContribution const&amp; a, StereoPsdContribution const&amp; b)
+{
+    // Symmetric sum: left channel uses base storage, right channel stored in derived field.
+    return StereoPsdContribution{a.value_ + b.value_, a.right_ + b.right_};
+}
+</code></pre>
+      <div class="why"><strong>Why these features:</strong> Free-function <code>operator+</code> keeps symmetry for commutative PSD fusion. Friends remain narrowly scoped to avoid breaking invariants while reading both channels.</div>
+    </div>
+  </div>
+
+  <p style="margin-top:28px;font-size:0.88rem;color:#57606a;">End of workbook — second half subjects (22–42).</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
