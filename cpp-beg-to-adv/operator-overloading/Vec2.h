@@ -62,13 +62,38 @@ public:
     };
 
     Vec2& operator=(const Vec2& other) {
-        std::cout << "OPERATOR =" << std::endl;
         if (this != &other){
             this->x = other.x;
             this->y = other.y;
         };
         return *this;
     };
+
+    friend std::ostream& operator<<(std::ostream& os, const Vec2& v) {
+        os<< "(" << v.x << ", " << v.y << ")";
+        return os;
+    };
+
+    double& operator[](int idx) {
+        std::cout << "INDEX OP" << std::endl;
+        return (idx == 0) ? this->x : this->y;
+    };
+
+    double operator*(const Vec2& other) const {
+        return (this->x * other.x + this->y * other.y);
+    };
+
+    Vec2& operator++() {
+        ++this->x;
+        ++this->y;
+        return *this;
+    };
+
+    Vec2 operator++(int) {
+        Vec2 res = *this;
+        ++(*this);
+        return res;
+    }; 
 };
 
 /* NON MEMBER OPERATORS */

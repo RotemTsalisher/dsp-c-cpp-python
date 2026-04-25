@@ -3,8 +3,8 @@
 
 int main() {
     Vec2 v0(1.0,1.0); 
-    Vec2 v1;
-    /*
+    /* Vec2 v1;
+    
     Vec2 res = v0 + v1;
     std::cout << "exe1: res = (" << res.x << ", " << res.y << ")" << std::endl;
     
@@ -23,6 +23,7 @@ int main() {
     v1 = v0 + 1;
     std::cout << "v1 = (" << v1.x << ", " << v1.y << ") || v0 = (" << v0.x << ", " << v0.y << ")" << std::endl;
     */
+   /*
     v0 *= 2;
     std::cout << "v0 = (" << v0.x << ", " << v0.y << ")" << std::endl;
     v1 = v1*1;
@@ -31,9 +32,25 @@ int main() {
     std::cout << "v1 = (" << v1.x << ", " << v1.y << ")" << std::endl;
     v1 = 2 * v1;
     std::cout << "v1 = (" << v1.x << ", " << v1.y << ")" << std::endl;
-
+*/
+/*
     Vec2 v2 = v1 + 1;
     std::cout << "bool = " << (v1 == v2) << std::endl;
-    return 0;
+    std::cout << "v2 = " << v2 << std::endl;
 
+    int int_idx = 0;
+
+    std::cout << "x cord: " << v2[int_idx] << std::endl;
+    */
+    Vec2 v1{1.0, 2.0};
+    Vec2 v2{0.707, 0.707};
+
+    ++v1;
+    std::cout << "v1 = " << v1 << std::endl;
+
+    v1 = v2++;
+
+    std::cout << "v1 = " << v1 << " || v2 = " << v2 << std::endl;
+    //std::cout << v1 << " * " << v2 << " = " << double(v1 * v2) << std::endl;
+    return 0;
 };

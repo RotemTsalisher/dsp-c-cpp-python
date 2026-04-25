@@ -49,3 +49,5 @@ Generate Batch 2 (Subjects 7-12), mixing in logic from Batch 1.
 Repeat until the list is exhausted.
 
 Finalize with the "All-Subject Integration" workbook.
+
+IMPORTANT NOTE: USE TYPICALL USE CASES FOR EXERCISES OF THE DIFFERENT TOPICS!!
