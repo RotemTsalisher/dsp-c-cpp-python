@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Project Setup — From Zero to Hero</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; background: #f9fafb; color: #111; }
+    h1, h2, h3 { color: #1f2937; }
+    code, pre { background: #e5e7eb; padding: 8px; border-radius: 6px; display: block; overflow-x: auto; }
+    .box { background: #ffffff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body>
+
+<h1>🐍 Python Project Setup — From Zero to Hero</h1>
+
+<div class="box">
+<h2>🎯 Goal</h2>
+<ul>
+<li>Understand virtual environments (venv)</li>
+<li>Install dependencies</li>
+<li>Understand PYTHONPATH</li>
+<li>Run a project from README</li>
+</ul>
+</div>
+
+<div class="box">
+<h2>🧠 Part 1 — Concepts</h2>
+
+<h3>1. Virtual Environment (venv)</h3>
+<p>A virtual environment is an isolated Python environment for each project.</p>
+<pre>python -m venv venv</pre>
+
+<h3>2. Install Dependencies</h3>
+<pre>pip install -r requirements.txt</pre>
+
+<h3>3. Editable Install</h3>
+<pre>pip install -e .</pre>
+
+<h3>4. PYTHONPATH</h3>
+<p>Tell Python where your code lives.</p>
+<pre># Windows
+$env:PYTHONPATH="src"
+
+# Mac/Linux
+export PYTHONPATH=src</pre>
+
+<h3>5. CLI</h3>
+<pre>python main.py</pre>
+</div>
+
+<div class="box">
+<h2>🚀 Part 2 — Workflow</h2>
+
+<h3>Step 1 — Create venv</h3>
+<pre>python -m venv venv</pre>
+
+<h3>Step 2 — Activate</h3>
+<pre># Windows
+venv\Scripts\activate
+
+# Mac/Linux
+source venv/bin/activate</pre>
+
+<h3>Step 3 — Upgrade pip</h3>
+<pre>python -m pip install --upgrade pip</pre>
+
+<h3>Step 4 — Install deps</h3>
+<pre>pip install -r requirements.txt</pre>
+
+<h3>Step 5 — Install project</h3>
+<pre>pip install -e .</pre>
+
+<h3>Step 6 — Alternative</h3>
+<pre>$env:PYTHONPATH="src"</pre>
+
+<h3>Step 7 — Run</h3>
+<pre>python main.py</pre>
+</div>
+
+<div class="box">
+<h2>🧪 Exercises</h2>
+
+<h3>1. Create venv</h3>
+<pre>python -m venv venv</pre>
+
+<h3>2. Activate</h3>
+<pre>venv\Scripts\activate</pre>
+
+<h3>3. Install package</h3>
+<pre>pip install requests</pre>
+
+<h3>4. Freeze</h3>
+<pre>pip freeze &gt; requirements.txt</pre>
+
+<h3>5. Project structure</h3>
+<pre>project/
+  src/
+    my_app/
+      main.py</pre>
+
+<h3>6. Run with PYTHONPATH</h3>
+<pre>$env:PYTHONPATH="src"
+python -c "from my_app.main import run; run()"</pre>
+
+<h3>7. setup.py</h3>
+<pre>from setuptools import setup, find_packages
+
+setup(
+ name="my_app",
+ version="0.1",
+ packages=find_packages(where="src"),
+ package_dir={"": "src"},
+)</pre>
+
+<h3>8. Break it</h3>
+<p>Remove PYTHONPATH and uninstall package. Observe errors.</p>
+
+<h3>9. CLI</h3>
+<pre>entry_points={
+ 'console_scripts': ['myapp=my_app.main:run']
+}</pre>
+
+<h3>10. Full workflow</h3>
+<ol>
+<li>Create venv</li>
+<li>Activate</li>
+<li>Install deps</li>
+<li>Install project</li>
+<li>Run CLI</li>
+</ol>
+</div>
+
+<div class="box">
+<h2>🧠 Final Mental Model</h2>
+<ol>
+<li>Isolate environment</li>
+<li>Install dependencies</li>
+<li>Make project importable</li>
+<li>Run entry point</li>
+</ol>
+</div>
+
+</body>
+</html>

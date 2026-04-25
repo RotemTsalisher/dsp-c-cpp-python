@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Codec Exercise</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+        background-color: #f7f7f7;
+    }
+    h1, h2 {
+        color: #333;
+    }
+    .box {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    button {
+        padding: 10px 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        background-color: #007BFF;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    #solution {
+        display: none;
+        margin-top: 20px;
+        background: #272822;
+        color: #f8f8f2;
+        padding: 20px;
+        border-radius: 10px;
+        overflow-x: auto;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h1>🎯 C++ Exercise: Abstract Codec</h1>
+
+    <h2>Goal</h2>
+    <p>
+        Build a small polymorphic system for encoding audio frames using an abstract base class.
+    </p>
+
+    <h2>Requirements</h2>
+    <ul>
+        <li>Create an abstract class <code>Codec</code></li>
+        <li>It must contain:
+            <ul>
+                <li>A pure virtual function:<br>
+                    <code>virtual void encodeFrame(double const* input, int numSamples) = 0;</code>
+                </li>
+                <li>A <b>protected default constructor</b></li>
+                <li>A virtual destructor</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>Your Tasks</h2>
+    <ol>
+        <li>Implement a derived class <code>PCMCodec</code>
+            <ul>
+                <li>It should "encode" by printing the samples as-is</li>
+            </ul>
+        </li>
+
+        <li>Implement another derived class <code>QuantizedCodec</code>
+            <ul>
+                <li>It should convert samples into integers (simulate quantization)</li>
+            </ul>
+        </li>
+
+        <li>In <code>main()</code>:
+            <ul>
+                <li>Create a sample frame (array of doubles)</li>
+                <li>Use a <code>Codec*</code> pointer</li>
+                <li>Call <code>encodeFrame</code> on both implementations</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>Constraints</h2>
+    <ul>
+        <li>You must NOT instantiate <code>Codec</code> directly</li>
+        <li>You must use polymorphism (base pointer)</li>
+    </ul>
+
+    <button onclick="toggleSolution()">Show Solution</button>
+
+    <div id="solution">
+<pre><code>
+// ===== Solution =====
+
+#include &lt;iostream&gt;
+
+class Codec {
+public:
+    virtual ~Codec() = default;
+    virtual void encodeFrame(double const* input, int numSamples) = 0;
+
+protected:
+    Codec() = default;
+};
+
+class PCMCodec : public Codec {
+public:
+    void encodeFrame(double const* input, int numSamples) override {
+        std::cout &lt;&lt; "PCM: ";
+        for (int i = 0; i &lt; numSamples; ++i)
+            std::cout &lt;&lt; input[i] &lt;&lt; " ";
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+class QuantizedCodec : public Codec {
+public:
+    void encodeFrame(double const* input, int numSamples) override {
+        std::cout &lt;&lt; "Quantized: ";
+        for (int i = 0; i &lt; numSamples; ++i)
+            std::cout &lt;&lt; static_cast&lt;int&gt;(input[i] * 10) &lt;&lt; " ";
+        std::cout &lt;&lt; std::endl;
+    }
+};
+
+int main() {
+    double frame[] = {0.1, 0.5, -0.3, 0.8};
+
+    Codec* c1 = new PCMCodec();
+    Codec* c2 = new QuantizedCodec();
+
+    c1-&gt;encodeFrame(frame, 4);
+    c2-&gt;encodeFrame(frame, 4);
+
+    delete c1;
+    delete c2;
+}
+</code></pre>
+    </div>
+</div>
+
+<script>
+function toggleSolution() {
+    const sol = document.getElementById("solution");
+    sol.style.display = sol.style.display === "none" ? "block" : "none";
+}
+</script>
+
+</body>
+</html>

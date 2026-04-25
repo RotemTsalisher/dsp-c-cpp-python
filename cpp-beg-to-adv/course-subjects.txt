@@ -31,6 +31,7 @@
 - Classes: 'friend' in inharitance
 - Classes: resurrect members in a more relaxed access level in inheritance
 - Classes: Copy Contructors and inheritance
+- Classes: "Explicit" keyword
 - Classes: Virtual keyword and Polymorphism
 - Classes: Overload, Override and hiding
 - Classes: Polymorphism at different levels
