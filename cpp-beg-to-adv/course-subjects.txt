@@ -41,7 +41,7 @@
 - Classes: Abstract class and pure virtual functions
 - Classes: Abstract classes as interfaces
 - Classes: operator overloading (left and right, inheritance)
-- Classes: friends and operators
+- Classes: friends and operators (friend use cases)
 
 MISSING FOR NOW:
 - STL Library
