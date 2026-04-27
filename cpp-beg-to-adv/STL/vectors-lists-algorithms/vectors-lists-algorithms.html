@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ STL Masterclass v2</title>
+<style>
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    margin:0;
+    background:#f4f7fb;
+    color:#222;
+    line-height:1.65;
+}
+header{
+    background:#0f172a;
+    color:white;
+    padding:35px;
+    text-align:center;
+}
+section{
+    max-width:1150px;
+    margin:22px auto;
+    background:white;
+    padding:30px;
+    border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.08);
+}
+h1,h2,h3{
+    color:#0f172a;
+}
+.method{
+    background:#eef4ff;
+    border-left:6px solid #2563eb;
+    padding:15px;
+    margin:14px 0;
+    border-radius:8px;
+}
+.exercise{
+    background:#fffbe8;
+    border-left:6px solid #f59e0b;
+    padding:16px;
+    margin:18px 0;
+    border-radius:8px;
+}
+.challenge{
+    background:#ecfdf5;
+    border-left:6px solid #10b981;
+    padding:18px;
+    margin:18px 0;
+    border-radius:8px;
+}
+pre{
+    background:#111827;
+    color:#e5e7eb;
+    padding:14px;
+    border-radius:10px;
+    overflow-x:auto;
+}
+code{
+    background:#eef2ff;
+    padding:2px 5px;
+    border-radius:5px;
+}
+details{
+    margin-top:10px;
+}
+summary{
+    cursor:pointer;
+    font-weight:bold;
+    color:#1d4ed8;
+}
+ul{
+    padding-left:20px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>C++ STL MASTERCLASS v2</h1>
+<p>Vectors • Lists • Algorithms</p>
+<p>Zero to Hero • Full Theory • Examples for Every Method • Exercises • Challenges</p>
+</header>
+
+<section>
+<h2>What is STL?</h2>
+
+<p>
+STL = <b>Standard Template Library</b>.  
+It gives ready-made containers and algorithms so you don’t need to reinvent data structures.
+</p>
+
+<ul>
+<li><b>Containers</b>: vector, list, map, set...</li>
+<li><b>Algorithms</b>: sort, find, count...</li>
+<li><b>Iterators</b>: objects used to move through containers</li>
+</ul>
+
+<p>
+Learning STL makes your C++ code shorter, cleaner, faster, and more professional.
+</p>
+</section>
+
+<section>
+<h1>PART 1 — VECTOR MASTERCLASS</h1>
+
+<h2>Theory</h2>
+
+<p>
+A <code>vector</code> is a dynamic array.
+It stores items in continuous memory like arrays, but can resize automatically.
+</p>
+
+<p><b>Best for:</b></p>
+<ul>
+<li>Fast indexing</li>
+<li>Appending values</li>
+<li>General-purpose storage</li>
+</ul>
+
+<pre>
+#include &lt;vector&gt;
+using namespace std;
+</pre>
+
+<h2>Methods (Every Method with Examples)</h2>
+
+<div class="method">
+<h3>push_back(x)</h3>
+<p>Add item to end.</p>
+<pre>
+vector&lt;int&gt; v;
+v.push_back(5);
+v.push_back(9);
+// {5,9}
+</pre>
+</div>
+
+<div class="method">
+<h3>pop_back()</h3>
+<p>Remove last item.</p>
+<pre>
+vector&lt;int&gt; v = {1,2,3};
+v.pop_back();
+// {1,2}
+</pre>
+</div>
+
+<div class="method">
+<h3>size()</h3>
+<p>Returns number of elements.</p>
+<pre>
+vector&lt;int&gt; v = {7,8,9};
+cout &lt;&lt; v.size(); // 3
+</pre>
+</div>
+
+<div class="method">
+<h3>empty()</h3>
+<p>Checks if vector has no items.</p>
+<pre>
+vector&lt;int&gt; v;
+cout &lt;&lt; v.empty(); // 1 (true)
+</pre>
+</div>
+
+<div class="method">
+<h3>front() / back()</h3>
+<pre>
+vector&lt;int&gt; v = {10,20,30};
+cout &lt;&lt; v.front(); // 10
+cout &lt;&lt; v.back();  // 30
+</pre>
+</div>
+
+<div class="method">
+<h3>[] and at()</h3>
+<p><code>at()</code> gives bounds checking.</p>
+<pre>
+vector&lt;int&gt; v = {4,5,6};
+
+cout &lt;&lt; v[1];    // 5
+cout &lt;&lt; v.at(2); // 6
+</pre>
+</div>
+
+<div class="method">
+<h3>insert()</h3>
+<p>Insert before position.</p>
+<pre>
+vector&lt;int&gt; v = {1,3};
+v.insert(v.begin()+1, 2);
+// {1,2,3}
+</pre>
+</div>
+
+<div class="method">
+<h3>erase()</h3>
+<p>Erase one element.</p>
+<pre>
+vector&lt;int&gt; v = {1,2,3};
+v.erase(v.begin()+1);
+// {1,3}
+</pre>
+</div>
+
+<div class="method">
+<h3>clear()</h3>
+<pre>
+vector&lt;int&gt; v = {1,2};
+v.clear();
+// {}
+</pre>
+</div>
+
+<h2>7 Exercises</h2>
+
+<div class="exercise">
+<h3>1. Build a vector</h3>
+Create empty vector. Add 10,20,30 and print.
+<details><summary>Solution</summary>
+<pre>
+vector&lt;int&gt; v;
+v.push_back(10);
+v.push_back(20);
+v.push_back(30);
+
+for(int x : v) cout &lt;&lt; x &lt;&lt; " ";
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>2. Print first and last</h3>
+<details><summary>Solution</summary>
+<pre>
+vector&lt;int&gt; v = {5,8,9};
+cout &lt;&lt; v.front();
+cout &lt;&lt; v.back();
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>3. Sum values</h3>
+<details><summary>Solution</summary>
+<pre>
+int sum=0;
+for(int x : v) sum += x;
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>4. Double every element</h3>
+<details><summary>Solution</summary>
+<pre>
+for(int& x : v) x *= 2;
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>5. Remove last item</h3>
+<details><summary>Solution</summary>
+<pre>
+v.pop_back();
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>6. Insert 99 in middle</h3>
+<details><summary>Solution</summary>
+<pre>
+v.insert(v.begin()+1,99);
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>7. Reverse print manually</h3>
+<details><summary>Solution</summary>
+<pre>
+for(int i=v.size()-1;i&gt;=0;i--)
+    cout &lt;&lt; v[i] &lt;&lt; " ";
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>PART 2 — LIST MASTERCLASS</h1>
+
+<h2>Theory</h2>
+
+<p>
+A <code>list</code> is a doubly linked list.
+Each item knows previous and next item.
+</p>
+
+<p><b>Best for:</b></p>
+<ul>
+<li>Frequent insertion/removal</li>
+<li>Unknown size changing often</li>
+</ul>
+
+<p><b>Not good for:</b></p>
+<ul>
+<li>Indexing like <code>list[5]</code></li>
+</ul>
+
+<pre>
+#include &lt;list&gt;
+</pre>
+
+<h2>Methods</h2>
+
+<div class="method">
+<h3>push_front(x)</h3>
+<pre>
+list&lt;int&gt; l;
+l.push_front(5);
+</pre>
+</div>
+
+<div class="method">
+<h3>push_back(x)</h3>
+<pre>
+l.push_back(10);
+</pre>
+</div>
+
+<div class="method">
+<h3>pop_front()</h3>
+<pre>
+l.pop_front();
+</pre>
+</div>
+
+<div class="method">
+<h3>pop_back()</h3>
+<pre>
+l.pop_back();
+</pre>
+</div>
+
+<div class="method">
+<h3>remove(value)</h3>
+<pre>
+list&lt;int&gt; l = {1,2,2,3};
+l.remove(2);
+// {1,3}
+</pre>
+</div>
+
+<div class="method">
+<h3>sort()</h3>
+<pre>
+list&lt;int&gt; l = {4,1,3};
+l.sort();
+</pre>
+</div>
+
+<div class="method">
+<h3>reverse()</h3>
+<pre>
+l.reverse();
+</pre>
+</div>
+
+<h2>7 Exercises</h2>
+
+<div class="exercise">
+<h3>1. Build and print list</h3>
+<details><summary>Solution</summary>
+<pre>
+list&lt;int&gt; l = {1,2,3};
+for(int x:l) cout&lt;&lt;x&lt;&lt;" ";
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>2. Add urgent item at front</h3>
+<details><summary>Solution</summary>
+<pre>
+l.push_front(99);
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>3. Remove last</h3>
+<details><summary>Solution</summary>
+<pre>
+l.pop_back();
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>4. Sort numbers</h3>
+<details><summary>Solution</summary>
+<pre>
+l.sort();
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>5. Reverse list</h3>
+<details><summary>Solution</summary>
+<pre>
+l.reverse();
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>6. Remove all 7</h3>
+<details><summary>Solution</summary>
+<pre>
+l.remove(7);
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>7. Count manually</h3>
+<details><summary>Solution</summary>
+<pre>
+int c=0;
+for(int x:l) c++;
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>PART 3 — ALGORITHMS MASTERCLASS</h1>
+
+<h2>Theory</h2>
+
+<p>
+Algorithms work with iterators. They make code elegant and reusable.
+</p>
+
+<pre>
+#include &lt;algorithm&gt;
+</pre>
+
+<h2>Methods</h2>
+
+<div class="method">
+<h3>sort()</h3>
+<pre>
+sort(v.begin(), v.end());
+</pre>
+</div>
+
+<div class="method">
+<h3>sort descending</h3>
+<pre>
+sort(v.begin(), v.end(), greater&lt;int&gt;());
+</pre>
+</div>
+
+<div class="method">
+<h3>find()</h3>
+<pre>
+auto it = find(v.begin(), v.end(), 8);
+</pre>
+</div>
+
+<div class="method">
+<h3>count()</h3>
+<pre>
+int c = count(v.begin(), v.end(), 5);
+</pre>
+</div>
+
+<div class="method">
+<h3>reverse()</h3>
+<pre>
+reverse(v.begin(), v.end());
+</pre>
+</div>
+
+<div class="method">
+<h3>max_element()</h3>
+<pre>
+cout &lt;&lt; *max_element(v.begin(), v.end());
+</pre>
+</div>
+
+<div class="method">
+<h3>min_element()</h3>
+<pre>
+cout &lt;&lt; *min_element(v.begin(), v.end());
+</pre>
+</div>
+
+<h2>7 Exercises</h2>
+
+<div class="exercise"><h3>1. Sort ascending</h3>
+<details><summary>Solution</summary><pre>sort(v.begin(), v.end());</pre></details></div>
+
+<div class="exercise"><h3>2. Sort descending</h3>
+<details><summary>Solution</summary><pre>sort(v.begin(), v.end(), greater&lt;int&gt;());</pre></details></div>
+
+<div class="exercise"><h3>3. Find number 10</h3>
+<details><summary>Solution</summary><pre>find(v.begin(), v.end(), 10);</pre></details></div>
+
+<div class="exercise"><h3>4. Count 7s</h3>
+<details><summary>Solution</summary><pre>count(v.begin(), v.end(), 7);</pre></details></div>
+
+<div class="exercise"><h3>5. Reverse values</h3>
+<details><summary>Solution</summary><pre>reverse(v.begin(), v.end());</pre></details></div>
+
+<div class="exercise"><h3>6. Largest item</h3>
+<details><summary>Solution</summary><pre>*max_element(v.begin(), v.end());</pre></details></div>
+
+<div class="exercise"><h3>7. Smallest item</h3>
+<details><summary>Solution</summary><pre>*min_element(v.begin(), v.end());</pre></details></div>
+
+</section>
+
+<section>
+<h1>FINAL ADVANCED CHALLENGES (4)</h1>
+
+<div class="challenge">
+<h3>Challenge 1 — Unique Sorted Vector</h3>
+Input 10 numbers into vector.  
+Sort them. Remove duplicates. Print result.
+<details><summary>Solution</summary>
+<pre>
+sort(v.begin(), v.end());
+v.erase(unique(v.begin(), v.end()), v.end());
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 2 — Task Manager</h3>
+Use list of strings. Add urgent task front, remove completed task.
+<details><summary>Solution</summary>
+<pre>
+list&lt;string&gt; tasks = {"Study","Gym"};
+tasks.push_front("Urgent");
+tasks.remove("Gym");
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 3 — Stats Engine</h3>
+Given vector numbers, print max/min/avg.
+<details><summary>Solution</summary>
+<pre>
+int sum=0;
+for(int x:v) sum+=x;
+
+cout &lt;&lt; *max_element(v.begin(),v.end());
+cout &lt;&lt; *min_element(v.begin(),v.end());
+cout &lt;&lt; (double)sum/v.size();
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 4 — Name Sorter</h3>
+Sort vector of names by shortest length first.
+<details><summary>Solution</summary>
+<pre>
+sort(names.begin(), names.end(),
+[](string a, string b){
+    return a.size() &lt; b.size();
+});
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>What To Master Next</h1>
+
+<ul>
+<li>map / unordered_map</li>
+<li>set / unordered_set</li>
+<li>lambda expressions</li>
+<li>custom comparators</li>
+<li>iterators deeply</li>
+<li>pairs / tuples</li>
+</ul>
+
+<p><b>If you master this workbook by coding everything yourself, your STL fundamentals will be strong.</b></p>
+</section>
+
+</body>
+</html>

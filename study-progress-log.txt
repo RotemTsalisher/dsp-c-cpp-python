@@ -1,3 +1,2 @@
-- finished operator overloading in cpp
-- moving to friends operators in cpp
+- STL containers
 - after that: begin c course

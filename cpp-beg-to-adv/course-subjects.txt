@@ -43,7 +43,8 @@
 - Classes: operator overloading (left and right, inheritance)
 - Classes: friends and operators (friend use cases)
 
-MISSING FOR NOW:
-- STL Library
+- STL: sequence containers - Vectors fundementals
+- STL: 
+
 - std::string vs std::string_view
 
