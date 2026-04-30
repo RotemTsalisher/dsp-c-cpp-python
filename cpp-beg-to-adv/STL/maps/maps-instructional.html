@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ STL Maps Workbook</title>
+<style>
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    margin:0;
+    background:#f4f7fb;
+    color:#222;
+    line-height:1.65;
+}
+header{
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:35px;
+}
+section{
+    max-width:1150px;
+    margin:22px auto;
+    background:white;
+    padding:30px;
+    border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.08);
+}
+h1,h2,h3{
+    color:#111827;
+}
+.topic{
+    background:#eef2ff;
+    border-left:6px solid #4f46e5;
+    padding:16px;
+    margin:16px 0;
+    border-radius:8px;
+}
+.exercise{
+    background:#fffbe8;
+    border-left:6px solid #f59e0b;
+    padding:16px;
+    margin:18px 0;
+    border-radius:8px;
+}
+.challenge{
+    background:#ecfdf5;
+    border-left:6px solid #10b981;
+    padding:16px;
+    margin:18px 0;
+    border-radius:8px;
+}
+pre{
+    background:#111827;
+    color:#e5e7eb;
+    padding:14px;
+    border-radius:10px;
+    overflow-x:auto;
+}
+code{
+    background:#eef2ff;
+    padding:2px 5px;
+    border-radius:5px;
+}
+details{
+    margin-top:10px;
+}
+summary{
+    cursor:pointer;
+    font-weight:bold;
+    color:#1d4ed8;
+}
+ul{
+    padding-left:22px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>C++ STL MAPS MASTERCLASS</h1>
+<p>map • multimap • unordered_map • unordered_multimap</p>
+<p>Add-on Workbook to Previous STL Masterclass</p>
+</header>
+
+<section>
+<h2>Introduction</h2>
+
+<p>
+Associative containers store data as <b>key-value pairs</b>.
+Instead of indexing by position like vectors, you access values using keys.
+</p>
+
+<p>
+Example:
+</p>
+
+<pre>
+map&lt;string,int&gt; age;
+
+age["David"] = 31;
+age["Sarah"] = 27;
+</pre>
+
+<p>
+Here:
+</p>
+
+<ul>
+<li><code>"David"</code> is the key</li>
+<li><code>31</code> is the value</li>
+</ul>
+
+<p>
+Maps are extremely useful for:
+</p>
+
+<ul>
+<li>Dictionaries</li>
+<li>Frequency counters</li>
+<li>ID lookups</li>
+<li>Settings storage</li>
+<li>Fast searching by key</li>
+</ul>
+
+</section>
+
+<section>
+<h1>PART 1 — Core Syntax and Setup</h1>
+
+<div class="topic">
+<h3>Headers</h3>
+
+<pre>
+#include &lt;map&gt;
+#include &lt;unordered_map&gt;
+</pre>
+
+<ul>
+<li><code>map</code></li>
+<li><code>multimap</code></li>
+<li><code>unordered_map</code></li>
+<li><code>unordered_multimap</code></li>
+</ul>
+</div>
+
+<div class="topic">
+<h3>Declaration</h3>
+
+<pre>
+map&lt;int,string&gt; students;
+map&lt;string,double&gt; prices;
+unordered_map&lt;string,int&gt; score;
+</pre>
+</div>
+
+<div class="topic">
+<h3>std::pair and make_pair</h3>
+
+<pre>
+pair&lt;string,int&gt; p = make_pair("Book", 5);
+
+cout &lt;&lt; p.first;   // Book
+cout &lt;&lt; p.second;  // 5
+</pre>
+</div>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<h3>1. Create a map</h3>
+Create a map from string to int for ages.
+Store 3 people and print one value.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;string,int&gt; age;
+
+age["Dan"] = 30;
+age["Maya"] = 24;
+age["Noa"] = 28;
+
+cout &lt;&lt; age["Maya"];
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>2. Practice pair</h3>
+Create pair of city and population.
+
+<details><summary>Solution</summary>
+<pre>
+pair&lt;string,int&gt; p = make_pair("TelAviv", 450000);
+
+cout &lt;&lt; p.first;
+cout &lt;&lt; p.second;
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>PART 2 — Insertion and Updating</h1>
+
+<div class="topic">
+<h3>Subscript Operator []</h3>
+
+<p>
+Use <code>[]</code> to insert or update values in <code>map</code>.
+</p>
+
+<pre>
+map&lt;string,int&gt; m;
+
+m["A"] = 5;   // insert
+m["A"] = 9;   // update
+</pre>
+</div>
+
+<div class="topic">
+<h3>insert()</h3>
+
+<p>
+Insert a key-value pair.
+If key already exists in standard map, insertion is ignored.
+</p>
+
+<pre>
+map&lt;int,string&gt; m;
+
+m.insert(make_pair(1,"One"));
+m.insert(make_pair(1,"Again")); // ignored
+</pre>
+</div>
+
+<div class="topic">
+<h3>Iteration with Iterators</h3>
+
+<pre>
+map&lt;string,int&gt; m;
+
+m["A"] = 10;
+m["B"] = 20;
+
+for(auto it = m.begin(); it != m.end(); ++it)
+{
+    cout &lt;&lt; it-&gt;first  &lt;&lt; " ";
+    cout &lt;&lt; it-&gt;second &lt;&lt; endl;
+}
+</pre>
+</div>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<h3>3. Update Existing Key</h3>
+Create map and update same key twice.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;string,int&gt; m;
+
+m["Score"] = 10;
+m["Score"] = 50;
+
+cout &lt;&lt; m["Score"];
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>4. Test insert duplicate</h3>
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;int,string&gt; m;
+
+m.insert(make_pair(7,"First"));
+m.insert(make_pair(7,"Second"));
+
+cout &lt;&lt; m[7]; // First
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>5. Print All Keys and Values</h3>
+
+<details><summary>Solution</summary>
+<pre>
+for(auto it=m.begin(); it!=m.end(); ++it)
+{
+    cout &lt;&lt; it-&gt;first &lt;&lt; " : "
+         &lt;&lt; it-&gt;second &lt;&lt; endl;
+}
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>PART 3 — Internal Structures</h1>
+
+<div class="topic">
+<h3>map uses Red-Black Tree</h3>
+
+<ul>
+<li>Automatically sorted by key</li>
+<li>Search / insert typically O(log n)</li>
+</ul>
+
+<pre>
+map&lt;int,string&gt; m;
+
+m[5]="A";
+m[1]="B";
+m[9]="C";
+</pre>
+
+<p>
+Output order when iterating:
+</p>
+
+<pre>
+1 B
+5 A
+9 C
+</pre>
+</div>
+
+<div class="topic">
+<h3>unordered_map uses Hash Table</h3>
+
+<ul>
+<li>No sorted order</li>
+<li>Average O(1) access</li>
+<li>Usually faster lookups</li>
+</ul>
+
+<pre>
+unordered_map&lt;int,string&gt; u;
+</pre>
+</div>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<h3>6. Ordering Test</h3>
+Insert keys 9,1,5 into map and print.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;int,string&gt; m;
+
+m[9]="x";
+m[1]="y";
+m[5]="z";
+
+for(auto it=m.begin(); it!=m.end(); ++it)
+    cout &lt;&lt; it-&gt;first &lt;&lt; " ";
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>7. unordered_map Test</h3>
+Insert same keys and compare order.
+
+<details><summary>Solution</summary>
+<pre>
+unordered_map&lt;int,string&gt; u;
+
+u[9]="x";
+u[1]="y";
+u[5]="z";
+
+for(auto it=u.begin(); it!=u.end(); ++it)
+    cout &lt;&lt; it-&gt;first &lt;&lt; " ";
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>PART 4 — Multi Containers</h1>
+
+<div class="topic">
+<h3>multimap</h3>
+
+<p>
+Allows multiple values for same key.
+</p>
+
+<pre>
+multimap&lt;string,int&gt; mm;
+
+mm.insert(make_pair("Math",90));
+mm.insert(make_pair("Math",95));
+</pre>
+</div>
+
+<div class="topic">
+<h3>unordered_multimap</h3>
+
+<p>
+Same idea, but hash-based and unordered.
+</p>
+</div>
+
+<div class="topic">
+<h3>No [] Operator in multimap</h3>
+
+<p>
+Because many entries may share the same key, C++ cannot know which one to update.
+</p>
+</div>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<h3>8. Duplicate Keys in multimap</h3>
+
+<details><summary>Solution</summary>
+<pre>
+multimap&lt;string,int&gt; mm;
+
+mm.insert(make_pair("A",10));
+mm.insert(make_pair("A",20));
+</pre>
+</details>
+</div>
+
+<div class="exercise">
+<h3>9. Iterate multimap</h3>
+
+<details><summary>Solution</summary>
+<pre>
+for(auto it=mm.begin(); it!=mm.end(); ++it)
+{
+    cout &lt;&lt; it-&gt;first &lt;&lt; " "
+         &lt;&lt; it-&gt;second &lt;&lt; endl;
+}
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>FINAL COMPARATIVE CHALLENGES (4)</h1>
+
+<div class="challenge">
+<h3>Challenge 1 — Frequency Counter</h3>
+Given vector of words, count how many times each word appears using map.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;string,int&gt; freq;
+
+for(string w : words)
+    freq[w]++;
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 2 — Student Grades</h3>
+Store names and grades. Update one student. Print sorted by name.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;string,int&gt; g;
+
+g["Dan"]=80;
+g["Maya"]=95;
+g["Dan"]=88;
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 3 — Duplicate Key Test</h3>
+Compare map vs multimap with key 5 inserted three times.
+
+<details><summary>Solution</summary>
+<pre>
+map&lt;int,string&gt; m;
+m.insert({5,"A"});
+m.insert({5,"B"});
+
+multimap&lt;int,string&gt; mm;
+mm.insert({5,"A"});
+mm.insert({5,"B"});
+</pre>
+</details>
+</div>
+
+<div class="challenge">
+<h3>Challenge 4 — Fast Lookup Benchmark Idea</h3>
+Store 10000 IDs in map and unordered_map.
+Search random IDs and compare speed.
+
+<details><summary>Solution</summary>
+<pre>
+Use chrono timers and compare lookup loops.
+unordered_map usually faster.
+</pre>
+</details>
+</div>
+
+</section>
+
+<section>
+<h1>What to Master Next</h1>
+
+<ul>
+<li><code>find()</code></li>
+<li><code>erase()</code></li>
+<li><code>count()</code></li>
+<li><code>lower_bound()</code></li>
+<li><code>equal_range()</code></li>
+<li>Custom key types</li>
+<li>Hash functions</li>
+</ul>
+
+<p>
+If you code every exercise yourself, your map fundamentals will become strong and practical.
+</p>
+
+</section>
+
+</body>
+</html>

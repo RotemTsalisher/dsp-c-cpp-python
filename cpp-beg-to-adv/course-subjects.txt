@@ -44,7 +44,10 @@
 - Classes: friends and operators (friend use cases)
 
 - STL: sequence containers - Vectors fundementals
-- STL: 
+- STL: list fundementals
+- STL: algorithm
+- STL: maps fundementals
+
 
 - std::string vs std::string_view
 
