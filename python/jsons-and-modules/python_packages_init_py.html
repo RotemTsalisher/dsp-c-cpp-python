@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Packages and __init__.py — Zero to Hero</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --text: #e7ecf3;
+      --muted: #9aa8b8;
+      --accent: #c9a227;
+      --code-bg: #0d1117;
+      --border: #2d3a4d;
+      --ok: #6abf69;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      line-height: 1.65;
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1 { font-size: 1.85rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h2 { font-size: 1.35rem; color: var(--accent); margin-top: 2.25rem; }
+    h3 { font-size: 1.1rem; color: var(--muted); margin-top: 1.5rem; }
+    p { margin: 0.85rem 0; }
+    ul, ol { margin: 0.5rem 0 1rem; padding-left: 1.35rem; }
+    li { margin: 0.35rem 0; }
+    code, pre {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 0.88rem;
+    }
+    code {
+      background: var(--surface);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    pre code { background: none; border: none; padding: 0; }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .exercise {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin: 1.25rem 0;
+      background: var(--surface);
+    }
+    .exercise h3 { margin-top: 0; color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+    th, td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+    th { background: var(--surface); }
+    a { color: #7eb6ff; }
+    .toc { background: var(--surface); padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); }
+    .toc ol { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+
+<h1>Python Packages and <code>__init__.py</code></h1>
+<p><strong>Audience:</strong> You can run Python files but are unsure why folders in projects contain <code>__init__.py</code> and what those files do. This guide explains namespaces, packages, imports, and the modern rules so you can read and design project layout like an experienced Python developer.</p>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#modules">Modules: one file, one namespace</a></li>
+    <li><a href="#packages">Packages: directories of modules</a></li>
+    <li><a href="#init-role">What <code>__init__.py</code> is for</a></li>
+    <li><a href="#implicit">Namespace packages (when <code>__init__.py</code> is optional)</a></li>
+    <li><a href="#patterns">Common patterns in real projects</a></li>
+    <li><a href="#relative">Relative imports inside packages</a></li>
+    <li><a href="#pitfalls">Pitfalls and mental models</a></li>
+    <li><a href="#exercises">Exercises (build mastery)</a></li>
+  </ol>
+</nav>
+
+<h2 id="modules">1. Modules: one file, one namespace</h2>
+<p>A Python <strong>module</strong> is typically a single <code>.py</code> file. When you <code>import mymodule</code>, Python executes <code>mymodule.py</code> (once) and binds names (functions, classes, variables) into a module object you access as <code>mymodule.something</code>.</p>
+<p>The module’s file location on disk determines how it is found (via <code>sys.path</code>, the list of directories Python searches). You do not need <code>__init__.py</code> for a lone file on the path; you need correct path layout for imports to resolve.</p>
+
+<h2 id="packages">2. Packages: directories of modules</h2>
+<p>A <strong>package</strong> is a way to group related modules under a common name so you can write hierarchical imports:</p>
+<pre><code>import mypkg.core
+from mypkg.utils import helper</code></pre>
+<p>Here <code>mypkg</code> is the top-level package. On disk you usually have a directory:</p>
+<pre><code>mypkg/
+  __init__.py
+  core.py
+  utils.py</code></pre>
+<p>Each <code>.py</code> file inside (that is meant to be imported) is a submodule. Subdirectories can be subpackages the same way, forming a tree.</p>
+
+<h2 id="init-role">3. What <code>__init__.py</code> is for</h2>
+<p><code>__init__.py</code> is a regular Python file with a special <strong>name</strong>. When Python imports a package directory, it executes <code>__init__.py</code> for that package (if present and relevant to the import mode). That gives you a hook to control what the package name means to outsiders.</p>
+<p><strong>Roles it often plays:</strong></p>
+<ul>
+  <li><strong>Mark a directory as a package (classic / “regular” packages).</strong> Historically, an empty <code>__init__.py</code> was enough to tell Python “this folder is a package.” Many teams still keep the file for clarity and tooling even when it could be omitted in some setups.</li>
+  <li><strong>Re-export a clean public API.</strong> You can import submodules inside <code>__init__.py</code> and expose names at the package level so users write <code>from mypkg import foo</code> instead of drilling into internal paths.</li>
+  <li><strong>Run package-level setup.</strong> Rarely heavy work; more often registering plugins, setting <code>__version__</code>, or configuring subpackages. Avoid slow side effects on import unless the project clearly intends it.</li>
+  <li><strong>Document intent.</strong> A short docstring at the top of <code>__init__.py</code> describes the package for <code>help(mypkg)</code> and for readers browsing the repo.</li>
+</ul>
+<p><strong>Example — minimal package surface:</strong></p>
+<pre><code># mypkg/__init__.py
+"""Public API for mypkg."""
+
+from mypkg.core import main as run
+from mypkg import __version__
+
+__all__ = ["run", "__version__"]</code></pre>
+<p><code>__all__</code> documents which names are intended when someone writes <code>from mypkg import *</code> (discouraged in application code, but still a useful signal).</p>
+
+<h2 id="implicit">4. Namespace packages (when <code>__init__.py</code> is optional)</h2>
+<p>Python 3.3+ supports <strong>namespace packages</strong> (PEP 420): certain directory layouts without <code>__init__.py</code> can still participate in imports when combined with other path entries. Libraries that split code across multiple install locations use this.</p>
+<div class="note">
+  <strong>Practical rule:</strong> For your own application and most internal libraries, using <code>__init__.py</code> in each package directory remains the clearest, most compatible choice. Omitting it is a deliberate packaging decision, not a default shortcut for beginners.
+</div>
+
+<h2 id="patterns">5. Common patterns in real projects</h2>
+<table>
+  <thead><tr><th>Pattern</th><th>What you might see in <code>__init__.py</code></th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Empty or near-empty file</td><td><code># makes this a package</code> or nothing</td><td>Directory is a package; submodules imported explicitly.</td></tr>
+    <tr><td>Barrel exports</td><td><code>from .module_a import ClassA</code></td><td>Stable, short import paths for users.</td></tr>
+    <tr><td>Lazy / guarded imports</td><td>Import heavy deps only inside functions</td><td>Faster startup when optional features are unused.</td></tr>
+    <tr><td>Version string</td><td><code>__version__ = "1.2.0"</code></td><td>Single place for package version metadata.</td></tr>
+  </tbody>
+</table>
+<p>The leading dot in <code>from .module_a import ...</code> means “relative to this same package”; see the next section.</p>
+
+<h2 id="relative">6. Relative imports inside packages</h2>
+<p>Inside package code, sibling modules are often imported with relative syntax:</p>
+<pre><code># inside mypkg/core.py
+from .utils import helper      # mypkg.utils
+from ..otherpkg import x       # parent of mypkg (only valid in a package)</code></pre>
+<p>Relative imports only work for modules loaded as part of a package; running a file directly as a script can break deep relative imports depending on how it is launched. That is a frequent source of <code>ImportError: attempted relative import beyond top-level package</code> when structure and launch method disagree.</p>
+
+<h2 id="pitfalls">7. Pitfalls and mental models</h2>
+<ul>
+  <li><strong>Circular imports:</strong> Package A imports B, B imports A during initialization. Sometimes solvable by local imports inside functions or restructuring layers.</li>
+  <li><strong>Heavy work in <code>__init__.py</code>:</strong> Every <code>import mypkg</code> pays that cost. Keep package init lightweight unless designed otherwise.</li>
+  <li><strong>Confusing public API:</strong> Re-exporting too much from <code>__init__.py</code> hides where code lives; balance convenience with discoverability.</li>
+  <li><strong>Scripts vs packages:</strong> Running <code>python mypkg/foo.py</code> may not set up package context the same as <code>python -m mypkg.foo</code>. Prefer <code>-m</code> for package-internal modules when the project documents that workflow.</li>
+</ul>
+
+<h2 id="exercises">8. Exercises (work through in order)</h2>
+<p>Create a throwaway folder (not necessarily inside a large production repo) so you can experiment freely.</p>
+
+<div class="exercise">
+  <h3>Exercise 1 — Smallest package</h3>
+  <p>Create <code>demo_pkg/__init__.py</code> (can be empty) and <code>demo_pkg/hello.py</code> with a function <code>say()</code> that returns a string. From a sibling script at the project root, add the root to path if needed (or run with <code>PYTHONPATH</code>) and execute <code>from demo_pkg.hello import say; print(say())</code>.</p>
+  <p><strong>Goal:</strong> See how a directory becomes importable as a package.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 2 — Package docstring</h3>
+  <p>Add a module-level docstring to <code>demo_pkg/__init__.py</code> describing the package. In a REPL, <code>import demo_pkg</code> then <code>help(demo_pkg)</code> or <code>demo_pkg.__doc__</code>.</p>
+  <p><strong>Goal:</strong> Connect <code>__init__.py</code> to the object bound to the package name.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 3 — Re-export API</h3>
+  <p>In <code>__init__.py</code>, import <code>say</code> from <code>hello</code> and list it in <code>__all__</code>. Confirm <code>from demo_pkg import say</code> works.</p>
+  <p><strong>Goal:</strong> Practice the barrel-export pattern used in many real libraries.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 4 — Nested subpackage</h3>
+  <p>Add <code>demo_pkg/tools/__init__.py</code> and <code>demo_pkg/tools/mathish.py</code> with one function. Import it as <code>from demo_pkg.tools.mathish import ...</code>.</p>
+  <p><strong>Goal:</strong> Internalize multi-level package trees.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 5 — Relative import</h3>
+  <p>Inside <code>demo_pkg/tools/mathish.py</code>, import something from <code>demo_pkg/hello.py</code> using a relative import (e.g. <code>from ..hello import say</code>). Call it from a function.</p>
+  <p><strong>Goal:</strong> Read and write dotted relative imports without copying path strings.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 6 — <code>python -m</code> vs direct script</h3>
+  <p>Add <code>demo_pkg/main.py</code> that imports from the package using relative or absolute imports as appropriate. Run it as <code>python -m demo_pkg.main</code> from the parent directory. Compare with <code>python demo_pkg/main.py</code> and note any import errors; adjust until you understand why.</p>
+  <p><strong>Goal:</strong> Expert-level comfort with how Python sets <code>__package__</code> and <code>sys.path</code> for each launch style.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 7 — Controlled side effect</h3>
+  <p>In <code>__init__.py</code>, set <code>demo_pkg.__version__ = "0.0.1"</code> and print a one-line log only when an environment variable <code>DEMO_PKG_DEBUG</code> is set. Verify import behavior with and without the variable.</p>
+  <p><strong>Goal:</strong> Learn to use package init deliberately instead of accidentally running expensive code on every import.</p>
+</div>
+
+<p style="margin-top:2.5rem;color:var(--muted);font-size:0.9rem;">You are “expert enough” when you can open any repo tree, predict import paths from layout and <code>__init__.py</code> contents, choose between absolute and relative imports consciously, and debug import and circular-dependency issues without random shuffling of files.</p>
+
+</body>
+</html>

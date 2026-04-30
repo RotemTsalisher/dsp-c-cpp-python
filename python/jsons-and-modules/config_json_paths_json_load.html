@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration JSON, Paths, and json.load — Zero to Hero</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --text: #e7ecf3;
+      --muted: #9aa8b8;
+      --accent: #5b9bd5;
+      --code-bg: #0d1117;
+      --border: #2d3a4d;
+      --ok: #6abf69;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      line-height: 1.65;
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1 { font-size: 1.85rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h2 { font-size: 1.35rem; color: var(--accent); margin-top: 2.25rem; }
+    h3 { font-size: 1.1rem; color: var(--muted); margin-top: 1.5rem; }
+    p { margin: 0.85rem 0; }
+    ul, ol { margin: 0.5rem 0 1rem; padding-left: 1.35rem; }
+    li { margin: 0.35rem 0; }
+    code, pre {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 0.88rem;
+    }
+    code {
+      background: var(--surface);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    pre code { background: none; border: none; padding: 0; }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .exercise {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin: 1.25rem 0;
+      background: var(--surface);
+    }
+    .exercise h3 { margin-top: 0; color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+    th, td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; }
+    th { background: var(--surface); }
+    a { color: var(--accent); }
+    .toc { background: var(--surface); padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border); }
+    .toc ol { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+
+<h1>Configuration JSON, File Paths, and <code>json.load</code></h1>
+<p><strong>Audience:</strong> You are comfortable running Python but have not yet internalized how projects load settings from JSON files on disk. This guide builds that skill from first principles to a level where you can read and write this pattern confidently in real codebases.</p>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#why">Why store configuration in JSON?</a></li>
+    <li><a href="#json-basics">JSON syntax and Python’s mapping</a></li>
+    <li><a href="#files">Files, paths, and the working directory</a></li>
+    <li><a href="#cnf-path">The <code>CNF_PATH</code> pattern (and similar names)</a></li>
+    <li><a href="#json-load"><code>json.load</code> vs <code>json.loads</code></a></li>
+    <li><a href="#full-flow">End-to-end: resolve path → open → parse</a></li>
+    <li><a href="#pitfalls">Pitfalls and good practices</a></li>
+    <li><a href="#exercises">Exercises (build mastery)</a></li>
+  </ol>
+</nav>
+
+<h2 id="why">1. Why store configuration in JSON?</h2>
+<p>Programs often need values that change between machines, environments, or experiments: API URLs, file locations, model hyperparameters, feature flags. Hard-coding those inside Python makes every change a code edit and a redeploy. Putting them in a <strong>data file</strong> (here, JSON) lets you:</p>
+<ul>
+  <li>Edit settings without touching program logic.</li>
+  <li>Keep different files for dev, staging, and production.</li>
+  <li>Share the same code with different configs.</li>
+  <li>Version-control config separately (sometimes with different access rules).</li>
+</ul>
+<p>JSON is a common choice because it is human-readable, widely supported, and maps cleanly to Python dicts and lists.</p>
+
+<h2 id="json-basics">2. JSON syntax and Python’s mapping</h2>
+<p>JSON (JavaScript Object Notation) describes <strong>structured data</strong> as text. A minimal config might look like this:</p>
+<pre><code>{
+  "app_name": "MyTool",
+  "max_retries": 3,
+  "enabled_features": ["export", "preview"],
+  "database": {
+    "host": "localhost",
+    "port": 5432
+  }
+}</code></pre>
+<p>Rules that matter in practice:</p>
+<ul>
+  <li>Keys must be double-quoted strings.</li>
+  <li>Strings use double quotes, not single quotes.</li>
+  <li>Numbers, booleans (<code>true</code>/<code>false</code>), and <code>null</code> are literal; note JSON uses lowercase (Python uses <code>None</code> after parsing).</li>
+  <li>No trailing commas after the last item in an object or array.</li>
+</ul>
+<p>After loading in Python, you typically get a <code>dict</code> at the top level:</p>
+<pre><code>config["app_name"]           # str
+config["max_retries"]        # int
+config["enabled_features"]   # list
+config["database"]["host"]   # nested dict access</code></pre>
+
+<h2 id="files">3. Files, paths, and the working directory</h2>
+<p>To read a JSON file, the program must know <strong>where on disk</strong> the file lives. That location is a <strong>path</strong>: either absolute (from the root of the drive) or relative (from some reference point).</p>
+<p><strong>Absolute path</strong> (Windows example):</p>
+<pre><code>C:\Users\you\project\config\settings.json</code></pre>
+<p><strong>Relative path</strong> (depends on “current working directory” when the program runs):</p>
+<pre><code>config/settings.json</code></pre>
+<p>If you start Python from <code>C:\Users\you\project</code>, then <code>config/settings.json</code> resolves to <code>C:\Users\you\project\config\settings.json</code>. If you start from elsewhere, the same relative string may point to a different place or nowhere at all. That is why mature projects often build paths relative to <strong>known anchors</strong> (the project root, the file containing the script, or an environment variable) instead of assuming the working directory.</p>
+<div class="note">
+  <strong>Takeaway:</strong> “Path string” + “how you resolve it” = which bytes actually get read. <code>CNF_PATH</code>-style variables are just a clear name for “the path we decided means our config file.”
+</div>
+
+<h2 id="cnf-path">4. The <code>CNF_PATH</code> pattern (and similar names)</h2>
+<p>You will see names like <code>CNF_PATH</code>, <code>CONFIG_PATH</code>, <code>SETTINGS_FILE</code>, or <code>cfg_path</code>. They are not magic: they are ordinary Python variables (often constants, written in <code>UPPER_SNAKE_CASE</code>) that hold a <code>str</code> or a <code>pathlib.Path</code> pointing at your JSON file.</p>
+<p><strong>Example A — fixed relative path (simplest):</strong></p>
+<pre><code>CNF_PATH = "config/app_config.json"</code></pre>
+<p><strong>Example B — path next to this source file (robust when cwd changes):</strong></p>
+<pre><code>from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+CNF_PATH = HERE / "defaults.json"</code></pre>
+<p><strong>Example C — project root + subfolder (common in apps):</strong></p>
+<pre><code>from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]  # adjust depth as needed
+CNF_PATH = ROOT / "config" / "production.json"</code></pre>
+<p><strong>Example D — environment variable override (deployments):</strong></p>
+<pre><code>import os
+from pathlib import Path
+
+CNF_PATH = Path(os.environ.get("APP_CONFIG", "config/default.json"))</code></pre>
+<p>The “resolves something” step you observed is usually: start from a known location (<code>__file__</code>, cwd, or env), combine path segments, maybe <code>.resolve()</code> to normalize <code>..</code> and symlinks, and assign the result to <code>CNF_PATH</code>.</p>
+
+<h2 id="json-load">5. <code>json.load</code> vs <code>json.loads</code></h2>
+<p>The standard library module is <code>import json</code>.</p>
+<ul>
+  <li><code>json.load(file_object)</code> reads <strong>from an open text file</strong> and parses one JSON document. Use this when your JSON lives on disk (or any stream).</li>
+  <li><code>json.loads(string)</code> parses JSON <strong>from a Python string</strong> already in memory (e.g. HTTP response body, or text you built in code).</li>
+</ul>
+<pre><code>import json
+from pathlib import Path
+
+CNF_PATH = Path("config/app_config.json")
+
+with CNF_PATH.open(encoding="utf-8") as f:
+    config = json.load(f)
+
+print(config.get("app_name", "unnamed"))</code></pre>
+<p>Using <code>encoding="utf-8"</code> avoids surprises on Windows when the file contains non-ASCII characters. The <code>with</code> statement ensures the file is closed after reading.</p>
+
+<h2 id="full-flow">6. End-to-end: resolve path → open → parse</h2>
+<p>Typical flow in three sentences: (1) Compute where the config file is and store that in something like <code>CNF_PATH</code>. (2) Open that path for reading as text. (3) Pass the open file object to <code>json.load</code> to get a Python <code>dict</code> (or list, depending on the file’s top-level structure).</p>
+<pre><code>import json
+from pathlib import Path
+
+def load_config(cnf_path: Path) -&gt; dict:
+    if not cnf_path.is_file():
+        raise FileNotFoundError(f"No config at: {cnf_path}")
+    with cnf_path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+ROOT = Path(__file__).resolve().parent
+CNF_PATH = ROOT / "settings.json"
+settings = load_config(CNF_PATH)</code></pre>
+<p>After this, <code>settings</code> is a normal Python structure; the rest of the program reads keys, supplies defaults with <code>.get()</code>, or validates with a schema library if the project requires it.</p>
+
+<h2 id="pitfalls">7. Pitfalls and good practices</h2>
+<table>
+  <thead><tr><th>Issue</th><th>What happens</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>Wrong cwd</td><td>Relative path points to the wrong file or missing file.</td><td>Anchor paths with <code>Path(__file__)</code>, env vars, or documented project root.</td></tr>
+    <tr><td>Invalid JSON</td><td><code>json.JSONDecodeError</code> at load time.</td><td>Edit file carefully; use a JSON-aware editor; validate in CI.</td></tr>
+    <tr><td>Trailing comma</td><td>Invalid in strict JSON.</td><td>Remove trailing commas; or use JSON5 only if the project explicitly supports it.</td></tr>
+    <tr><td>Comments in file</td><td>Standard <code>json</code> module does not allow <code>//</code> or <code>#</code>.</td><td>Use a format that supports comments (YAML, TOML) or strip comments in a documented way.</td></tr>
+    <tr><td>Huge integers / floats</td><td>Precision or overflow surprises.</td><td>Store big numbers as strings if exactness matters.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="exercises">8. Exercises (work through in order)</h2>
+<p>Use a small scratch folder for these. Create real files and run the code yourself.</p>
+
+<div class="exercise">
+  <h3>Exercise 1 — Create and load your first config</h3>
+  <p>Create <code>my_config.json</code> with keys <code>"title"</code> (string) and <code>"count"</code> (integer). Write a script that sets <code>CNF_PATH</code> to that file, opens it, calls <code>json.load</code>, and prints both values.</p>
+  <p><strong>Goal:</strong> Muscle memory for open + <code>json.load</code>.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 2 — Nested access</h3>
+  <p>Extend JSON with a nested object <code>"server": {"host": "127.0.0.1", "port": 8080}</code>. Load it and build a URL string <code>http://host:port/</code> from the dict (convert port to str when concatenating).</p>
+  <p><strong>Goal:</strong> Comfortable navigation of nested dicts produced by JSON.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 3 — Relative vs anchored path</h3>
+  <p>Write two scripts in different subfolders that both need the same <code>shared/config.json</code>. Make one script use a path relative to cwd (and observe failure when cwd changes). Refactor the second to use <code>Path(__file__)</code> so it always finds the file.</p>
+  <p><strong>Goal:</strong> Understand why projects anchor <code>CNF_PATH</code> to <code>__file__</code> or project root.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 4 — Missing file and bad JSON</h3>
+  <p>Deliberately point <code>CNF_PATH</code> at a non-existent path; catch <code>FileNotFoundError</code>. Then corrupt the JSON (add a trailing comma) and catch <code>json.JSONDecodeError</code>. Print user-friendly messages.</p>
+  <p><strong>Goal:</strong> Know the common exceptions and where they arise.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 5 — Environment override</h3>
+  <p>Support reading <code>MYAPP_CONFIG</code> from the environment; if unset, fall back to <code>default.json</code>. Verify by setting the variable in your shell and printing which file was loaded.</p>
+  <p><strong>Goal:</strong> Match deployment patterns where ops injects config location.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 6 — <code>json.loads</code> vs <code>json.load</code></h3>
+  <p>Read the same JSON content twice: once from disk with <code>json.load</code>, once by reading <code>f.read()</code> into a string and using <code>json.loads</code>. Assert the two resulting dicts are equal.</p>
+  <p><strong>Goal:</strong> Clear mental model of stream parsing vs string parsing.</p>
+</div>
+
+<div class="exercise">
+  <h3>Exercise 7 — Small refactor into a function</h3>
+  <p>Write <code>load_json_config(path: Path) -&gt; dict</code> that checks existence, uses UTF-8, and returns the parsed object. Import it from a second module and load config from two different JSON files in one run.</p>
+  <p><strong>Goal:</strong> Reusable pattern matching real project structure.</p>
+</div>
+
+<p style="margin-top:2.5rem;color:var(--muted);font-size:0.9rem;">You are “expert enough” here when you can trace any <code>CNF_PATH</code> in a codebase to its anchor, predict the resolved absolute path, and load or debug JSON failures without guesswork.</p>
+
+</body>
+</html>

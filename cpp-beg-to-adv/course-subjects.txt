@@ -49,5 +49,3 @@
 - STL: maps fundementals
 
 
-- std::string vs std::string_view
-
