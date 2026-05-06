@@ -1,0 +1,7 @@
+- psd to lpc guide : outer scope
+- fading fir folder -> html + GPT
+- study with GPT the VST (cpp) implementation
+- lpc psd to fir folder -> with GPT and html
+- study with GPT the VST (cpp) implementation
+- help from DRSP notes for Yule-Walker 
+- 

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PSD → LPC → FIR Crossfading Masterclass</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+  background: #f4f6f7;
+  line-height: 1.7;
+}
+
+h1, h2, h3 {
+  color: #2c3e50;
+}
+
+.section {
+  background: white;
+  padding: 25px;
+  margin-bottom: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+pre {
+  background: #ecf0f1;
+  padding: 12px;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+
+button {
+  padding: 10px 14px;
+  margin-top: 10px;
+  border: none;
+  background: #3498db;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.solution {
+  display: none;
+  background: #eafaf1;
+  padding: 12px;
+  margin-top: 10px;
+  border-left: 4px solid #2ecc71;
+}
+</style>
+
+<script>
+function toggle(id){
+  var el = document.getElementById(id);
+  el.style.display = (el.style.display === "none") ? "block" : "none";
+}
+</script>
+
+</head>
+
+<body>
+
+<h1>PSD → LPC → FIR Crossfading (Zero → Hero)</h1>
+
+<div class="section">
+<h2>1. The Big Picture</h2>
+<p>
+We want to transform a signal into a spectral model and smoothly morph it:
+</p>
+
+<pre>
+Signal → PSD → Autocorrelation → LPC → FIR → Crossfade → Output
+</pre>
+
+<p>
+This pipeline is used in speech coding, audio effects, and adaptive filtering.
+</p>
+</div>
+
+<div class="section">
+<h2>2. Power Spectral Density (PSD)</h2>
+
+<p>
+The PSD describes how signal power is distributed across frequency:
+</p>
+
+<pre>
+Sx(ω) = |X(e^{jω})|²
+</pre>
+
+<p>
+In MATLAB:
+</p>
+
+<pre>
+[Pxx, f] = pwelch(x, [], [], N, fs);
+</pre>
+
+<p>
+This gives a smooth estimate of the signal spectrum.
+</p>
+</div>
+
+<div class="section">
+<h2>3. PSD → Autocorrelation (Critical Step)</h2>
+
+<p>
+The PSD and autocorrelation are Fourier transform pairs:
+</p>
+
+<pre>
+r[k] = (1 / 2π) ∫ Sx(ω) e^{jωk} dω
+</pre>
+
+<p>
+This means:
+</p>
+
+<p><b>If you know the PSD, you can recover the autocorrelation.</b></p>
+
+<p>In MATLAB:</p>
+
+<pre>
+r = real(ifft(Pxx));
+</pre>
+
+<p>
+This step is the bridge between frequency domain and time-domain modeling.
+</p>
+</div>
+
+<div class="section">
+<h2>4. LPC Model</h2>
+
+<p>
+We model the signal as predictable from past samples:
+</p>
+
+<pre>
+x[n] + Σ (k=1→p) a_k x[n-k] = e[n]
+</pre>
+
+<p>
+Where:
+</p>
+<ul>
+<li>e[n] = white noise (prediction error)</li>
+<li>a_k = LPC coefficients</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>5. Deriving Yule-Walker Equations</h2>
+
+<p>
+We minimize prediction error:
+</p>
+
+<pre>
+E[e[n]²] minimized
+</pre>
+
+<p>
+Using orthogonality:
+</p>
+
+<pre>
+E[e[n] x[n-m]] = 0
+</pre>
+
+<p>
+Substitute the model:
+</p>
+
+<pre>
+r[m] + Σ a_k r[m-k] = 0
+</pre>
+
+<p>This gives a linear system:</p>
+
+<pre>
+R * a = -r
+</pre>
+
+<p>
+Where R is a Toeplitz matrix:
+</p>
+
+<pre>
+[r0 r1 r2 ...]
+[r1 r0 r1 ...]
+...
+</pre>
+</div>
+
+<div class="section">
+<h2>6. What LPC is Actually Doing</h2>
+
+<p>
+LPC approximates the PSD using an all-pole model:
+</p>
+
+<pre>
+Sx(ω) ≈ σ² / |1 + Σ a_k e^{-jωk}|²
+</pre>
+
+<p>
+👉 Peaks in PSD → poles in filter  
+👉 LPC captures spectral envelope (not fine detail)
+</p>
+</div>
+
+<div class="section">
+<h2>7. MATLAB: Full PSD → LPC (Manual)</h2>
+
+<pre>
+x = randn(1,1024);
+p = 16;
+
+[Pxx,~] = pwelch(x, [], [], 1024);
+r = real(ifft(Pxx));
+
+R = toeplitz(r(1:p));
+rhs = -r(2:p+1);
+
+a = R \ rhs;
+a = [1; a];
+</pre>
+</div>
+
+<div class="section">
+<h2>8. LPC → FIR Conversion</h2>
+
+<p>
+LPC is IIR (all-pole). For real-time crossfading we convert to FIR:
+</p>
+
+<pre>
+imp = [1 zeros(1,255)];
+h = filter(1, a, imp);
+</pre>
+</div>
+
+<div class="section">
+<h2>9. Crossfading FIR Filters</h2>
+
+<p>
+We smoothly interpolate:
+</p>
+
+<pre>
+h_interp = (1 - α)h1 + αh2
+</pre>
+
+<p>
+This avoids clicks and ensures stability.
+</p>
+</div>
+
+<div class="section">
+<h1>Exercises (with Full Instructions + Solutions)</h1>
+
+<h3>Exercise 1 — PSD & Autocorrelation</h3>
+<p>Compute PSD and recover autocorrelation. Plot and verify symmetry.</p>
+
+<button onclick="toggle('sol1')">Show Solution</button>
+<div id="sol1" class="solution">
+<pre>
+x = randn(1,1024);
+
+[Pxx,~] = pwelch(x, [], [], 1024);
+r = real(ifft(Pxx));
+
+plot(r);
+title('Autocorrelation');
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 2 — Build Toeplitz Matrix</h3>
+<p>Create the Yule-Walker matrix and inspect structure.</p>
+
+<button onclick="toggle('sol2')">Show Solution</button>
+<div id="sol2" class="solution">
+<pre>
+p = 8;
+R = toeplitz(r(1:p));
+disp(R);
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 3 — Solve LPC Without lpc()</h3>
+<p>Solve the linear system manually.</p>
+
+<button onclick="toggle('sol3')">Show Solution</button>
+<div id="sol3" class="solution">
+<pre>
+rhs = -r(2:p+1);
+a = R \ rhs;
+a = [1; a];
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 4 — Compare with Built-in LPC</h3>
+
+<button onclick="toggle('sol4')">Show Solution</button>
+<div id="sol4" class="solution">
+<pre>
+a_builtin = lpc(x, p);
+norm(a - a_builtin')
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 5 — PSD Matching</h3>
+<p>Compare LPC spectral estimate vs original PSD.</p>
+
+<button onclick="toggle('sol5')">Show Solution</button>
+<div id="sol5" class="solution">
+<pre>
+[H,w] = freqz(1,a,512);
+
+plot(w,10*log10(abs(H).^2));
+hold on;
+plot(linspace(0,pi,length(Pxx)),10*log10(Pxx));
+legend('LPC','PSD');
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 6 — FIR Conversion</h3>
+
+<button onclick="toggle('sol6')">Show Solution</button>
+<div id="sol6" class="solution">
+<pre>
+imp = [1 zeros(1,255)];
+h = filter(1,a,imp);
+plot(h);
+</pre>
+</div>
+
+<hr>
+
+<h3>Exercise 7 — FINAL: Crossfade System</h3>
+<p>
+Build full system: LPC → FIR → smooth crossfade.
+</p>
+
+<button onclick="toggle('sol7')">Show Solution</button>
+<div id="sol7" class="solution">
+<pre>
+x1 = randn(1,1024);
+x2 = filter([1 0.5],1,x1);
+
+p = 16;
+
+a1 = lpc(x1,p);
+a2 = lpc(x2,p);
+
+imp = [1 zeros(1,255)];
+
+h1 = filter(1,a1,imp);
+h2 = filter(1,a2,imp);
+
+alpha = linspace(0,1,512);
+y = zeros(1,512);
+
+for n=1:512
+    h_interp = (1-alpha(n))*h1 + alpha(n)*h2;
+    y(n) = filter(h_interp,1,x1(n));
+end
+
+plot(y);
+</pre>
+</div>
+
+</div>
+
+<div class="section">
+<h2>Final Insight</h2>
+<p>
+You are fitting a spectral model (LPC) to a PSD, converting it into a stable FIR,
+and morphing between spectral envelopes in real time.
+</p>
+</div>
+
+</body>
+</html>

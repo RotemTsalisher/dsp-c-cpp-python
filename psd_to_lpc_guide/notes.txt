@@ -1,0 +1,28 @@
+conv Auto-correlation to FIR Methods: 
+- Minimum phase
+- warpped
+- LPC
+
+Recurssion Methods:
+- Levinson-Durbin methods
+
+
+Fading mechanism:
+- refer to the faded biquads module -> how does the fading process works 
+
+Steps:
+- implement MP conversion "Dumping" the outputs as the FIR coef's -> no fading between both
+- introduce fading between the two filters (use fading biquads as reference for switching)
+- implement LPC as the conversion between the auto-correlation coef's and the FIR filter coef's 
+
+
+Implementations:
+- VST
+- DSP
+
+Study:
+- Levinson Durbin Method
+- Conversion from PSD to FIR coefs by MP
+- conversion from PSD to FIR coefs by lpc
+- matlab exercises to take this from zero to hero in those subjects
+- RDSP from college
