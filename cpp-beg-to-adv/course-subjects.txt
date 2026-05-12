@@ -7,9 +7,13 @@
 - functions pointers
 - passing functions as arguments
 - fold expressions and arg packs
-- constexpr
-- handle "traits" using variable templates or struct-based templates
-- threads (<thread> basics)
+- fold expressions : reading / coding exe for differencing between left and right folds
+- fold expressions : left and right folds with init values
+- constexpr programming: compile-time functions, static_assert, and constant-expression evaluation
+- implement and use custom type traits with struct-based templates and compile-time boolean constants
+- implement variable-template traits (_v style) and use them with static_assert and template constraints
+- create and manage threads using std::thread, including launching functions, joining, detaching, and passing arguments safely
+- synchronize multiple threads using mutexes, lock guards, and shared data protection basics
 - namespace (prevent naming collisions)
 - concepts and auto variables
 - introduction to classes (class definition mainly)
