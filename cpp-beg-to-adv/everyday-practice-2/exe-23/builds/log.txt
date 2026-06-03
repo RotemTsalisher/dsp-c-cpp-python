@@ -1,0 +1,4 @@
+Peak bin:  k = 42, PSD = 100
+Floor bin: k = 17, PSD = 5
+Tone-to-noise ratio = 20
+Tone-to-noise ratio with zero floor PSD = 0

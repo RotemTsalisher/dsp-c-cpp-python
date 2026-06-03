@@ -1,0 +1,11 @@
+mixer1:
+  dry = 1
+  wet = 0
+
+mixer2:
+  dry = 0.6
+  wet = 0.4
+
+mixer2 after setters:
+  dry = 0.2
+  wet = 0.8
