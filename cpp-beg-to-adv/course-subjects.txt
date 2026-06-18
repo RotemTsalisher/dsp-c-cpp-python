@@ -47,9 +47,9 @@
 - Classes: operator overloading (left hand operators and right hand operators, members vs non members operators, symmetry, inheritance)
 - Classes: friends and operators (friend use cases)
 
-- STL: sequence containers - Vectors fundementals
-- STL: list fundementals
-- STL: algorithm
-- STL: maps fundementals
+- STL: sequence containers - Vectors fundementals (produce a complete seperated workbook)
+- STL: list fundementals (produce a complete seperated workbook)
+- STL: algorithm (produce a complete seperated workbook)
+- STL: maps fundementals (produce a complete seperated workbook)
 
 
