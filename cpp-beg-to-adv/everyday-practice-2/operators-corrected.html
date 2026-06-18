@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Operator Overloading Exercises</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+.exercise{
+    border:1px solid #ccc;
+    padding:15px;
+    margin-bottom:20px;
+    border-radius:8px;
+}
+button{
+    padding:8px 12px;
+    cursor:pointer;
+}
+.solution{
+    display:none;
+    margin-top:10px;
+    background:#f5f5f5;
+    padding:10px;
+}
+</style>
+
+<script>
+function toggle(id){
+    let x=document.getElementById(id);
+    x.style.display = (x.style.display==="block") ? "none" : "block";
+}
+</script>
+
+</head>
+<body>
+
+<h1>Operator Overloading Practice</h1>
+
+<div class="exercise">
+<h2>1. Vector2D + Vector2D</h2>
+
+<p>
+Create a class <b>Vector2D</b> containing x and y.
+Implement:
+</p>
+
+<pre>
+Vector2D a(1,2);
+Vector2D b(3,4);
+
+Vector2D c = a + b;
+</pre>
+
+<p>
+Decide:
+</p>
+
+<ul>
+<li>Should operator+ be member or non-member?</li>
+<li>What should it return?</li>
+<li>Should parameters be const?</li>
+</ul>
+
+<button onclick="toggle('s1')">Reveal Discussion</button>
+
+<div id="s1" class="solution">
+Typical solution:
+operator+ returns a new object.
+Arguments should be const.
+Either member or free function is acceptable.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>2. Left and Right Scalar Multiplication</h2>
+
+<p>
+Support BOTH:
+</p>
+
+<pre>
+Vector2D v(1,2);
+
+v * 5;
+5 * v;
+</pre>
+
+<p>
+Which operator must be a free function and why?
+</p>
+
+<button onclick="toggle('s2')">Reveal Discussion</button>
+
+<div id="s2" class="solution">
+A member operator can only handle:
+v * 5
+
+because the left operand is Vector2D.
+
+To support:
+5 * v
+
+you need a non-member operator.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>3. Complex Number Arithmetic</h2>
+
+<p>
+Create a Complex class.
+Support:
+</p>
+
+<pre>
+a + b
+a - b
+a * b
+</pre>
+
+<p>
+Make expressions like:
+</p>
+
+<pre>
+a + b + c
+</pre>
+
+<p>
+work correctly.
+</p>
+
+<button onclick="toggle('s3')">Reveal Discussion</button>
+
+<div id="s3" class="solution">
+Return objects by value.
+Avoid returning references to temporary objects.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>4. += versus +</h2>
+
+<p>
+Implement:
+</p>
+
+<pre>
+v += other;
+</pre>
+
+<p>
+Then implement:
+</p>
+
+<pre>
+v + other;
+</pre>
+
+<p>
+using += internally.
+</p>
+
+<button onclick="toggle('s4')">Reveal Discussion</button>
+
+<div id="s4" class="solution">
+Common pattern:
+
+operator+= modifies current object.
+
+operator+ creates a copy and applies +=.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>5. Equality Operators</h2>
+
+<p>
+Implement:
+</p>
+
+<pre>
+a == b
+a != b
+</pre>
+
+<p>
+Avoid duplicate logic.
+</p>
+
+<button onclick="toggle('s5')">Reveal Discussion</button>
+
+<div id="s5" class="solution">
+Implement operator== once.
+
+Implement operator!= using !(a==b).
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>6. Stream Operators</h2>
+
+<p>
+Implement:
+</p>
+
+<pre>
+std::cout << point;
+std::cin >> point;
+</pre>
+
+<p>
+Why can these operators NOT be member functions of Point?
+</p>
+
+<button onclick="toggle('s6')">Reveal Discussion</button>
+
+<div id="s6" class="solution">
+Left operand is ostream/istream.
+
+Therefore Point cannot be the owner of the operator.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>7. Inheritance + Operator Overloading</h2>
+
+<p>
+Given:
+</p>
+
+<pre>
+class Shape
+class Circle : public Shape
+</pre>
+
+<p>
+Implement:
+</p>
+
+<pre>
+circle1 == circle2
+</pre>
+
+<p>
+using data inherited from Shape and data inside Circle.
+</p>
+
+<p>
+Think about:
+</p>
+
+<ul>
+<li>access to protected members</li>
+<li>slicing</li>
+<li>const correctness</li>
+</ul>
+
+<button onclick="toggle('s7')">Reveal Discussion</button>
+
+<div id="s7" class="solution">
+Operator should compare both base and derived state.
+Often call a base comparison helper.
+</div>
+</div>
+
+
+<div class="exercise">
+<h2>8. The Symmetry Trap</h2>
+
+<p>
+Design a Temperature class.
+</p>
+
+<p>
+Support ALL:
+</p>
+
+<pre>
+Temperature t(20);
+
+t + 5;
+5 + t;
+
+t - 5;
+5 - t;
+</pre>
+
+<p>
+Without duplicating code.
+</p>
+
+<button onclick="toggle('s8')">Reveal Discussion</button>
+
+<div id="s8" class="solution">
+Excellent exercise for understanding
+member vs non-member operators,
+conversion rules,
+and code reuse.
+</div>
+</div>
+
+</body>
+</html>

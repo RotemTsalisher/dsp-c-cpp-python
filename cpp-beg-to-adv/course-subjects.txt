@@ -44,7 +44,7 @@
 - Classes: Static Binding
 - Classes: Abstract class and pure virtual functions
 - Classes: Abstract classes as interfaces
-- Classes: operator overloading (left and right, inheritance)
+- Classes: operator overloading (left hand operators and right hand operators, members vs non members operators, symmetry, inheritance)
 - Classes: friends and operators (friend use cases)
 
 - STL: sequence containers - Vectors fundementals
