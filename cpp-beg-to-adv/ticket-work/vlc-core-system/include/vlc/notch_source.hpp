@@ -7,7 +7,7 @@ namespace vlc {
 
 class NotchSource final : public Source {
 public:
-    double next();
+    double next() override;
 
 private:
     double phase_{0.0};

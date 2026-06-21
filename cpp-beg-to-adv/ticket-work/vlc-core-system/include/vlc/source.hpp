@@ -6,7 +6,7 @@ namespace vlc {
 /// Polymorphic sample source (plugin host boundary).
 class Source {
 public:
-    double next() { return 0.0; }
+    virtual double next() { return 0.0; }
     virtual ~Source() = default;
 
 protected:
