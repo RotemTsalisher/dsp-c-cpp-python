@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\build\CMakeFiles\d58fd7b4ea411098b5588de27e34c646\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{CF51479F-87B1-3BA7-8923-90CDA267BFF1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

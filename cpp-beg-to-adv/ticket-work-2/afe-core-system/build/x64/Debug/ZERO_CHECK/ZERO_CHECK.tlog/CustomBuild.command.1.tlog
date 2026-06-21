@@ -1,0 +1,10 @@
+^C:\USERS\ROTEMT\ONEDRIVE - CARDO SYSTEMS LTD\DESKTOP\SW\DSP-C-CPP-PYTHON\CPP-BEG-TO-ADV\TICKET-WORK-2\AFE-CORE-SYSTEM\BUILD\CMAKEFILES\D58FD7B4EA411098B5588DE27E34C646\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work-2/afe-core-system" "-BC:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work-2/afe-core-system/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work-2/afe-core-system/build/afe_core_system.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

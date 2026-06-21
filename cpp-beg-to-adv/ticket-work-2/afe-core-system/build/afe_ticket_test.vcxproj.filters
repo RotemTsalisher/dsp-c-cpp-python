@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\tests\ticket_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7BDFEB91-3189-3512-8086-F593A0039701}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

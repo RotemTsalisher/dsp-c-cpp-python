@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work 2 — Mid Level AFE / C++</title>
+  <style>
+    :root { --bg:#f6f4ef; --card:#fff; --border:#d0d7de; --accent:#bf8700; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+    .system { background:#fff8c5; border-left:4px solid var(--accent); padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .system h2 { margin:0 0 8px 0; font-size:1rem; color:#9a6d00; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; box-shadow:0 1px 2px rgba(31,35,40,.06); }
+    .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .prio { font-size:.75rem; background:#ddf4ff; border:1px solid #54aeff; padding:2px 8px; border-radius:4px; }
+    .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; font-size:.9rem; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; font-size:.9rem; margin-top:10px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
+    .btn-hint { background:#57606a; color:#fff; }
+    .btn-sol { background:#bf8700; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    .hint-panel { background:#eaeef2; border:1px solid var(--border); }
+    .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:8px 0 0; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
+    footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+
+  <h1><span class="badge">MID</span> AFE ticket notebook (workbook 2)</h1>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · templates, threads, folds, dispatch · C++20 (no STL containers)</p>
+
+  <div class="system">
+    <h2>CardoLink AFE — mid-level triage</h2>
+    <p>Defects span <code>requires</code> constraints, worker threads, virtual dispatch, fold expressions, and function-pointer gates.</p>
+    <pre><code>cd ../afe-core-system
+cmake --build build --target afe_ticket_test
+.\build\Debug\afe_ticket_test.exe AFE-MID-201</code></pre>
+  </div>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-MID-201</span><span class="prio">P2 · Major</span><span class="qa">Static analysis</span></div>
+    <h3>16-bit field accepted in masked OR helper</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>The register helper accepts <code>std::uint16_t</code> field values. Certification requires 32-bit fields only so narrow writes cannot reach the AFE map.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/register_mask.hpp</code> — <code>masked_or</code> template constraint.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-MID-201</code></pre>
+      <pre><code>observed uint16_t field accepted at compile time: 1
+expected uint16_t field accepted at compile time: 0</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-MID-201 PASS</code> — test still compiles after your fix.</div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h201')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s201')">Complete solution</button>
+    </div>
+    <div id="h201" class="panel hint-panel"><strong>Hint:</strong> Tighten the <code>requires</code> clause beyond “any integral”.</div>
+    <div id="s201" class="panel sol-panel"><pre><code>template &lt;typename T&gt;
+requires std::same_as&lt;T, std::uint32_t&gt;
+std::uint32_t masked_or(...);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-MID-202</span><span class="prio">P2 · Major</span><span class="qa">PSD worker</span></div>
+    <h3>PSD bin worker never updates output</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>run_psd_bin_once</code> leaves the output bin at zero. The worker lambda is never launched on a <code>std::thread</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/psd_worker.cpp</code> — <code>run_psd_bin_once</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-MID-202</code></pre>
+      <pre><code>observed bin after run_psd_bin_once: 0
+expected bin after run_psd_bin_once: 0.0625</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-MID-202 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h202')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s202')">Complete solution</button>
+    </div>
+    <div id="h202" class="panel hint-panel"><strong>Hint:</strong> Construct a <code>std::thread</code> from the lambda and <code>join()</code> before returning.</div>
+    <div id="s202" class="panel sol-panel"><pre><code>std::thread worker([&amp;bin_out]() { bin_out = 0.0625; });
+worker.join();</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-MID-203</span><span class="prio">P2 · Major</span><span class="qa">HIL tone</span></div>
+    <h3>Tone source silent through WaveSource*</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>ToneSource</code> returns <code>0.707</code> when called directly but <code>0.0</code> when invoked through a <code>WaveSource*</code> in the HIL harness.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/wave_source.hpp</code> — <code>WaveSource::next_sample</code> and <code>ToneSource::next_sample</code> relationship.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-MID-203</code></pre>
+      <pre><code>observed WaveSource* -&gt; ToneSource::next_sample(): 0
+expected WaveSource* -&gt; ToneSource::next_sample(): 0.707</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-MID-203 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h203')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s203')">Complete solution</button>
+    </div>
+    <div id="h203" class="panel hint-panel"><strong>Hint:</strong> Dynamic dispatch requires a virtual member on the base class.</div>
+    <div id="s203" class="panel sol-panel"><pre><code>virtual double next_sample() { return 0.0; }
+double next_sample() override { return 0.707; }</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-MID-204</span><span class="prio">P3 · Minor</span><span class="qa">Fold audit</span></div>
+    <h3>Negated bin deltas fold from wrong anchor</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>fold_negated_from_zero(1,2,3)</code> returns <code>-4</code> instead of the lab reference <code>-6</code> for “zero minus all deltas”.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/fold_accumulator.hpp</code> — <code>fold_negated_from_zero</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-MID-204</code></pre>
+      <pre><code>observed fold_negated_from_zero(1,2,3): -4
+expected fold_negated_from_zero(1,2,3): -6</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-MID-204 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h204')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s204')">Complete solution</button>
+    </div>
+    <div id="h204" class="panel hint-panel"><strong>Hint:</strong> Use a unary left fold with an explicit <code>0.0</code> initializer.</div>
+    <div id="s204" class="panel sol-panel"><pre><code>return (0.0 - ... - static_cast&lt;double&gt;(values));</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-MID-205</span><span class="prio">P3 · Minor</span><span class="qa">Comb gate</span></div>
+    <h3>Tap sifter ignores noise-floor predicate</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>sift_tap</code> returns <code>true</code> even when the sample is below the comb noise floor and the predicate should reject it.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/tap_sifter.cpp</code> — <code>sift_tap</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-MID-205</code></pre>
+      <pre><code>observed sift_tap(1e-8, over_comb_floor): 1
+expected sift_tap(1e-8, over_comb_floor): 0</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-MID-205 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h205')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s205')">Complete solution</button>
+    </div>
+    <div id="h205" class="panel hint-panel"><strong>Hint:</strong> Forward the sample to the <code>TapPredicate</code> function pointer.</div>
+    <div id="s205" class="panel sol-panel"><pre><code>return pred(x);</code></pre></div>
+  </article>
+
+  <footer>CardoLink AFE · ticket-work-2 · Mid · 5 tickets</footer>
+  <script>function toggle(id){const el=document.getElementById(id);if(el)el.classList.toggle('visible');}</script>
+</body>
+</html>

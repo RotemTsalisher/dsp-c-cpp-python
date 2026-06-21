@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Everyday Practice 3 — One Exercise per Subject</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.5; color: #24292f; max-width: 920px; margin: 0 auto; padding: 32px 20px 48px; background: #f6f8fa; }
+    h1 { text-align: center; border-bottom: 3px solid #0969da; padding-bottom: 10px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.92rem; margin-bottom: 24px; }
+    .note { background: #fff8c5; border-left: 4px solid #bf8700; padding: 12px 14px; margin-bottom: 22px; border-radius: 0 6px 6px 0; font-size: 0.9rem; }
+    section.subject { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+    .subj-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .num { font-weight: 800; color: #0969da; font-size: 0.85rem; }
+    .title { font-weight: 600; color: #1f2328; }
+    p.task { margin: 6px 0 10px 0; font-size: 0.95rem; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 1px 5px; border-radius: 4px; font-size: 0.88em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 0.78rem; line-height: 1.4; margin: 8px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { padding: 6px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #0969da; color: #fff; }
+    button.reveal-btn:hover { background: #0550ae; }
+    .solution { display: none; margin-top: 10px; }
+    .solution.visible { display: block; }
+    .why { font-size: 0.85rem; color: #424a53; margin-top: 8px; }
+    nav.toc { font-size: 0.82rem; columns: 4; margin: 16px 0 8px 0; padding: 12px; background: #eaeef2; border-radius: 6px; }
+    nav.toc a { color: #0969da; text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h1>Everyday Practice 3</h1>
+  <p class="subtitle">Third pass drills · One exercise per line in <code>course-subjects.txt</code> (52 subjects) · C++20 · Comb-delay / PSD / AFE register framing · Non-STL sections avoid containers; STL subjects use the standard library</p>
+
+  <div class="note">
+    Independent of <strong>Everyday Practice</strong> (volume 1) and <strong>Everyday Practice 2</strong> (volume 2): new tasks, same curriculum order. Use <strong>Reveal solution</strong> for a minimal sketch. Prefer <code>double</code> for audio/PSD samples. When passing callable behavior, use explicit typedefs such as <code>double (*)(double)</code> — not deduced function types.
+  </div>
+
+  <nav class="toc" aria-label="Subjects">
+    <a href="#s01">1</a> · <a href="#s02">2</a> · <a href="#s03">3</a> · <a href="#s04">4</a> · <a href="#s05">5</a> · <a href="#s06">6</a> · <a href="#s07">7</a> · <a href="#s08">8</a> · <a href="#s09">9</a> · <a href="#s10">10</a> · <a href="#s11">11</a> · <a href="#s12">12</a> · <a href="#s13">13</a><br>
+    <a href="#s14">14</a> · <a href="#s15">15</a> · <a href="#s16">16</a> · <a href="#s17">17</a> · <a href="#s18">18</a> · <a href="#s19">19</a> · <a href="#s20">20</a> · <a href="#s21">21</a> · <a href="#s22">22</a> · <a href="#s23">23</a> · <a href="#s24">24</a> · <a href="#s25">25</a> · <a href="#s26">26</a><br>
+    <a href="#s27">27</a> · <a href="#s28">28</a> · <a href="#s29">29</a> · <a href="#s30">30</a> · <a href="#s31">31</a> · <a href="#s32">32</a> · <a href="#s33">33</a> · <a href="#s34">34</a> · <a href="#s35">35</a> · <a href="#s36">36</a> · <a href="#s37">37</a> · <a href="#s38">38</a> · <a href="#s39">39</a><br>
+    <a href="#s40">40</a> · <a href="#s41">41</a> · <a href="#s42">42</a> · <a href="#s43">43</a> · <a href="#s44">44</a> · <a href="#s45">45</a> · <a href="#s46">46</a> · <a href="#s47">47</a> · <a href="#s48">48</a> · <a href="#s49">49</a> · <a href="#s50">50</a> · <a href="#s51">51</a> · <a href="#s52">52</a>
+  </nav>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+
+  <!-- 1 -->
+  <section class="subject" id="s01">
+    <div class="subj-head"><span class="num">01</span><span class="title">functions</span></div>
+    <p class="task">Write <code>double nyquistHz(double sampleRateHz)</code> returning <code>0.5 * sampleRateHz</code> (upper usable bandwidth for PSD bin planning).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol01')">Reveal solution</button>
+    <div id="sol01" class="solution">
+      <pre><code>double nyquistHz(double const sampleRateHz)
+{
+    return 0.5 * sampleRateHz;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Free functions keep hot-path math readable without a class wrapper — here the Nyquist limit bounds valid comb-line tuning.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="subject" id="s02">
+    <div class="subj-head"><span class="num">02</span><span class="title">functions overloading</span></div>
+    <p class="task">Overload <code>adcToVolts</code>: (a) <code>double adcToVolts(int rawCount)</code> assumes 16-bit full scale → maps to ±1.0 V; (b) <code>double adcToVolts(int rawCount, double fullScaleVolts)</code> uses the same count range but a caller-supplied reference voltage.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol02')">Reveal solution</button>
+    <div id="sol02" class="solution">
+      <pre><code>double adcToVolts(int const rawCount)
+{
+    return adcToVolts(rawCount, 1.0);
+}
+
+double adcToVolts(int const rawCount, double const fullScaleVolts)
+{
+    double const normalized = static_cast&lt;double&gt;(rawCount) / 32768.0;
+    return normalized * fullScaleVolts;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Overloading lets factory trim pass a measured reference while lab code keeps a default full-scale.</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="subject" id="s03">
+    <div class="subj-head"><span class="num">03</span><span class="title">functions templates</span></div>
+    <p class="task">Template <code>template&lt;typename T&gt; T saturate(T x, T lo, T hi)</code> clamping <code>x</code> to <code>[lo, hi]</code> with comparisons only (no STL).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol03')">Reveal solution</button>
+    <div id="sol03" class="solution">
+      <pre><code>template &lt;typename T&gt;
+T saturate(T const x, T const lo, T const hi)
+{
+    if (x &lt; lo) {
+        return lo;
+    }
+    if (x &gt; hi) {
+        return hi;
+    }
+    return x;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> One template serves int register fields and floating comb feedback without duplicating clamp logic.</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="subject" id="s04">
+    <div class="subj-head"><span class="num">04</span><span class="title">template specialization</span></div>
+    <p class="task">Primary <code>template&lt;typename T&gt; struct MantissaBits { static int value() { return 0; } };</code> Specialize for <code>float</code> → <code>23</code>, <code>double</code> → <code>52</code> (IEEE mantissa width for PSD noise-floor estimates).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol04')">Reveal solution</button>
+    <div id="sol04" class="solution">
+      <pre><code>template &lt;typename T&gt;
+struct MantissaBits
+{
+    static int value()
+    {
+        return 0;
+    }
+};
+
+template &lt;&gt;
+struct MantissaBits&lt;float&gt;
+{
+    static int value() { return 23; }
+};
+
+template &lt;&gt;
+struct MantissaBits&lt;double&gt;
+{
+    static int value() { return 52; }
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Explicit specializations document driver-facing constants even when <code>sizeof</code> alone would not capture mantissa semantics.</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="subject" id="s05">
+    <div class="subj-head"><span class="num">05</span><span class="title">lambda functions</span></div>
+    <p class="task">Lambda capturing <code>double knee</code> by value: soft-limit a sample with <code>x / (1.0 + std::abs(x) / knee)</code> (gentle AFE headroom before hard clip).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol05')">Reveal solution</button>
+    <div id="sol05" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+
+double softLimit(double const knee, double const x)
+{
+    auto const shaper = [knee](double const xi) {
+        return xi / (1.0 + std::abs(xi) / knee);
+    };
+    return shaper(x);
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Capturing <code>knee</code> by value keeps the lambda reusable across a buffer without dangling references.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="subject" id="s06">
+    <div class="subj-head"><span class="num">06</span><span class="title">requires</span></div>
+    <p class="task"><code>template&lt;typename T&gt; T wrapBinIndex(T idx, T nBins)</code> with <code>requires std::is_integral_v&lt;T&gt;</code> returning <code>(idx % nBins + nBins) % nBins</code> for circular PSD bin indexing.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol06')">Reveal solution</button>
+    <div id="sol06" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+requires std::is_integral_v&lt;T&gt;
+T wrapBinIndex(T const idx, T const nBins)
+{
+    return (idx % nBins + nBins) % nBins;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>requires</code> blocks accidental use on floating bin frequencies where modulo is ill-defined.</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="subject" id="s07">
+    <div class="subj-head"><span class="num">07</span><span class="title">functions pointers</span></div>
+    <p class="task">Typedef <code>using ShaperFn = double (*)(double);</code> Implement <code>double softClipUnit(double x)</code> returning <code>x</code> clamped to <code>[-1, 1]</code>. Return <code>ShaperFn pickSoftClip();</code> pointing at <code>softClipUnit</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol07')">Reveal solution</button>
+    <div id="sol07" class="solution">
+      <pre><code>using ShaperFn = double (*)(double);
+
+double softClipUnit(double const x)
+{
+    if (x &lt; -1.0) {
+        return -1.0;
+    }
+    if (x &gt; 1.0) {
+        return 1.0;
+    }
+    return x;
+}
+
+ShaperFn pickSoftClip()
+{
+    return &amp;softClipUnit;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Explicit <code>ShaperFn</code> typedef documents the callback contract for comb feedback paths.</p>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="subject" id="s08">
+    <div class="subj-head"><span class="num">08</span><span class="title">passing functions as arguments</span></div>
+    <p class="task"><code>double cascadeGain(double x, ShaperFn fn, int stages)</code> where <code>ShaperFn = double (*)(double)</code>; apply <code>fn</code> to <code>x</code> exactly <code>stages</code> times (serial gain staging).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol08')">Reveal solution</button>
+    <div id="sol08" class="solution">
+      <pre><code>using ShaperFn = double (*)(double);
+
+double cascadeGain(double x, ShaperFn const fn, int const stages)
+{
+    for (int i = 0; i &lt; stages; ++i) {
+        x = fn(x);
+    }
+    return x;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Passing a function pointer lets the same cascade loop host different shapers without template bloat.</p>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="subject" id="s09">
+    <div class="subj-head"><span class="num">09</span><span class="title">fold expressions and arg packs</span></div>
+    <p class="task"><code>template&lt;typename... Ts&gt; constexpr double sumSquares(Ts... samples)</code> using a binary fold: <code>(0.0 + ... + (static_cast&lt;double&gt;(samples) * static_cast&lt;double&gt;(samples)))</code> (PSD energy sum).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol09')">Reveal solution</button>
+    <div id="sol09" class="solution">
+      <pre><code>template &lt;typename... Ts&gt;
+constexpr double sumSquares(Ts... samples)
+{
+    return (0.0 + ... + (static_cast&lt;double&gt;(samples) * static_cast&lt;double&gt;(samples)));
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Parameter packs plus folds replace hand-unrolled accumulators for small fixed channel counts.</p>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="subject" id="s10">
+    <div class="subj-head"><span class="num">10</span><span class="title">fold expressions : reading / coding exe for differencing between left and right folds</span></div>
+    <p class="task">For three comb tap gains <code>g0, g1, g2</code>, write both <code>double leftChain = (1.0 * ... * g);</code> and <code>double rightChain = (g * ... * 1.0);</code> in a comment or snippet — state whether they differ for multiplication and why associativity matters for numerics.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10')">Reveal solution</button>
+    <div id="sol10" class="solution">
+      <pre><code>template &lt;typename... Ts&gt;
+constexpr double leftMul(Ts... gains)
+{
+    return (1.0 * ... * gains); // init on the left
+}
+
+template &lt;typename... Ts&gt;
+constexpr double rightMul(Ts... gains)
+{
+    return (gains * ... * 1.0); // init on the right
+}
+
+static_assert(leftMul(0.9, 0.8, 0.7) == rightMul(0.9, 0.8, 0.7));
+
+// For * over reals both folds yield the same product; they differ syntactically
+// and would diverge for non-commutative operators or mixed-precision staging.
+</code></pre>
+      <p class="why"><strong>Note:</strong> Left vs right fold syntax differs; for <code>*</code> the result is the same but the expansion order is not identical in the abstract syntax tree.</p>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="subject" id="s11">
+    <div class="subj-head"><span class="num">11</span><span class="title">fold expressions : left and right folds with init values</span></div>
+    <p class="task"><code>template&lt;typename... Ts&gt; constexpr int countNonZero(Ts... v)</code> using init fold <code>(0 + ... + (v != Ts{0}))</code> — counts how many PSD bins in a pack are non-zero.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11')">Reveal solution</button>
+    <div id="sol11" class="solution">
+      <pre><code>template &lt;typename... Ts&gt;
+constexpr int countNonZero(Ts... v)
+{
+    return (0 + ... + (v != Ts{0}));
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> An explicit init value (<code>0</code>) makes empty packs well-formed and matches the “fold with init” curriculum line.</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="subject" id="s12">
+    <div class="subj-head"><span class="num">12</span><span class="title">constexpr programming: compile-time functions, static_assert, and constant-expression evaluation</span></div>
+    <p class="task"><code>constexpr int hopSize(int fftSize, int hopDenominator)</code> returning <code>fftSize / hopDenominator</code>. <code>static_assert(hopSize(1024, 4) == 256);</code> for a 75% overlap STFT hop.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12')">Reveal solution</button>
+    <div id="sol12" class="solution">
+      <pre><code>constexpr int hopSize(int const fftSize, int const hopDenominator)
+{
+    return fftSize / hopDenominator;
+}
+
+static_assert(hopSize(1024, 4) == 256);
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>constexpr</code> plus <code>static_assert</code> catches frame/hop mismatches before link time.</p>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="subject" id="s13">
+    <div class="subj-head"><span class="num">13</span><span class="title">implement and use custom type traits with struct-based templates and compile-time boolean constants</span></div>
+    <p class="task">Struct trait <code>template&lt;typename T&gt; struct IsPsdSample { static bool const value = false; };</code> Specialize for <code>float</code> and <code>double</code> to <code>true</code>. Use in <code>static_assert(IsPsdSample&lt;double&gt;::value);</code></p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13')">Reveal solution</button>
+    <div id="sol13" class="solution">
+      <pre><code>template &lt;typename T&gt;
+struct IsPsdSample
+{
+    static bool const value = false;
+};
+
+template &lt;&gt;
+struct IsPsdSample&lt;float&gt;
+{
+    static bool const value = true;
+};
+
+template &lt;&gt;
+struct IsPsdSample&lt;double&gt;
+{
+    static bool const value = true;
+};
+
+static_assert(IsPsdSample&lt;double&gt;::value);
+</code></pre>
+      <p class="why"><strong>Note:</strong> Struct traits with <code>::value</code> predate <code>_v</code> aliases and remain common in embedded headers.</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="subject" id="s14">
+    <div class="subj-head"><span class="num">14</span><span class="title">implement variable-template traits (_v style) and use them with static_assert and template constraints</span></div>
+    <p class="task">Variable template <code>template&lt;typename T&gt; inline constexpr bool is_register_integral_v = std::is_same_v&lt;T, std::uint16_t&gt; || std::is_same_v&lt;T, std::uint32_t&gt;;</code> plus <code>static_assert(is_register_integral_v&lt;std::uint32_t&gt;);</code></p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14')">Reveal solution</button>
+    <div id="sol14" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+inline constexpr bool is_register_integral_v =
+    std::is_same_v&lt;T, std::uint16_t&gt; || std::is_same_v&lt;T, std::uint32_t&gt;;
+
+static_assert(is_register_integral_v&lt;std::uint32_t&gt;);
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>_v</code> traits read naturally in <code>static_assert</code> and C++20 <code>requires</code> clauses.</p>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="subject" id="s15">
+    <div class="subj-head"><span class="num">15</span><span class="title">create and manage threads using std::thread, including launching functions, joining, detaching, and passing arguments safely</span></div>
+    <p class="task">Launch a worker thread that writes peak-hold <code>maxAbs</code> from four fixed samples passed by value into a shared <code>double peakOut</code> (by reference), then <code>join()</code>. Do not detach in this drill.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15')">Reveal solution</button>
+    <div id="sol15" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+#include &lt;thread&gt;
+
+int main()
+{
+    double peakOut = 0.0;
+    double const s0 = -0.3;
+    double const s1 = 0.9;
+    double const s2 = 0.1;
+    double const s3 = -0.6;
+
+    std::thread worker([&amp;peakOut, s0, s1, s2, s3]() {
+        peakOut = std::max({std::abs(s0), std::abs(s1), std::abs(s2), std::abs(s3)});
+    });
+    worker.join();
+    return 0;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Capture shared state by reference, inputs by value — safe join before reading <code>peakOut</code>.</p>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="subject" id="s16">
+    <div class="subj-head"><span class="num">16</span><span class="title">synchronize multiple threads using mutexes, lock guards, and shared data protection basics</span></div>
+    <p class="task">Global <code>double psdSum_</code> and <code>std::mutex psdMutex_</code>. Function <code>void addBinPower(double p)</code> uses <code>std::lock_guard&lt;std::mutex&gt;</code> before <code>psdSum_ += p</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol16')">Reveal solution</button>
+    <div id="sol16" class="solution">
+      <pre><code>#include &lt;mutex&gt;
+
+double psdSum_ = 0.0;
+std::mutex psdMutex_;
+
+void addBinPower(double const p)
+{
+    std::lock_guard&lt;std::mutex&gt; lock{psdMutex_};
+    psdSum_ += p;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>lock_guard</code> guarantees unlock on scope exit — essential when multiple threads accumulate PSD bins.</p>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="subject" id="s17">
+    <div class="subj-head"><span class="num">17</span><span class="title">namespace (prevent naming collisions)</span></div>
+    <p class="task">Place <code>std::uint32_t enableChannelMask(std::uint32_t reg, int channelIndex)</code> in <code>namespace afe::reg</code> — sets bit <code>channelIndex</code> in <code>reg</code> (OR with <code>1u &lt;&lt; channelIndex</code>).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol17')">Reveal solution</button>
+    <div id="sol17" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+
+namespace afe::reg
+{
+inline std::uint32_t enableChannelMask(std::uint32_t const reg, int const channelIndex)
+{
+    return reg | (1u &lt;&lt; static_cast&lt;unsigned&gt;(channelIndex));
+}
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Nested namespaces keep AFE register helpers out of the global DSP symbol table.</p>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="subject" id="s18">
+    <div class="subj-head"><span class="num">18</span><span class="title">concepts and auto variables</span></div>
+    <p class="task"><code>template&lt;typename T&gt; concept RealSample = std::is_same_v&lt;T, float&gt; || std::is_same_v&lt;T, double&gt;;</code> and <code>void storeSample(RealSample auto in, auto&amp; out)</code> assigning via a local <code>auto copy = in;</code></p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol18')">Reveal solution</button>
+    <div id="sol18" class="solution">
+      <pre><code>#include &lt;type_traits&gt;
+
+template &lt;typename T&gt;
+concept RealSample = std::is_same_v&lt;T, float&gt; || std::is_same_v&lt;T, double&gt;;
+
+void storeSample(RealSample auto const in, auto&amp; out)
+{
+    auto const copy = in;
+    out = copy;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Concepts constrain the sample type; <code>auto</code> deduces the staging copy without repeating <code>T</code>.</p>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section class="subject" id="s19">
+    <div class="subj-head"><span class="num">19</span><span class="title">introduction to classes (class definition mainly)</span></div>
+    <p class="task">Class <code>AfeGainWord</code> with public data members <code>std::uint16_t address</code> and <code>std::uint16_t value</code> only (minimal register write descriptor).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol19')">Reveal solution</button>
+    <div id="sol19" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+
+class AfeGainWord
+{
+public:
+    std::uint16_t address{};
+    std::uint16_t value{};
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> A bare class groups related register fields before encapsulation is introduced.</p>
+    </div>
+  </section>
+
+  <!-- 20 -->
+  <section class="subject" id="s20">
+    <div class="subj-head"><span class="num">20</span><span class="title">Classes: Encapsulation (private and public members, "getters", "setters", etc)</span></div>
+    <p class="task">Class <code>NoiseFloorTracker</code>: private <code>double floorDb_</code>; <code>double floorDb() const</code>; <code>void observe(double binPowerDb)</code> lowering the floor when <code>binPowerDb</code> is smaller.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol20')">Reveal solution</button>
+    <div id="sol20" class="solution">
+      <pre><code>class NoiseFloorTracker
+{
+public:
+    double floorDb() const
+    {
+        return floorDb_;
+    }
+
+    void observe(double const binPowerDb)
+    {
+        if (binPowerDb &lt; floorDb_) {
+            floorDb_ = binPowerDb;
+        }
+    }
+
+private:
+    double floorDb_{0.0};
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Private state with accessors hides invariants — the floor cannot be read without going through <code>observe</code> logic later.</p>
+    </div>
+  </section>
+
+  <!-- 21 -->
+  <section class="subject" id="s21">
+    <div class="subj-head"><span class="num">21</span><span class="title">Classes: constructors, with and without arguments</span></div>
+    <p class="task">Class <code>FftPlanSpec</code>: default ctor sets <code>size_ = 512</code>; <code>explicit FftPlanSpec(int size)</code> for custom frame lengths.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol21')">Reveal solution</button>
+    <div id="sol21" class="solution">
+      <pre><code>class FftPlanSpec
+{
+public:
+    FftPlanSpec()
+        : size_{512}
+    {
+    }
+
+    explicit FftPlanSpec(int const size)
+        : size_{size}
+    {
+    }
+
+    int size() const { return size_; }
+
+private:
+    int size_;
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Default vs parameterized ctors mirror “lab default 512-bin PSD” vs product-specific frame sizes.</p>
+    </div>
+  </section>
+
+  <!-- 22 -->
+  <section class="subject" id="s22">
+    <div class="subj-head"><span class="num">22</span><span class="title">Classes: spreading across multiple files</span></div>
+    <p class="task">Sketch <code>CombTap.h</code> declaring <code>double gain() const;</code> and <code>CombTap.cpp</code> defining <code>double CombTap::gain() const { return gain_; }</code> with classic include guard.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol22')">Reveal solution</button>
+    <div id="sol22" class="solution">
+      <pre><code>// CombTap.h
+#ifndef COMB_TAP_H
+#define COMB_TAP_H
+
+class CombTap
+{
+public:
+    double gain() const;
+
+private:
+    double gain_{1.0};
+};
+
+#endif
+
+// CombTap.cpp
+#include "CombTap.h"
+
+double CombTap::gain() const
+{
+    return gain_;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Declaration in header, definition in <code>.cpp</code> — standard split for build times on embedded targets.</p>
+    </div>
+  </section>
+
+  <!-- 23 -->
+  <section class="subject" id="s23">
+    <div class="subj-head"><span class="num">23</span><span class="title">Include Guards</span></div>
+    <p class="task">Three-macro guard <code>AFE_MIXER_H</code> wrapping <code>struct AfeMixerParams;</code> forward declaration.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol23')">Reveal solution</button>
+    <div id="sol23" class="solution">
+      <pre><code>#ifndef AFE_MIXER_H
+#define AFE_MIXER_H
+
+struct AfeMixerParams;
+
+#endif // AFE_MIXER_H
+</code></pre>
+      <p class="why"><strong>Note:</strong> Include guards prevent duplicate definitions when mixer headers pull in shared AFE types.</p>
+    </div>
+  </section>
+
+  <!-- 24 -->
+  <section class="subject" id="s24">
+    <div class="subj-head"><span class="num">24</span><span class="title">Classes: managing class objects through pointers</span></div>
+    <p class="task"><code>new AfeTrim</code> where <code>AfeTrim</code> has <code>void setDb(double)</code> and <code>double db() const</code>; call through pointer, read value, <code>delete</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol24')">Reveal solution</button>
+    <div id="sol24" class="solution">
+      <pre><code>class AfeTrim
+{
+public:
+    void setDb(double const db) { db_ = db; }
+    double db() const { return db_; }
+
+private:
+    double db_{0.0};
+};
+
+void demo()
+{
+    AfeTrim* trim = new AfeTrim{};
+    trim-&gt;setDb(-3.0);
+    double const level = trim-&gt;db();
+    (void)level;
+    delete trim;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Pointer ownership drill — every <code>new</code> paired with <code>delete</code> before RAII wrappers appear in later work.</p>
+    </div>
+  </section>
+
+  <!-- 25 -->
+  <section class="subject" id="s25">
+    <div class="subj-head"><span class="num">25</span><span class="title">Classes: Destructors</span></div>
+    <p class="task">Class <code>IirState</code> owning <code>double* z_</code>: ctor allocates two states; dtor <code>delete[] z_</code>; delete copy operations.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol25')">Reveal solution</button>
+    <div id="sol25" class="solution">
+      <pre><code>class IirState
+{
+public:
+    IirState()
+        : z_{new double[2]{}}
+    {
+    }
+
+    ~IirState()
+    {
+        delete[] z_;
+    }
+
+    IirState(IirState const&amp;) = delete;
+    IirState&amp; operator=(IirState const&amp;) = delete;
+
+private:
+    double* z_;
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Destructor releases biquad delay elements — copy deletion avoids double-free on raw buffers.</p>
+    </div>
+  </section>
+
+  <!-- 26 -->
+  <section class="subject" id="s26">
+    <div class="subj-head"><span class="num">26</span><span class="title">Classes: 'this' operator: chaining calls using pointers</span></div>
+    <p class="task">Class <code>WetDryPan</code> with <code>WetDryPan&amp; setDry(double)</code> and <code>WetDryPan&amp; setWet(double)</code> returning <code>*this</code> for comb send/return mixing setup.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol26')">Reveal solution</button>
+    <div id="sol26" class="solution">
+      <pre><code>class WetDryPan
+{
+public:
+    WetDryPan&amp; setDry(double const d)
+    {
+        dry_ = d;
+        return *this;
+    }
+
+    WetDryPan&amp; setWet(double const w)
+    {
+        wet_ = w;
+        return *this;
+    }
+
+    double blend(double const dryIn, double const wetIn) const
+    {
+        return dry_ * dryIn + wet_ * wetIn;
+    }
+
+private:
+    double dry_{1.0};
+    double wet_{0.0};
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Returning <code>*this</code> enables fluent configuration in init code without temporary structs.</p>
+    </div>
+  </section>
+
+  <!-- 27 -->
+  <section class="subject" id="s27">
+    <div class="subj-head"><span class="num">27</span><span class="title">Struct (as a thing that resembles Class)</span></div>
+    <p class="task"><code>struct TapWeight { int delaySamples; double gain; };</code> and <code>double weightedSample(TapWeight tap, double x)</code> returning <code>tap.gain * x</code> (delay applied elsewhere).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol27')">Reveal solution</button>
+    <div id="sol27" class="solution">
+      <pre><code>struct TapWeight
+{
+    int delaySamples;
+    double gain;
+};
+
+double weightedSample(TapWeight const tap, double const x)
+{
+    (void)tap.delaySamples;
+    return tap.gain * x;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Structs bundle plain comb-tap metadata with public fields — no vtable overhead.</p>
+    </div>
+  </section>
+
+  <!-- 28 -->
+  <section class="subject" id="s28">
+    <div class="subj-head"><span class="num">28</span><span class="title">Boundary Alignment (Memory)</span></div>
+    <p class="task"><code>alignas(16) struct AdcCaptureBlock { double samples[4]; };</code> at namespace scope; note why 16-byte alignment suits 128-bit SIMD loads on four doubles.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol28')">Reveal solution</button>
+    <div id="sol28" class="solution">
+      <pre><code>namespace
+{
+alignas(16) struct AdcCaptureBlock
+{
+    double samples[4];
+};
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>alignas(16)</code> ensures the four-sample block starts on a 128-bit boundary for vectorized AFE capture paths.</p>
+    </div>
+  </section>
+
+  <!-- 29 -->
+  <section class="subject" id="s29">
+    <div class="subj-head"><span class="num">29</span><span class="title">Classes: Inheritance and Method Overriding</span></div>
+    <p class="task"><code>class SampleProvider { public: virtual double next(); virtual ~SampleProvider()=default; };</code> default returns 0. <code>class NoiseProvider : public SampleProvider</code> overrides to return stored <code>sigma_</code> stub (constant noise RMS).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol29')">Reveal solution</button>
+    <div id="sol29" class="solution">
+      <pre><code>class SampleProvider
+{
+public:
+    virtual double next()
+    {
+        return 0.0;
+    }
+    virtual ~SampleProvider() = default;
+};
+
+class NoiseProvider : public SampleProvider
+{
+public:
+    explicit NoiseProvider(double const sigma)
+        : sigma_{sigma}
+    {
+    }
+
+    double next() override
+    {
+        return sigma_;
+    }
+
+private:
+    double sigma_;
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Virtual <code>next()</code> lets HIL swap deterministic noise sources without changing the consumer loop.</p>
+    </div>
+  </section>
+
+  <!-- 30 -->
+  <section class="subject" id="s30">
+    <div class="subj-head"><span class="num">30</span><span class="title">Classes: const correctness</span></div>
+    <p class="task">Class <code>PhaseAccumulator</code> with <code>double phase() const</code> and non-const <code>void advance(double delta)</code> updating private <code>phase_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol30')">Reveal solution</button>
+    <div id="sol30" class="solution">
+      <pre><code>class PhaseAccumulator
+{
+public:
+    double phase() const
+    {
+        return phase_;
+    }
+
+    void advance(double const delta)
+    {
+        phase_ += delta;
+    }
+
+private:
+    double phase_{0.0};
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>const</code> observers may read phase during PSD capture without mutating oscillator state.</p>
+    </div>
+  </section>
+
+  <!-- 31 -->
+  <section class="subject" id="s31">
+    <div class="subj-head"><span class="num">31</span><span class="title">Classes: const member variables and reference member variables</span></div>
+    <p class="task">Class <code>FixedGainProbe</code> with <code>double const gain_</code> and <code>double const&amp; input_</code>; ctor initializes both; <code>double read() const</code> returns <code>gain_ * input_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol31')">Reveal solution</button>
+    <div id="sol31" class="solution">
+      <pre><code>class FixedGainProbe
+{
+public:
+    FixedGainProbe(double const gain, double const&amp; input)
+        : gain_{gain}
+        , input_{input}
+    {
+    }
+
+    double read() const
+    {
+        return gain_ * input_;
+    }
+
+private:
+    double const gain_;
+    double const&amp; input_;
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Const and reference members must be set in the ctor init-list — typical for tap probes bound to ring-buffer slots.</p>
+    </div>
+  </section>
+
+  <!-- 32 -->
+  <section class="subject" id="s32">
+    <div class="subj-head"><span class="num">32</span><span class="title">Classes: chaining class functions</span></div>
+    <p class="task"><code>class CombTuning</code> with chained <code>CombTuning&amp; setDelayMs(double)</code>, <code>setFeedback(double)</code>, <code>setMix(double)</code> returning <code>*this</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol32')">Reveal solution</button>
+    <div id="sol32" class="solution">
+      <pre><code>class CombTuning
+{
+public:
+    CombTuning&amp; setDelayMs(double const ms)
+    {
+        delayMs_ = ms;
+        return *this;
+    }
+
+    CombTuning&amp; setFeedback(double const g)
+    {
+        feedback_ = g;
+        return *this;
+    }
+
+    CombTuning&amp; setMix(double const m)
+    {
+        mix_ = m;
+        return *this;
+    }
+
+    double delayMs() const { return delayMs_; }
+    double feedback() const { return feedback_; }
+    double mix() const { return mix_; }
+
+private:
+    double delayMs_{10.0};
+    double feedback_{0.5};
+    double mix_{0.3};
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Method chaining groups comb parameters in one expression during factory preset loading.</p>
+    </div>
+  </section>
+
+  <!-- 33 -->
+  <section class="subject" id="s33">
+    <div class="subj-head"><span class="num">33</span><span class="title">Classes: protected member variables</span></div>
+    <p class="task"><code>class DelayLineBase { protected: int lengthSamples_; };</code> <code>class FractionalDelay : public DelayLineBase { public: int lengthSamples() const; };</code> reading <code>lengthSamples_</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol33')">Reveal solution</button>
+    <div id="sol33" class="solution">
+      <pre><code>class DelayLineBase
+{
+protected:
+    int lengthSamples_{256};
+};
+
+class FractionalDelay : public DelayLineBase
+{
+public:
+    int lengthSamples() const
+    {
+        return lengthSamples_;
+    }
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>protected</code> exposes state to derived comb delay lines while hiding it from clients.</p>
+    </div>
+  </section>
+
+  <!-- 34 -->
+  <section class="subject" id="s34">
+    <div class="subj-head"><span class="num">34</span><span class="title">Classes: Base Class access specifiers</span></div>
+    <p class="task"><code>class RegBlock { public: std::uint32_t addr; };</code> then <code>class MapPublic : public RegBlock {};</code>, <code>class MapProtected : protected RegBlock {};</code>, <code>class MapPrivate : private RegBlock {};</code> — one sentence on how <code>addr</code> appears in each derived interface.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol34')">Reveal solution</button>
+    <div id="sol34" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+
+class RegBlock
+{
+public:
+    std::uint32_t addr{};
+};
+
+class MapPublic : public RegBlock
+{
+};
+class MapProtected : protected RegBlock
+{
+};
+class MapPrivate : private RegBlock
+{
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>public</code> inheritance keeps <code>addr</code> public in <code>MapPublic</code>; <code>protected</code> / <code>private</code> inheritance downgrade visibility in the derived type.</p>
+    </div>
+  </section>
+
+  <!-- 35 -->
+  <section class="subject" id="s35">
+    <div class="subj-head"><span class="num">35</span><span class="title">Classes: 'friend' in inharitance</span></div>
+    <p class="task">Base <code>TrimBank { protected: double trimDb_; };</code> <code>class FactoryTrim : public TrimBank { friend void applyFactoryDefault(FactoryTrim&amp;); public: double trimDb() const; };</code> friend sets <code>trimDb_ = -12.0</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol35')">Reveal solution</button>
+    <div id="sol35" class="solution">
+      <pre><code>class TrimBank
+{
+protected:
+    double trimDb_{0.0};
+};
+
+class FactoryTrim : public TrimBank
+{
+    friend void applyFactoryDefault(FactoryTrim&amp; bank);
+
+public:
+    double trimDb() const { return trimDb_; }
+};
+
+void applyFactoryDefault(FactoryTrim&amp; bank)
+{
+    bank.trimDb_ = -12.0;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Friend functions in derived classes reach protected base state for calibration routines.</p>
+    </div>
+  </section>
+
+  <!-- 36 -->
+  <section class="subject" id="s36">
+    <div class="subj-head"><span class="num">36</span><span class="title">Classes: resurrect members in a more relaxed access level in inheritance</span></div>
+    <p class="task"><code>class CorePlan { protected: int hopSize_{256}; };</code> <code>class PublicPlan : public CorePlan { public: using CorePlan::hopSize_; };</code></p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol36')">Reveal solution</button>
+    <div id="sol36" class="solution">
+      <pre><code>class CorePlan
+{
+protected:
+    int hopSize_{256};
+};
+
+class PublicPlan : public CorePlan
+{
+public:
+    using CorePlan::hopSize_;
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>using</code> promotes a protected base member to public in the derived API without adding accessors.</p>
+    </div>
+  </section>
+
+  <!-- 37 -->
+  <section class="subject" id="s37">
+    <div class="subj-head"><span class="num">37</span><span class="title">Classes: Copy Contructors and inheritance</span></div>
+    <p class="task"><code>class FrameHeader { public: int nBins; explicit FrameHeader(int n); };</code> <code>class TimestampedFrame : public FrameHeader { public: int timestampMs; TimestampedFrame(int n,int ts); TimestampedFrame(TimestampedFrame const&amp; o); };</code> copy ctor forwards base.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol37')">Reveal solution</button>
+    <div id="sol37" class="solution">
+      <pre><code>class FrameHeader
+{
+public:
+    int nBins;
+    explicit FrameHeader(int const n)
+        : nBins{n}
+    {
+    }
+};
+
+class TimestampedFrame : public FrameHeader
+{
+public:
+    int timestampMs;
+
+    TimestampedFrame(int const n, int const ts)
+        : FrameHeader{n}
+        , timestampMs{ts}
+    {
+    }
+
+    TimestampedFrame(TimestampedFrame const&amp; o)
+        : FrameHeader{o}
+        , timestampMs{o.timestampMs}
+    {
+    }
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Derived copy constructors must initialize the base subobject — here the PSD bin count travels with the timestamp.</p>
+    </div>
+  </section>
+
+  <!-- 38 -->
+  <section class="subject" id="s38">
+    <div class="subj-head"><span class="num">38</span><span class="title">Classes: "Explicit" keyword</span></div>
+    <p class="task">Class <code>CombLength</code> with <code>explicit CombLength(int tapCount)</code> only. Comment that <code>CombLength line = 64;</code> is ill-formed.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol38')">Reveal solution</button>
+    <div id="sol38" class="solution">
+      <pre><code>class CombLength
+{
+public:
+    explicit CombLength(int const tapCount)
+        : tapCount_{tapCount}
+    {
+    }
+
+    int tapCount() const { return tapCount_; }
+
+private:
+    int tapCount_;
+};
+
+// CombLength line = 64; // error: explicit ctor is not a converting constructor
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>explicit</code> prevents silent int→comb-length conversions that could confuse tap counts with milliseconds.</p>
+    </div>
+  </section>
+
+  <!-- 39 -->
+  <section class="subject" id="s39">
+    <div class="subj-head"><span class="num">39</span><span class="title">Classes: Virtual keyword and Polymorphism</span></div>
+    <p class="task"><code>class FilterKernel { public: virtual double process(double x)=0; virtual ~FilterKernel()=default; };</code> + <code>class AllPassStub : public FilterKernel</code> returning <code>x</code> unchanged.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol39')">Reveal solution</button>
+    <div id="sol39" class="solution">
+      <pre><code>class FilterKernel
+{
+public:
+    virtual double process(double const x) = 0;
+    virtual ~FilterKernel() = default;
+};
+
+class AllPassStub : public FilterKernel
+{
+public:
+    double process(double const x) override
+    {
+        return x;
+    }
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Pure virtual <code>process</code> defines the comb post-filter slot; stub passes samples through for bring-up.</p>
+    </div>
+  </section>
+
+  <!-- 40 -->
+  <section class="subject" id="s40">
+    <div class="subj-head"><span class="num">40</span><span class="title">Classes: Overload, Override and hiding</span></div>
+    <p class="task">Base <code>virtual void mapBin(double hz)</code>; derived declares <code>void mapBin(int k)</code> without <code>override</code> — hides base; comment “hiding, not override”.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol40')">Reveal solution</button>
+    <div id="sol40" class="solution">
+      <pre><code>class BinMapper
+{
+public:
+    virtual void mapBin(double)
+    {
+    }
+    virtual ~BinMapper() = default;
+};
+
+class FastBinMapper : public BinMapper
+{
+public:
+    void mapBin(int)
+    {
+    } // hides BinMapper::mapBin(double) — hiding, not override
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Overload in derived without <code>virtual</code> hides the base virtual — a common PSD tooling footgun.</p>
+    </div>
+  </section>
+
+  <!-- 41 -->
+  <section class="subject" id="s41">
+    <div class="subj-head"><span class="num">41</span><span class="title">Classes: Polymorphism at different levels</span></div>
+    <p class="task">Using <code>FilterKernel</code> from 39: <code>double runKernel(FilterKernel&amp; k, double x)</code> vs <code>double runKernel(AllPassStub&amp; k, double x)</code> — comment dynamic vs static dispatch.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol41')">Reveal solution</button>
+    <div id="sol41" class="solution">
+      <pre><code>class FilterKernel
+{
+public:
+    virtual double process(double const x) = 0;
+    virtual ~FilterKernel() = default;
+};
+
+class AllPassStub : public FilterKernel
+{
+public:
+    double process(double const x) override { return x; }
+};
+
+double runKernel(FilterKernel&amp; k, double const x)
+{
+    return k.process(x); // dynamic dispatch
+}
+
+double runKernel(AllPassStub&amp; k, double const x)
+{
+    return k.process(x); // static dispatch to AllPassStub::process
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Reference type at the call site selects vtable vs direct call even when the function name is identical.</p>
+    </div>
+  </section>
+
+  <!-- 42 -->
+  <section class="subject" id="s42">
+    <div class="subj-head"><span class="num">42</span><span class="title">Classes: "final" specifier</span></div>
+    <p class="task"><code>class HpfStage final : public FilterKernel</code> with <code>process</code> returning <code>0.5 * x</code>. Comment: further derivation is ill-formed.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol42')">Reveal solution</button>
+    <div id="sol42" class="solution">
+      <pre><code>class FilterKernel
+{
+public:
+    virtual double process(double const x) = 0;
+    virtual ~FilterKernel() = default;
+};
+
+class HpfStage final : public FilterKernel
+{
+public:
+    double process(double const x) override
+    {
+        return 0.5 * x;
+    }
+};
+
+// class More : public HpfStage {}; // ill-formed: HpfStage is final
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>final</code> seals a certified HPF stage — subclasses would violate the signed DSP pipeline.</p>
+    </div>
+  </section>
+
+  <!-- 43 -->
+  <section class="subject" id="s43">
+    <div class="subj-head"><span class="num">43</span><span class="title">Classes: virtual override w/ default args</span></div>
+    <p class="task">Base <code>virtual double tapGain(int k, bool normalized = true) const;</code> derived override with same default; comment that defaults bind statically.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol43')">Reveal solution</button>
+    <div id="sol43" class="solution">
+      <pre><code>class CombTapLaw
+{
+public:
+    virtual double tapGain(int const k, bool const normalized = true) const
+    {
+        return normalized ? 1.0 / static_cast&lt;double&gt;(k + 1) : 1.0;
+    }
+    virtual ~CombTapLaw() = default;
+};
+
+class UnityTapLaw : public CombTapLaw
+{
+public:
+    double tapGain(int const k, bool const normalized = true) const override
+    {
+        (void)k;
+        (void)normalized;
+        return 1.0;
+    }
+};
+
+// Default arguments are determined by the static type of the expression naming the function.
+</code></pre>
+      <p class="why"><strong>Note:</strong> Virtual dispatch picks the function body; default args still come from the static type — a subtle comb-gain trap.</p>
+    </div>
+  </section>
+
+  <!-- 44 -->
+  <section class="subject" id="s44">
+    <div class="subj-head"><span class="num">44</span><span class="title">Classes: Static Binding</span></div>
+    <p class="task">Non-virtual <code>class ChannelLayout { public: int count() const { return 1; } };</code> <code>class StereoLayout : public ChannelLayout { public: int count() const { return 2; } };</code> Show <code>ChannelLayout layout = StereoLayout{}; layout.count();</code> — comment result.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol44')">Reveal solution</button>
+    <div id="sol44" class="solution">
+      <pre><code>class ChannelLayout
+{
+public:
+    int count() const
+    {
+        return 1;
+    }
+};
+
+class StereoLayout : public ChannelLayout
+{
+public:
+    int count() const
+    {
+        return 2;
+    }
+};
+
+void demo()
+{
+    ChannelLayout layout = StereoLayout{};
+    int const c = layout.count(); // c == 1: slicing + static binding
+    (void)c;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Without <code>virtual</code>, the base subobject is copied and <code>count()</code> resolves at compile time to mono.</p>
+    </div>
+  </section>
+
+  <!-- 45 -->
+  <section class="subject" id="s45">
+    <div class="subj-head"><span class="num">45</span><span class="title">Classes: Abstract class and pure virtual functions</span></div>
+    <p class="task">Abstract <code>class PsdEstimator</code> with <code>virtual double estimate(double const* frame, int n)=0;</code> protected ctor; cannot instantiate <code>PsdEstimator</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol45')">Reveal solution</button>
+    <div id="sol45" class="solution">
+      <pre><code>class PsdEstimator
+{
+public:
+    virtual double estimate(double const* frame, int n) = 0;
+    virtual ~PsdEstimator() = default;
+
+protected:
+    PsdEstimator() = default;
+};
+
+// PsdEstimator est; // error: abstract type
+</code></pre>
+      <p class="why"><strong>Note:</strong> Pure virtual methods force concrete Welch/periodogram implementations in derived classes.</p>
+    </div>
+  </section>
+
+  <!-- 46 -->
+  <section class="subject" id="s46">
+    <div class="subj-head"><span class="num">46</span><span class="title">Classes: Abstract classes as interfaces</span></div>
+    <p class="task"><code>struct IBinWriter</code> — pure virtual <code>void write(int bin, double power)</code>, virtual dtor. <code>class NullBinWriter : public IBinWriter</code> with empty <code>write</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol46')">Reveal solution</button>
+    <div id="sol46" class="solution">
+      <pre><code>struct IBinWriter
+{
+    virtual void write(int bin, double power) = 0;
+    virtual ~IBinWriter() = default;
+};
+
+class NullBinWriter : public IBinWriter
+{
+public:
+    void write(int, double) override
+    {
+    }
+};
+</code></pre>
+      <p class="why"><strong>Note:</strong> Interface structs decouple PSD peak logging from the core FFT loop.</p>
+    </div>
+  </section>
+
+  <!-- 47 -->
+  <section class="subject" id="s47">
+    <div class="subj-head"><span class="num">47</span><span class="title">Classes: operator overloading (left hand operators and right hand operators, members vs non members operators, symmetry, inheritance)</span></div>
+    <p class="task"><code>class CombTapPair</code> holds <code>double dry_</code>, <code>double wet_</code>; member <code>CombTapPair operator+(CombTapPair const&amp; rhs) const</code>; friend non-member <code>CombTapPair operator*(double k, CombTapPair const&amp; p)</code> scaling both taps.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol47')">Reveal solution</button>
+    <div id="sol47" class="solution">
+      <pre><code>class CombTapPair
+{
+public:
+    CombTapPair(double const dry, double const wet)
+        : dry_{dry}
+        , wet_{wet}
+    {
+    }
+
+    CombTapPair operator+(CombTapPair const&amp; rhs) const
+    {
+        return CombTapPair{dry_ + rhs.dry_, wet_ + rhs.wet_};
+    }
+
+    double dry() const { return dry_; }
+    double wet() const { return wet_; }
+
+    friend CombTapPair operator*(double k, CombTapPair const&amp; p);
+
+private:
+    double dry_;
+    double wet_;
+};
+
+CombTapPair operator*(double const k, CombTapPair const&amp; p)
+{
+    return CombTapPair{k * p.dry_, k * p.wet_};
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Member <code>+</code> for same-type combine; free <code>operator*</code> on the left keeps scalar gain symmetric and readable.</p>
+    </div>
+  </section>
+
+  <!-- 48 -->
+  <section class="subject" id="s48">
+    <div class="subj-head"><span class="num">48</span><span class="title">Classes: friends and operators (friend use cases)</span></div>
+    <p class="task">Class <code>AdcReading</code> with private <code>int raw_</code>; <code>friend bool operator&lt;(AdcReading const&amp;, AdcReading const&amp;);</code> comparing <code>raw_</code> for threshold sort in calibration logs.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol48')">Reveal solution</button>
+    <div id="sol48" class="solution">
+      <pre><code>class AdcReading
+{
+    friend bool operator&lt;(AdcReading const&amp; a, AdcReading const&amp; b);
+
+public:
+    explicit AdcReading(int const raw)
+        : raw_{raw}
+    {
+    }
+
+private:
+    int raw_;
+};
+
+bool operator&lt;(AdcReading const&amp; a, AdcReading const&amp; b)
+{
+    return a.raw_ &lt; b.raw_;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> Friend comparison operators reach private ADC counts without exposing <code>raw_</code> publicly.</p>
+    </div>
+  </section>
+
+  <!-- 49 -->
+  <section class="subject" id="s49">
+    <div class="subj-head"><span class="num">49</span><span class="title">STL: sequence containers - Vectors fundementals (produce a complete seperated workbook)</span></div>
+    <p class="task">Use <code>std::vector&lt;double&gt;</code>: function <code>void resizeZeroFrame(std::vector&lt;double&gt;&amp; v, int frameSize)</code> calling <code>resize(frameSize)</code> and <code>std::fill</code> to zero (FFT capture buffer init).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol49')">Reveal solution</button>
+    <div id="sol49" class="solution">
+      <pre><code>#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+
+void resizeZeroFrame(std::vector&lt;double&gt;&amp; v, int const frameSize)
+{
+    v.resize(static_cast&lt;std::size_t&gt;(frameSize));
+    std::fill(v.begin(), v.end(), 0.0);
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>vector::resize</code> plus fill prepares a known-length frame without manual <code>new[]</code>.</p>
+    </div>
+  </section>
+
+  <!-- 50 -->
+  <section class="subject" id="s50">
+    <div class="subj-head"><span class="num">50</span><span class="title">STL: list fundementals (produce a complete seperated workbook)</span></div>
+    <p class="task"><code>std::list&lt;TapWeight&gt;</code> for scheduled comb taps; function <code>void enqueueTap(std::list&lt;TapWeight&gt;&amp; taps, TapWeight w)</code> appending with <code>push_back</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol50')">Reveal solution</button>
+    <div id="sol50" class="solution">
+      <pre><code>#include &lt;list&gt;
+
+struct TapWeight
+{
+    int delaySamples;
+    double gain;
+};
+
+void enqueueTap(std::list&lt;TapWeight&gt;&amp; taps, TapWeight const w)
+{
+    taps.push_back(w);
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>list</code> gives stable iterators when taps are inserted during live retune — unlike vector reallocation.</p>
+    </div>
+  </section>
+
+  <!-- 51 -->
+  <section class="subject" id="s51">
+    <div class="subj-head"><span class="num">51</span><span class="title">STL: algorithm (produce a complete seperated workbook)</span></div>
+    <p class="task">Given <code>std::vector&lt;double&gt; const&amp; magnitudes</code>, return the largest value using <code>std::max_element</code> from <code>&lt;algorithm&gt;</code> (peak bin search).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol51')">Reveal solution</button>
+    <div id="sol51" class="solution">
+      <pre><code>#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+
+double peakMagnitude(std::vector&lt;double&gt; const&amp; magnitudes)
+{
+    if (magnitudes.empty()) {
+        return 0.0;
+    }
+    return *std::max_element(magnitudes.begin(), magnitudes.end());
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>max_element</code> returns an iterator — dereference for the PSD peak without a manual loop.</p>
+    </div>
+  </section>
+
+  <!-- 52 -->
+  <section class="subject" id="s52">
+    <div class="subj-head"><span class="num">52</span><span class="title">STL: maps fundementals (produce a complete seperated workbook)</span></div>
+    <p class="task"><code>std::map&lt;std::string, std::uint32_t&gt;</code> AFE register table; function <code>std::uint32_t lookupOffset(std::map&lt;std::string, std::uint32_t&gt; const&amp; m, std::string const&amp; name)</code> returning offset or <code>0</code> if missing.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol52')">Reveal solution</button>
+    <div id="sol52" class="solution">
+      <pre><code>#include &lt;cstdint&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+
+std::uint32_t lookupOffset(
+    std::map&lt;std::string, std::uint32_t&gt; const&amp; m,
+    std::string const&amp; name)
+{
+    auto const it = m.find(name);
+    if (it == m.end()) {
+        return 0u;
+    }
+    return it-&gt;second;
+}
+</code></pre>
+      <p class="why"><strong>Note:</strong> <code>map::find</code> avoids inserting a zero entry when a register name is absent from the table.</p>
+    </div>
+  </section>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:24px;">52 subjects · Everyday Practice 3</p>
+
+</body>
+</html>

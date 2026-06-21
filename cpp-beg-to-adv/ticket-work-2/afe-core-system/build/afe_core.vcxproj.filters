@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\iencoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\route_channel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\response_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\stereo_comb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\calibrated_gain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\psd_worker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\wave_source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\register_mask.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\tap_sifter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\fold_accumulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\export_layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\safe_add.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\audit_gate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\src\api_revision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\SW\dsp-c-cpp-python\cpp-beg-to-adv\ticket-work-2\afe-core-system\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7BDFEB91-3189-3512-8086-F593A0039701}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

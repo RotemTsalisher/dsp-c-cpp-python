@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work 2 — Staff Level AFE / C++</title>
+  <style>
+    :root { --bg:#f0f1f3; --card:#fff; --border:#d0d7de; --accent:#a40e26; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+    .system { background:#ffebe9; border-left:4px solid var(--accent); padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .system h2 { margin:0 0 8px 0; font-size:1rem; color:#82071e; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; box-shadow:0 1px 2px rgba(31,35,40,.06); }
+    .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .prio { font-size:.75rem; background:#212830; color:#fff; padding:2px 8px; border-radius:4px; }
+    .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; font-size:.9rem; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; font-size:.9rem; margin-top:10px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
+    .btn-hint { background:#57606a; color:#fff; }
+    .btn-sol { background:#a40e26; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    .hint-panel { background:#eaeef2; border:1px solid var(--border); }
+    .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.76rem; line-height:1.4; margin:8px 0 0; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
+    footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+
+  <h1><span class="badge">STAFF</span> AFE ticket notebook (workbook 2)</h1>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · certification, ABI, overflow policy, cross-module contracts</p>
+
+  <div class="system">
+    <h2>CardoLink AFE — staff audit lane</h2>
+    <p>Security and certification regressions: overflow guards, plugin ABI layout, audit tokens, API revision drift, and mono-mix energy after comb merge.</p>
+    <pre><code>cd ../afe-core-system
+cmake --build build --target afe_ticket_test
+.\build\Debug\afe_ticket_test.exe AFE-STAFF-301</code></pre>
+  </div>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-STAFF-301</span><span class="prio">P0 · Blocker</span><span class="qa">Overflow audit</span></div>
+    <h3>Signed add wraps at INT_MAX</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>safe_add_i32(INT_MAX, 1)</code> wraps to <code>INT_MIN</code>. Certification requires a sentinel <code>-1</code> on overflow instead of undefined wrapping.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/safe_add.cpp</code> — <code>safe_add_i32</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-STAFF-301</code></pre>
+      <pre><code>observed safe_add_i32(INT_MAX, 1): -2147483648
+expected safe_add_i32(INT_MAX, 1): -1</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-STAFF-301 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h301')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s301')">Complete solution</button>
+    </div>
+    <div id="h301" class="panel hint-panel"><strong>Hint:</strong> Detect positive overflow before performing raw signed addition.</div>
+    <div id="s301" class="panel sol-panel"><pre><code>if (b &gt; 0 &amp;&amp; a &gt; INT_MAX - b) return -1;
+return a + b;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-STAFF-302</span><span class="prio">P1 · Critical</span><span class="qa">Plugin ABI</span></div>
+    <h3>Export header size mismatch breaks plugin loader</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>export_header_size()</code> reports <code>6</code> bytes. The loader contract expects natural alignment padding to <code>8</code> bytes for <code>PluginExportHeader</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/export_layout.hpp</code> — <code>PluginExportHeader</code> layout.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-STAFF-302</code></pre>
+      <pre><code>observed export_header_size(): 6
+expected export_header_size(): 8</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-STAFF-302 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h302')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s302')">Complete solution</button>
+    </div>
+    <div id="h302" class="panel hint-panel"><strong>Hint:</strong> Packed layout removed required tail padding between <code>uint16_t</code> and following fields.</div>
+    <div id="s302" class="panel sol-panel"><pre><code>// Remove #pragma pack — use natural alignment for uint32_t flags.</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-STAFF-303</span><span class="prio">P1 · Critical</span><span class="qa">Security audit</span></div>
+    <h3>Audit token never stored after certification write</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>set_audit_token</code> is a no-op. Verification always fails after the certification station programs token <code>0.875</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/audit_gate.cpp</code> — <code>set_audit_token</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-STAFF-303</code></pre>
+      <pre><code>observed verify_audit_token after set_audit_token(0.875): 0
+expected verify_audit_token after set_audit_token(0.875): 1</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-STAFF-303 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h303')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s303')">Complete solution</button>
+    </div>
+    <div id="h303" class="panel hint-panel"><strong>Hint:</strong> The friend setter must write the private token field on the gate object.</div>
+    <div id="s303" class="panel sol-panel"><pre><code>gate.token_ = token;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-STAFF-304</span><span class="prio">P2 · Major</span><span class="qa">API contract</span></div>
+    <h3>API revision below signed contract</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>Partner DLLs expect <code>api_revision()</code> to return <code>2</code>. The core still reports <code>1</code> after the v2 register map shipped.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/api_revision.cpp</code> — <code>api_revision</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-STAFF-304</code></pre>
+      <pre><code>observed api_revision(): 1
+expected api_revision(): 2</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-STAFF-304 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h304')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s304')">Complete solution</button>
+    </div>
+    <div id="h304" class="panel hint-panel"><strong>Hint:</strong> Bump the returned revision constant to match the v2 header contract.</div>
+    <div id="s304" class="panel sol-panel"><pre><code>return 2;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-STAFF-305</span><span class="prio">P2 · Major</span><span class="qa">Mono-mix cert</span></div>
+    <h3>Mono-mix energy wrong after comb PSD merge</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>After merging tone and noise comb snapshots, the mono-mix quadratic energy exceeds the certification limit because the right channel energy is overstated.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/stereo_comb.cpp</code> — <code>operator+(StereoComb const&amp;, StereoComb const&amp;)</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-STAFF-305</code></pre>
+      <pre><code>observed mono_energy after operator+: 0.0441
+expected mono_energy after operator+: 0.0333</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-STAFF-305 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h305')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s305')">Complete solution</button>
+    </div>
+    <div id="h305" class="panel hint-panel"><strong>Hint:</strong> Same root cause as ENTRY-104 — verify the right channel uses <code>b.right()</code>.</div>
+    <div id="s305" class="panel sol-panel"><pre><code>return StereoComb{a.left() + b.left(), a.right() + b.right()};</code></pre></div>
+  </article>
+
+  <footer>CardoLink AFE · ticket-work-2 · Staff · 5 tickets</footer>
+  <script>function toggle(id){const el=document.getElementById(id);if(el)el.classList.toggle('visible');}</script>
+</body>
+</html>

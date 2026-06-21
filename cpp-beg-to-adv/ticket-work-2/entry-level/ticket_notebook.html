@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work 2 — Entry Level AFE / C++</title>
+  <style>
+    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#1a7f37; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
+    .system { background:#ddf4ff; border-left:4px solid #0969da; padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .system h2 { margin:0 0 8px 0; font-size:1rem; color:#0550ae; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; box-shadow:0 1px 2px rgba(31,35,40,.06); }
+    .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .prio { font-size:.75rem; background:#fff8c5; border:1px solid #d4a72c; padding:2px 8px; border-radius:4px; }
+    .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; font-size:.9rem; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; font-size:.9rem; margin-top:10px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
+    .btn-hint { background:#bf8700; color:#fff; }
+    .btn-sol { background:#0969da; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    .hint-panel { background:#fff8c5; border:1px solid #d4a72c; }
+    .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:8px 0 0; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
+    footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+
+  <h1><span class="badge">ENTRY</span> AFE ticket notebook (workbook 2)</h1>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · object model &amp; ownership floor · C++20 training subset (no STL containers)</p>
+
+  <div class="system">
+    <h2>Analog Front End Core (AFE) — how to work a ticket</h2>
+    <p><strong>System:</strong> CardoLink AFE — register masking, comb-energy merge, encoder plugins, and duplex routing helpers for the voice uplink chain.</p>
+    <p><strong>Your job:</strong> Each ticket describes one defect already present in the codebase. Patch only the files listed under <em>Fix</em>, then re-run that ticket’s test until it prints <code>PASS</code>.</p>
+    <p><strong>Code:</strong> <code>../afe-core-system/</code></p>
+    <pre><code>cd ../afe-core-system
+cmake -S . -B build
+cmake --build build --target afe_ticket_test
+.\build\Debug\afe_ticket_test.exe AFE-ENTRY-101</code></pre>
+    <p>List every ticket id: <code>.\build\Debug\afe_ticket_test.exe --list</code></p>
+  </div>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-ENTRY-101</span><span class="prio">P0 · Blocker</span><span class="qa">Soak + ASan</span></div>
+    <h3>Crash on teardown deleting encoder through IEncoder*</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>Host deletes a <code>NotchEncoder</code> through <code>IEncoder*</code>. Under ASan the delete is undefined behaviour and may crash during long-run soak.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/iencoder.hpp</code> — <code>IEncoder</code> destructor and <code>NotchEncoder</code> teardown path.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-ENTRY-101</code></pre>
+      <pre><code>observed has_virtual_destructor_v&lt;IEncoder&gt;: 0
+expected has_virtual_destructor_v&lt;IEncoder&gt;: 1</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-ENTRY-101 PASS</code> and exit code 0.</div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h101')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s101')">Complete solution</button>
+    </div>
+    <div id="h101" class="panel hint-panel"><strong>Hint:</strong> Polymorphic bases deleted through a pointer need a virtual destructor.</div>
+    <div id="s101" class="panel sol-panel">
+      <p><strong>Root cause:</strong> Non-virtual destructor on a polymorphic interface.</p>
+      <pre><code>struct IEncoder {
+    virtual void encode_frame(double const* frame, int count) = 0;
+    virtual ~IEncoder() = default;
+};</code></pre>
+    </div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-ENTRY-102</span><span class="prio">P1 · Critical</span><span class="qa">Certification</span></div>
+    <h3>Duplex lane id lost in routing telemetry</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>route_channel_by_value</code> logs lane id <code>1</code> for a <code>DuplexChannel</code> that reports id <code>2</code> when queried directly.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>include/afe/route_channel.hpp</code>, <code>src/route_channel.cpp</code> — <code>route_channel_by_value</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-ENTRY-102</code></pre>
+      <pre><code>observed DuplexChannel.lane_id(): 2
+observed route_channel_by_value(DuplexChannel): 1
+expected route_channel_by_value(DuplexChannel): 2</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-ENTRY-102 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h102')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s102')">Complete solution</button>
+    </div>
+    <div id="h102" class="panel hint-panel"><strong>Hint:</strong> Value parameters can slice derived channel objects.</div>
+    <div id="s102" class="panel sol-panel"><pre><code>int route_channel_by_value(DuplexChannel const&amp; channel) {
+    return channel.lane_id();
+}</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-ENTRY-103</span><span class="prio">P1 · Critical</span><span class="qa">Golden FFT</span></div>
+    <h3>Response curve doubles through IResponseCurve*</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>Calling <code>eval(0.5)</code> through <code>IResponseCurve const*</code> returns <code>1.0</code> instead of <code>0.5</code> on the golden curve check.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/response_curve.cpp</code> — <code>ResponseCurve::eval(double)</code> one-argument overload.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-ENTRY-103</code></pre>
+      <pre><code>observed IResponseCurve::eval(0.5): 1
+expected IResponseCurve::eval(0.5): 0.5</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-ENTRY-103 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h103')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s103')">Complete solution</button>
+    </div>
+    <div id="h103" class="panel hint-panel"><strong>Hint:</strong> Default arguments bind statically; the one-arg override must delegate to the correct two-arg call.</div>
+    <div id="s103" class="panel sol-panel"><pre><code>double ResponseCurve::eval(double const x) const {
+    return eval(x, false);
+}</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-ENTRY-104</span><span class="prio">P2 · Major</span><span class="qa">PSD merge</span></div>
+    <h3>Stereo comb operator+ drops right channel energy</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>Merging two <code>StereoComb</code> PSD snapshots adds left energies correctly but the right channel mirrors the left sum instead of summing right energies.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/stereo_comb.cpp</code> — <code>operator+(StereoComb const&amp;, StereoComb const&amp;)</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-ENTRY-104</code></pre>
+      <pre><code>observed (a + b).right(): 1.25
+expected (a + b).right(): 0.75</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-ENTRY-104 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h104')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s104')">Complete solution</button>
+    </div>
+    <div id="h104" class="panel hint-panel"><strong>Hint:</strong> Both channels need their own accumulator in the free <code>operator+</code>.</div>
+    <div id="s104" class="panel sol-panel"><pre><code>return StereoComb{a.left() + b.left(), a.right() + b.right()};</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <div class="ticket-head"><span class="id">AFE-ENTRY-105</span><span class="prio">P2 · Major</span><span class="qa">Factory trim</span></div>
+    <h3>Factory calibration write is a no-op</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>After <code>set_factory_cal(gain, 1.08)</code>, reading <code>trim()</code> still returns the default <code>1.0</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/calibrated_gain.cpp</code> — <code>set_factory_cal</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\afe_ticket_test.exe AFE-ENTRY-105</code></pre>
+      <pre><code>observed trim() after set_factory_cal(1.08): 1
+expected trim(): 1.08</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>AFE-ENTRY-105 PASS</code></div>
+    <div class="btn-row">
+      <button type="button" class="btn-hint" onclick="toggle('h105')">Hint</button>
+      <button type="button" class="btn-sol" onclick="toggle('s105')">Complete solution</button>
+    </div>
+    <div id="h105" class="panel hint-panel"><strong>Hint:</strong> The friend function is declared but does not write the protected trim field.</div>
+    <div id="s105" class="panel sol-panel"><pre><code>void set_factory_cal(CalibratedGain&amp; target, double const value) {
+    target.trim_ = value;
+}</code></pre></div>
+  </article>
+
+  <footer>CardoLink AFE · ticket-work-2 · Entry · 5 tickets</footer>
+  <script>function toggle(id){const el=document.getElementById(id);if(el)el.classList.toggle('visible');}</script>
+</body>
+</html>
