@@ -9,9 +9,6 @@ void WindPsdScratch::write_bin(int const index, double const value)
     if (index < 0 || index >= kBins) {
         throw std::out_of_range("write_bin");
     }
-    if (index == 0) {
-        return;
-    }
     bins_[static_cast<std::size_t>(index)] = value;
 }
 

@@ -1,4 +1,5 @@
 C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work/vlc-core-system/build/CMakeFiles/vlc_core.dir
 C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work/vlc-core-system/build/CMakeFiles/vlc_demo.dir
+C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work/vlc-core-system/build/CMakeFiles/vlc_ticket_test.dir
 C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work/vlc-core-system/build/CMakeFiles/ALL_BUILD.dir
 C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/cpp-beg-to-adv/ticket-work/vlc-core-system/build/CMakeFiles/ZERO_CHECK.dir

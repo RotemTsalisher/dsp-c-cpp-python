@@ -4,9 +4,10 @@
 
 namespace vlc {
 
-void MicGainChain::set_db(double const db)
+MicGainChain& MicGainChain::set_db(double const db)
 {
     linear_ = std::pow(10.0, db / 20.0);
+    return *this;
 }
 
 double MicGainChain::linear() const

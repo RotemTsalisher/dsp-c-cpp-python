@@ -18,7 +18,10 @@ HeapBins::HeapBins(std::size_t const bin_count)
     ++live_instances_;
 }
 
-HeapBins::~HeapBins() = default;
+HeapBins::~HeapBins(){
+    delete[] bins_;
+    --live_instances_;
+};
 
 double* HeapBins::data()
 {
