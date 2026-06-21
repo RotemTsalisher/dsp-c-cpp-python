@@ -6,7 +6,7 @@ namespace vlc {
 /// Non-polymorphic routing id (value semantics / static binding lesson).
 class Box {
 public:
-    int id() const { return 1; }
+    virtual int id() const { return 1; }
 };
 
 class FancyBox : public Box {
@@ -15,7 +15,7 @@ public:
 };
 
 /// Slices derived routing id when passed by value (VLC-SR-302 repro).
-inline int route_box_by_value(Box box)
+inline int route_box_by_value(Box const& box)
 {
     return box.id();
 }

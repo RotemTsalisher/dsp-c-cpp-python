@@ -1,0 +1,435 @@
+---
+description: Master rulebook — generate everyday subject drills and 3-level ticket-work job simulations from course-subjects.txt (C or C++). Copy to .cursor/rules/ in any course repo.
+alwaysApply: false
+globs: course-subjects.txt,**/ticket-work/**,**/everyday-practice*/**,**/workbooks/**,exercises-instructions.txt
+---
+
+# Practice Exercise Rulebook — Everyday Drills + Ticket-Work Job Simulations
+
+Use this rule when the user asks you to **produce or extend practice material** for a programming course (`c-beg-to-adv`, `cpp-beg-to-adv`, or a future course tree).
+
+The user **runs the curriculum manually** via `course-subjects.txt`. Your job is to **materialize** that list into two complementary deliverable families that share the same EE/product narrative but serve different learning modes.
+
+---
+
+## 0. Canonical inputs (read first, every time)
+
+| File | Role |
+|------|------|
+| `course-subjects.txt` | **Authoritative ordered subject list.** One subject per line. Do not skip, reorder, or invent topics not on the list. |
+| `exercises-instructions.txt` | Batch/workbook protocol (5–7 exercises per batch, cumulative mix, EE framing). |
+| This rulebook | Architecture for **everyday** + **ticket-work** deliverables, HTML/test conventions, level scale. |
+
+**Pre-flight checklist (mandatory):**
+
+1. Read `course-subjects.txt` end-to-end. Count active subjects (exclude blank lines and “MISSING FOR NOW” blocks unless the user updated the file).
+2. Note **forbidden / deferred** topics in that file (e.g. STL sections marked missing in an early C++ pass).
+3. Confirm **language** (C vs C++) and **standard** (C11/C17 vs C++20) with the repo you are in.
+4. Confirm whether you are generating **everyday**, **ticket-work**, or **both**.
+
+---
+
+## 1. Two deliverable families (always paired conceptually)
+
+For every course repo, the user expects **both**:
+
+### A. Everyday practice — subject-by-subject drills
+
+**Purpose:** One focused exercise **per line** in `course-subjects.txt`. Straightforward, isolated practice. No intentional multi-bug codebase.
+
+**Path pattern:**
+
+```
+<course-root>/everyday-practice/          # volume 1
+<course-root>/everyday-practice-2/        # optional second pass (new tasks, same order)
+```
+
+**Deliverable:** Standalone HTML (`per_subject_practice.html` or numbered volumes).
+
+**Hard rules:**
+
+- **Every active subject gets exactly one exercise.** Zero skips.
+- Subject order in HTML **matches** `course-subjects.txt` order.
+- Number exercises (`01`, `02`, …) and anchor IDs (`#s01`, `#s02`, …).
+- Include a **table of contents** linking all subjects.
+- Each exercise: **task statement only** in the visible body; **full solution + brief “why this feature”** inside a **Reveal solution** button panel only.
+- Simpler than ticket-work; may be pencil-and-paper or small snippet — does not require the core-system repo unless the user asks.
+
+### B. Ticket-work — 3-level job simulation
+
+**Purpose:** A **coherent embedded product codebase** with **intentional bugs**, QA-style HTML tickets, and a **per-ticket automated test runner**. Mimics real on-the-job defect triage.
+
+**Path pattern:**
+
+```
+<course-root>/ticket-work/
+  entry-level/ticket_notebook.html      # Level 1 (see §2)
+  mid-level/ticket_notebook.html        # Level 2
+  staff-level/ticket_notebook.html      # Level 3 (or senior-level/ if legacy name)
+  <core-system>/                      # e.g. vlc-core-system, dsp-core-system
+    include/...
+    src/...
+    tests/ticket_tests.cpp
+    tests/ticket_test_common.hpp
+    CMakeLists.txt
+    README.md
+    TICKET_CROSSWALK.md
+```
+
+**Hard rules:**
+
+- **5 tickets per level** (15 total), difficulty increases **within** each notebook and **across** levels.
+- Each ticket maps to **one primary defect** in named source file(s).
+- Codebase ships with **bugs present** (not pre-solved).
+- Each ticket has a **dedicated test** invokable in isolation.
+- Do **not** put solutions or fix instructions in test stdout — only **observed**, **expected**, **PASS** / **FAIL** (see §6).
+
+---
+
+## 2. Level architecture (NEW scale — critical)
+
+### Legacy C++ ticket-work (deprecated naming)
+
+The original `cpp-beg-to-adv/ticket-work` used:
+
+| Old folder | Old difficulty |
+|------------|----------------|
+| `entry-level` | arithmetic, leaks, chaining, const |
+| `junior-level` | templates, threads, virtual, concepts |
+| `senior-level` | ownership, slicing, friends, ABI |
+
+### New 3-level scale (use from now on)
+
+**The old *senior* difficulty is the new floor (Entry).** Build **up** from there.
+
+| New level | Folder | Ticket ID prefix | Difficulty anchor |
+|-----------|--------|------------------|-------------------|
+| **Entry** | `entry-level/` | `XXX-ENTRY-1xx` | Same as **former senior**: virtual dtor, slicing, virtual/default-arg traps, `friend`, `operator+` visibility, cross-module ownership |
+| **Mid** | `mid-level/` | `XXX-MID-2xx` | Multi-TU linkage, ODR-adjacent mistakes, plugin/DLL boundaries, stress + sanitizer narratives, API contracts across headers |
+| **Staff** | `staff-level/` | `XXX-STAFF-3xx` | Certification / security audit tone, intentional UB under load, binary-compat constraints, policy violations spanning 2+ modules |
+
+When generating **new** repos (including **C**):
+
+- Do **not** recreate old entry/junior “easy arithmetic” tiers unless the user explicitly asks for a beginner ticket track.
+- Rename mentally: “senior ticket” templates in the reference repo → **Entry ticket** templates in new work.
+
+**Reference mapping (C++ legacy → new):**
+
+| Former senior ticket theme | New Entry ticket |
+|---------------------------|------------------|
+| VLC-SR-301 virtual ~Codec | ENTRY-101 |
+| VLC-SR-302 slicing | ENTRY-102 |
+| VLC-SR-303 virtual + default args | ENTRY-103 |
+| VLC-SR-304 friend / operator+ | ENTRY-104 |
+| VLC-SR-305 factory friend trim | ENTRY-105 |
+
+Mid and Staff tickets are **new designs** at higher scope — not copies of old junior/entry bugs.
+
+---
+
+## 3. Product narrative (shared universe)
+
+Pick **one** embedded product name per course (VoiceLink Core / VLC is the C++ reference). Use it consistently:
+
+- **Everyday HTML:** light EE framing (comb delay, mono mix, PSD bins, ADC counts, AFE registers).
+- **Ticket-work:** same product, maintenance / QA viewpoint.
+
+For a **C course**, keep the same DSP/embedded story but:
+
+- Use `.c` / `.h` instead of `.hpp`.
+- Replace C++20 mechanisms with C equivalents (see §8).
+- CMake target names: `dsp_core`, `dsp_ticket_test` (or course-specific prefix).
+
+---
+
+## 4. Ticket-work codebase design
+
+### 4.1 Layout
+
+```
+<core-system>/
+  include/<prefix>/     # public headers
+  src/                  # one .c/.cpp per module; bugs live here
+  tests/
+    ticket_test_common.h|.hpp
+    ticket_tests.c|.cpp
+  CMakeLists.txt
+  README.md
+  TICKET_CROSSWALK.md
+```
+
+### 4.2 Module rules
+
+- **One ticket → one primary module** (sometimes 2 files for declaration + definition).
+- Expose **ticket-facing spellings** (camelCase aliases) only when the HTML ticket uses them; document both in `TICKET_CROSSWALK.md`.
+- Keep modules **compilable together**; optional smoke binary (`*_demo`) is fine.
+- Respect curriculum constraints (no STL containers in non-STL phases, etc.).
+
+### 4.3 Intentional bugs
+
+Each defect must be:
+
+1. **Reproducible** via the ticket test command.
+2. **Presentable** — bug output documented in HTML “Reproduce” section (copy-paste from running test **before** fix).
+3. **Fixable in place** — student edits only files listed under **Fix**.
+4. **Gone after fix** — same test prints `PASS`, exit code 0.
+
+Ship the repo in **buggy baseline** state. Solutions belong only in HTML hint/solution panels.
+
+### 4.4 Test harness (mandatory pattern)
+
+**CLI:**
+
+```text
+./build/<cfg>/<prefix>_ticket_test <TICKET-ID>
+./build/<cfg>/<prefix>_ticket_test --list
+```
+
+**Per-test output (stdout only):**
+
+```text
+=== XXX-ENTRY-101 — Short title ===
+  observed <label>: <value>
+  expected <label>: <value>
+XXX-ENTRY-101 PASS
+```
+
+or `FAIL`. **Never** print fix hints, file paths, or root-cause prose in the test binary.
+
+**Exit codes:** `0` = PASS, `1` = FAIL (bug still present), `2` = usage error.
+
+**Implementation file:** single dispatcher (`ticket_tests.c` / `.cpp`) with one function per ticket ID.
+
+**Common helpers:** `print_header`, `print_observed`, `print_expected`, `pass(id)`, `fail(id)`, `nearly_equal` for floats.
+
+### 4.5 Compile-time constraint tickets (JR-201 / JR-204 lesson)
+
+When a ticket is “must not compile for type X”:
+
+- **Do NOT** call the invalid instantiation in normal test code (even inside `if` — the compiler still type-checks dead branches).
+- **Do** detect acceptance with a compile-time predicate, e.g. C++:
+
+```cpp
+template<typename T>
+constexpr bool accepts_foo_v = requires(T a) {
+    { api_foo(a) } -> std::same_as<Expected>;
+};
+```
+
+- Test prints `observed accepts BadType: 0/1` and `expected accepts BadType: 0`.
+- After the student adds constraints, the test **must still compile** and return PASS.
+
+For **C**, use separate translation units + CMake `try_compile`, or `_Static_assert` with type-size / function-pointer checks — never `#include` a line that fails to compile in the main test TU.
+
+### 4.6 TICKET_CROSSWALK.md
+
+Maintain a table per level:
+
+| Ticket ID | Symptom (one line) | Fix these files | Primary symbol |
+
+No solution code in the crosswalk.
+
+---
+
+## 5. Ticket HTML notebook design
+
+Each level: **one** standalone `ticket_notebook.html`.
+
+### 5.1 Page sections
+
+1. **Header** — level badge, ticket count, language/standard note.
+2. **System intro** — product blurb, student role, path to `<core-system>/`, build + test commands.
+3. **One `<article class="ticket">` per ticket**, containing the blocks below.
+4. **Footer** — product name + ticket count.
+
+### 5.2 Per-ticket blocks (required order)
+
+| Block | CSS class | Content rules |
+|-------|-----------|---------------|
+| **Problem** | `.section` | QA symptom in plain English. Steps / expected vs actual behaviour. **No fix spoilers.** |
+| **Fix (bug is here)** | `.section.fix` | **Files + symbol names only.** Example: `` `src/lab_curve.cpp` — `LabCurve::eval(double)` ``. **FORBIDDEN in Fix text:** “must be virtual”, “use norm=false”, “add delete[]”, “return *this”, code snippets, or any wording that states the solution. |
+| **Reproduce** | `.section.test` | Exact test command + **bug output** (observed/expected lines students will see before fixing). |
+| **Pass criteria** | `.pass` | e.g. `XXX-ENTRY-101 PASS` and exit code 0. |
+| **Hint button** | `.panel.hint-panel` | Nudge only; no full solution. |
+| **Solution button** | `.panel.sol-panel` | Root cause + full fixed code + short review note. |
+
+### 5.3 Fix-section examples
+
+**Good:**
+
+> `include/vlc/icodec.hpp` — `ICodec` destructor and `NotchCodec` teardown path.
+
+**Bad (do not write):**
+
+> `ICodec::~ICodec` must be `virtual`.
+
+> Change `eval(x, true)` to `eval(x, false)`.
+
+### 5.4 Styling
+
+- Entry / Mid / Staff use **distinct accent colours** (green → amber → red, or course palette).
+- Reuse the ticket-work CSS structure from `cpp-beg-to-adv/ticket-work/` for consistency.
+- Keep max-width ~960px, monospace for IDs and test output.
+
+### 5.5 Ticket IDs
+
+Format: `<PREFIX>-<LEVEL>-<nnn>`
+
+Examples: `VLC-ENTRY-101`, `DSP-MID-204`, `AFE-STAFF-305`.
+
+Use stable prefixes per product (`VLC`, `DSP`, etc.).
+
+---
+
+## 6. Everyday HTML notebook design
+
+### 6.1 Structure
+
+- One `<section class="subject">` per `course-subjects.txt` line.
+- Fields: subject number, **exact subject title from file**, task paragraph, **Reveal solution** button, hidden solution panel.
+
+### 6.2 Task writing
+
+- One clear job per subject — typical use case for that language feature.
+- Prefer EE context: buffers, samples, registers, gain, PSD, comb delay.
+- Match difficulty to **that subject only**; cross-subject mixing is optional light review, not required.
+
+### 6.3 Solutions
+
+- Full code in the hidden panel.
+- Short “why” tying solution to the curriculum line.
+- **Never** place solution code in the visible task area.
+
+### 6.4 STL / phased curriculum
+
+When `course-subjects.txt` marks STL as separate trailing subjects:
+
+- Everyday volume 1: non-STL subjects only, honour “MISSING FOR NOW”.
+- Optional separate everyday volume or workbook for STL blocks (vectors, list, algorithm, maps) — **one exercise per STL line**, still no skips.
+
+---
+
+## 7. Workflow — when the user says “generate from course-subjects.txt”
+
+Execute in this order unless the user narrows scope:
+
+### Step 1 — Inventory
+
+```
+N = count of active subjects in course-subjects.txt
+```
+
+Report N to the user. Split batches of 5–7 for **workbook-style** batches if also doing `workbooks/` (see `exercises-instructions.txt`).
+
+### Step 2 — Everyday practice
+
+Generate `everyday-practice/per_subject_practice.html` (and `-2` if second pass requested):
+
+- **N exercises**, ordered, TOC, reveal buttons.
+- Cover **100%** of subjects.
+
+### Step 3 — Ticket-work (3 levels × 5 tickets)
+
+1. Design **15 defects** mapped to curriculum topics appropriate to each **new** level (§2).
+2. Implement `<core-system>/` with bugs + CMake + test runner.
+3. Write three `ticket_notebook.html` files.
+4. Write `TICKET_CROSSWALK.md` + `README.md`.
+5. Run all 15 tests in **buggy** state → must **compile** and **FAIL**.
+6. Apply one sample fix per level → must **PASS** (sanity-check harness).
+
+### Step 4 — Optional workbooks folder
+
+If requested, also produce `workbooks/` per `exercises-instructions.txt` (first half / second half / interview). Those are **narrative exercise sets**, not the ticket-work codebase.
+
+---
+
+## 8. C course adaptations
+
+When `course-subjects.txt` is for **C** (future `c-beg-to-adv`):
+
+| C++ ticket-work idea | C equivalent |
+|---------------------|--------------|
+| `virtual` / polymorphism | function pointers in structs, vtable-style manual dispatch |
+| `requires` / concepts | prototypes + `_Static_assert` / wrong-type link errors |
+| `std::thread` / join | `<pthread.h>` or C11 threads, join before read |
+| RAII destructor | explicit `free` / `close` in teardown function |
+| `friend` | static file-scope helpers + opaque struct pattern |
+| Templates | macros / `_Generic` (C11) where on curriculum |
+
+**Test runner:** same CLI pattern in C (C11 or later).
+
+**Compile-time tests:** prefer `try_compile` CMake tests or separate `.c` snippets — do not break main `ticket_tests.c` when constraint is fixed.
+
+**Naming:** snake_case in C sources; ticket text may use legacy camelCase → document alias in crosswalk.
+
+---
+
+## 9. Language, naming, and engineering tone
+
+- **Professional names:** `UplinkMixer`, `HeapBins`, `AfeRegister` — not `MyStruct`.
+- **EE framing:** signal chains, soak tests, HIL, certification, factory trim.
+- **Student role:** QA / maintainer fixing regressions, not greenfield feature work.
+- **English:** Problem and Fix sections use complete sentences; consistent terminology (observed / expected / PASS / FAIL).
+
+---
+
+## 10. Quality gates before delivery
+
+### Everyday
+
+- [ ] Exercise count == subject count in `course-subjects.txt`
+- [ ] Order matches file exactly
+- [ ] Every exercise has reveal button with solution + why
+- [ ] No solution in visible task text
+
+### Ticket-work
+
+- [ ] 15 tickets, 5 per level, IDs stable
+- [ ] Every ticket: Problem / Fix / Reproduce / Pass / Hint / Solution panels
+- [ ] **Fix sections contain no solution language** (§5.2)
+- [ ] Bug baseline: all tests compile; all FAIL
+- [ ] Test stdout: observed + expected + PASS/FAIL only
+- [ ] Compile-time tickets: tests compile after fix (§4.5)
+- [ ] `TICKET_CROSSWALK.md` complete
+- [ ] `README.md` has build + single-ticket test commands
+
+---
+
+## 11. Reference implementation (C++)
+
+Study before generating new material:
+
+| Artifact | Path |
+|----------|------|
+| Ticket-work tree | `cpp-beg-to-adv/ticket-work/` |
+| Test harness | `ticket-work/vlc-core-system/tests/ticket_tests.cpp` |
+| Test output helpers | `ticket-work/vlc-core-system/tests/ticket_test_common.hpp` |
+| Entry notebook template | `ticket-work/entry-level/ticket_notebook.html` (update to new Entry = old Senior content when migrating) |
+| Everyday example | `cpp-beg-to-adv/everyday-practice-2/per_subject_practice.html` |
+| Workbook protocol | `cpp-beg-to-adv/exercises-instructions.txt` |
+| Legacy workbook notes | `WORKBOOK_GENERATION.md` |
+
+---
+
+## 12. Migrating an existing C++ ticket-work repo to the new level names
+
+1. Rename content: move old `senior-level/` themes → new `entry-level/`.
+2. Retire or archive old entry/junior notebooks (or keep in `legacy/` if user wants history).
+3. Author **new** Mid + Staff tickets (10 new defects + tests).
+4. Update ticket ID prefixes and crosswalk.
+5. Re-run full test matrix (buggy FAIL, fixed PASS).
+
+---
+
+## 13. What the user runs vs what you generate
+
+| User action | Your output |
+|-------------|-------------|
+| Updates `course-subjects.txt` | Regenerate everyday HTML to match **all** lines; adjust ticket subject mapping if new topics affect Mid/Staff |
+| Says “add everyday volume 2” | New HTML, same order, **new** tasks, no duplicate prompts from volume 1 |
+| Says “build ticket-work for C” | Full §4 tree under `c-beg-to-adv/ticket-work/` using §8 |
+| Says “push rule to new repo” | Copy this `.mdc` to `<repo>/.cursor/rules/practice-exercise-rulebook.mdc` |
+
+---
+
+*Aligned with `cpp-beg-to-adv/ticket-work` architecture, test-runner behaviour, and everyday-practice conventions. Level floor = former senior. Fix panels must not leak solutions.*

@@ -1,10 +1,10 @@
 #include "vlc/lab_curve.hpp"
-
+#include <iostream>
 namespace vlc {
 
 double LabCurve::eval(double const x) const
 {
-    return eval(x, true);
+    return eval(x, false);
 }
 
 double LabCurve::eval(double const x, bool const norm) const

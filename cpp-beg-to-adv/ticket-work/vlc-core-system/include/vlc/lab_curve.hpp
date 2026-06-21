@@ -15,7 +15,7 @@ protected:
 class LabCurve final : public ICurve {
 public:
     double eval(double x) const override;
-    double eval(double x, bool norm) const;
+    double eval(double x, bool norm = false) const;
 };
 
 } // namespace vlc
