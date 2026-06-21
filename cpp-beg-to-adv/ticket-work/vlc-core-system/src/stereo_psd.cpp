@@ -25,7 +25,7 @@ double StereoPsd::right() const
 
 StereoPsd operator+(StereoPsd const& a, StereoPsd const& b)
 {
-    return StereoPsd{a.energy() + b.energy(), a.right() + b.right()};
+    return StereoPsd{a.energy() + b.energy(), a.right()};
 }
 
 } // namespace vlc

@@ -29,9 +29,11 @@ int main()
     double const v_ticket = countsToVolts(2047.0, 2.5, 12);
 
     MicGainChain gain;
-    gain.set_db(-6.0).set_db(-3.0);
+    gain.set_db(-6.0);
+    gain.set_db(-3.0);
     MicGainChain gain2;
-    gain2.setDb(-6.0).setDb(-3.0);
+    gain2.setDb(-6.0);
+    gain2.setDb(-3.0);
 
     WindPsdScratch psd;
     psd.write_bin(0, 0.05);

@@ -1,15 +1,35 @@
-# VoiceLink Core (VLC) — reference system under test
+# VoiceLink Core (VLC) — ticket exercise codebase
 
-This tree is the **C++20 reference implementation** that matches the **VoiceLink Core** product narrative used in `../entry-level/`, `../junior-level/`, and `../senior-level/` ticket notebooks.
+This tree is the **C++20 training implementation** of VoiceLink Core used by the ticket notebooks in `../entry-level/`, `../junior-level/`, and `../senior-level/`.
 
-- **Ticket mapping:** see **`TICKET_CROSSWALK.md`** (every HTML ticket ↔ file ↔ symbol, including camelCase aliases).
-- **Build:** `cmake -S . -B build && cmake --build build` (then run `vlc_demo` or link `vlc_core` into your own harness).
-- **Constraints:** Training stack — **no STL containers** (`vector`, `map`, …). Uses `<cmath>`, `<cstdint>`, `<thread>`, `<type_traits>`, `<numbers>`, `<utility>` where needed.
-- **Layout:** `include/vlc/` public headers, `src/` translation units. Tickets map to modules by name (e.g. `mono_mix`, `heap_bins`, `icodec`).
+Each ticket ships with an **intentional defect** in a named module. Your job is to read the ticket, reproduce the failure with the per-ticket test runner, patch the listed source files, and re-run the same test until it prints `PASS`.
 
-This version is intended as a **coherent, compiling baseline** you can browse while closing tickets; individual tickets in the HTML notebooks may describe defects that were already fixed here, or hypothetical regressions—use the notebook solution as the authoritative “after” for each scenario.
+## Quick start
 
-## Module map (headers under `include/vlc/`)
+```powershell
+cd vlc-core-system
+cmake -S . -B build
+cmake --build build --target vlc_ticket_test
+.\build\Debug\vlc_ticket_test.exe --list
+.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-101
+```
+
+Exit code `0` means your fix satisfies that ticket. Exit code `1` means the defect is still present.
+
+## Layout
+
+| Path | Purpose |
+|------|---------|
+| `include/vlc/` | Public headers referenced by tickets |
+| `src/` | Translation units that contain the bugs you fix |
+| `tests/ticket_tests.cpp` | One automated check per ticket ID |
+| `TICKET_CROSSWALK.md` | Ticket ID → file → symbol map |
+
+## Constraints
+
+Training stack — **no STL containers** (`vector`, `map`, …). Uses `<cmath>`, `<cstdint>`, `<thread>`, `<type_traits>`, `<numbers>`, `<utility>` where needed.
+
+## Module map
 
 | Module | Role |
 |--------|------|
@@ -29,3 +49,9 @@ This version is intended as a **coherent, compiling baseline** you can browse wh
 | `stereo_psd.hpp` | Mono/stereo PSD merge (`operator+`) |
 | `cal_amp.hpp` | Factory trim via `friend` |
 | `uplink_service.hpp` | Thin façade over uplink helpers |
+
+## Reference
+
+- Ticket notebooks: `../entry-level/ticket_notebook.html`, etc.
+- Crosswalk: `TICKET_CROSSWALK.md`
+- Optional smoke binary: `vlc_demo` (builds everything; use per-ticket tests while fixing)

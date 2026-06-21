@@ -1,37 +1,41 @@
 # Ticket ↔ VLC core system crosswalk
 
-Use this table to map **QA ticket text** to **headers / symbols** in `vlc-core-system`. Canonical implementation uses **snake_case**; **camelCase** and `dsp::afe::maskedOr` exist as thin aliases where tickets use those spellings.
+Each row maps a **QA ticket** to the **file(s) that contain the defect** and the **automated check** you run after patching.
+
+**Test runner:** from `vlc-core-system/`, build `vlc_ticket_test` and run `.\build\Debug\vlc_ticket_test.exe <TICKET-ID>` (see `README.md`).
 
 ## Entry (`../entry-level/ticket_notebook.html`)
 
-| Ticket ID | Ticket component / API name | Code location | Notes |
-|-----------|----------------------------|---------------|--------|
-| VLC-ENTRY-101 | `monoMixDown`, `uplink_mix.cpp` | `include/vlc/mono_mix.hpp`, `src/mono_mix.cpp` | Logic lives as `mono_mix_down`; alias `monoMixDown`. |
-| VLC-ENTRY-102 | `countsToVolts` | `include/vlc/adc_counts.hpp`, `src/adc_counts.cpp` | Canonical `counts_to_volts`; alias `countsToVolts`. |
-| VLC-ENTRY-103 | `HeapBins` | `include/vlc/heap_bins.hpp`, `src/heap_bins.cpp` | Destructor + `delete[]` present. |
-| VLC-ENTRY-104 | `MicGainChain::setDb` | `include/vlc/mic_gain_chain.hpp`, `src/mic_gain_chain.cpp` | Canonical `set_db`; inline `setDb` chains. |
-| VLC-ENTRY-105 | `WindPsdScratch::writeBin` | `include/vlc/wind_psd_scratch.hpp`, `src/wind_psd_scratch.cpp` | Canonical `write_bin`; `writeBin` alias. Writer is **non-const**. |
+| Ticket ID | Symptom | Fix these files | Primary symbol |
+|-----------|---------|-----------------|----------------|
+| VLC-ENTRY-101 | Mono mix ~6 dB hot | `src/mono_mix.cpp` | `mono_mix_down` / `monoMixDown` |
+| VLC-ENTRY-102 | ADC voltage ~2× high | `src/adc_counts.cpp` | `counts_to_volts` / `countsToVolts` |
+| VLC-ENTRY-103 | Heap leak in soak | `src/heap_bins.cpp` | `HeapBins::~HeapBins` |
+| VLC-ENTRY-104 | Fluent gain API won't chain | `src/mic_gain_chain.cpp`, `include/vlc/mic_gain_chain.hpp` | `MicGainChain::set_db` / `setDb` |
+| VLC-ENTRY-105 | Wind PSD bin 0 stuck at zero | `src/wind_psd_scratch.cpp` | `WindPsdScratch::write_bin` / `writeBin` |
 
 ## Junior (`../junior-level/ticket_notebook.html`)
 
-| Ticket ID | Ticket component / API name | Code location | Notes |
-|-----------|----------------------------|---------------|--------|
-| VLC-JR-201 | `quantizeSample`, `dsp/quantize.h` | `include/vlc/quantize.hpp` | `quantize_sample` + alias `quantizeSample`; `requires std::is_arithmetic_v<T>`. |
-| VLC-JR-202 | `TelemetrySlice::runOnce` | `include/vlc/telemetry_slice.hpp`, `src/telemetry_slice.cpp` | `run_telemetry_slice_once` + struct `TelemetrySlice::runOnce`. |
-| VLC-JR-203 | `Source::next` virtual, `NotchSource` | `include/vlc/source.hpp`, `include/vlc/notch_source.hpp`, `src/notch_source.cpp` | **Fixed model:** `Source::next` is **pure virtual** (stricter than ticket snippet’s defaulting base). |
-| VLC-JR-204 | `dsp::afe::maskedOr` | `include/vlc/afe_registers.hpp` | Implementations in `vlc::dsp::afe::masked_or`; ticket spelling `::dsp::afe::maskedOr` forwards. Inside `using namespace vlc`, qualify **`::dsp::afe::maskedOr`** to avoid ambiguity with `vlc::dsp`. |
-| VLC-JR-205 | `gateTap`, `TapPred`, `overNoiseFloor` | `include/vlc/tap_gate.hpp`, `src/tap_gate.cpp` | Canonical `gate_tap`, `over_noise_floor`; camelCase aliases. |
+| Ticket ID | Symptom | Fix these files | Primary symbol |
+|-----------|---------|-----------------|----------------|
+| VLC-JR-201 | Quantizer accepts non-arithmetic types | `include/vlc/quantize.hpp` | `quantize_sample` / `quantizeSample` |
+| VLC-JR-202 | Telemetry summary stale (no join) | `src/telemetry_slice.cpp` | `run_telemetry_slice_once` / `TelemetrySlice::runOnce` |
+| VLC-JR-203 | Notch source silent through `Source*` | `include/vlc/source.hpp`, `include/vlc/notch_source.hpp` | `Source::next`, `NotchSource::next` |
+| VLC-JR-204 | 16-bit field accepted in masked OR | `include/vlc/afe_registers.hpp` | `masked_or` / `::dsp::afe::maskedOr` |
+| VLC-JR-205 | Tap gate ignores predicate | `src/tap_gate.cpp` | `gate_tap` / `gateTap`, `over_noise_floor` |
 
 ## Senior (`../senior-level/ticket_notebook.html`)
 
-| Ticket ID | Ticket component / API name | Code location | Notes |
-|-----------|----------------------------|---------------|--------|
-| VLC-SR-301 | `ICodec`, virtual destructor, `NotchCodec` | `include/vlc/icodec.hpp`, `src/icodec.cpp` | `virtual ~ICodec() = default`; `NotchCodec final`. |
-| VLC-SR-302 | `Box`, `FancyBox`, telemetry | `include/vlc/box_telemetry.hpp` | Non-virtual `id()`; demonstrates slicing / static binding. |
-| VLC-SR-303 | `ICurve`, `LabCurve::eval` | `include/vlc/lab_curve.hpp`, `src/lab_curve.cpp` | One-arg virtual delegates to `eval(x, false)`; two-arg matches ticket math `norm ? 2x : x`. |
-| VLC-SR-304 | `StereoPsd`, `operator+`, `stereo_psd.cpp` | `include/vlc/stereo_psd.hpp`, `src/stereo_psd.cpp` | `friend` `operator+`; uses `energy()` / `right()`. |
-| VLC-SR-305 | `CalAmp`, `GainBase`, `setFactoryTrim` | `include/vlc/cal_amp.hpp`, `src/cal_amp.cpp` | `set_factory_trim` + `setFactoryTrim` both friends with same semantics. |
+| Ticket ID | Symptom | Fix these files | Primary symbol |
+|-----------|---------|-----------------|----------------|
+| VLC-SR-301 | Crash deleting codec through base pointer | `include/vlc/icodec.hpp` | `ICodec::~ICodec` |
+| VLC-SR-302 | Fancy route id lost (slicing) | `include/vlc/box_telemetry.hpp` | `route_box_by_value`, `Box` / `FancyBox` |
+| VLC-SR-303 | Curve eval wrong through `ICurve*` | `src/lab_curve.cpp` | `LabCurve::eval(double)` |
+| VLC-SR-304 | Stereo PSD `operator+` drops right channel | `src/stereo_psd.cpp` | `operator+(StereoPsd, StereoPsd)` |
+| VLC-SR-305 | Factory trim write is a no-op | `src/cal_amp.cpp` | `set_factory_trim` / `setFactoryTrim` |
 
-## Smoke test
+## Notes
 
-`src/main.cpp` exercises both canonical and ticket-style entry points where applicable. Build with CMake per `README.md`.
+- Canonical code uses **snake_case**; tickets may use **camelCase** aliases in headers.
+- `::dsp::afe::maskedOr` forwards into `vlc::dsp::afe::masked_or`.
+- Do **not** edit `tests/ticket_tests.cpp` unless a ticket explicitly tells you to — it is the verifier.

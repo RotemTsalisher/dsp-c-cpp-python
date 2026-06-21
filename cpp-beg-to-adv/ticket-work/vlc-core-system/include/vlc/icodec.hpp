@@ -6,7 +6,7 @@ namespace vlc {
 /// Plugin-facing codec boundary (polymorphic ownership requires virtual dtor).
 struct ICodec {
     virtual void encode_frame(double const* frame, int count) = 0;
-    virtual ~ICodec() = default;
+    ~ICodec() = default;
 
 protected:
     ICodec() = default;
@@ -16,7 +16,7 @@ protected:
 struct NotchCodec final : ICodec {
     void encode_frame(double const* frame, int count) override;
 
-    ~NotchCodec() override;
+    ~NotchCodec();
 
 private:
     int taps_{8};

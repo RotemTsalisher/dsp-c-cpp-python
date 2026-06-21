@@ -5,6 +5,8 @@
 
 namespace vlc {
 
+int HeapBins::live_instances_ = 0;
+
 HeapBins::HeapBins(std::size_t const bin_count)
     : count_{bin_count}
     , bins_{nullptr}
@@ -13,12 +15,10 @@ HeapBins::HeapBins(std::size_t const bin_count)
         throw std::invalid_argument("bin_count");
     }
     bins_ = new double[count_]{};
+    ++live_instances_;
 }
 
-HeapBins::~HeapBins()
-{
-    delete[] bins_;
-}
+HeapBins::~HeapBins() = default;
 
 double* HeapBins::data()
 {

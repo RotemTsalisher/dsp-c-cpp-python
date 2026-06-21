@@ -16,20 +16,20 @@
     .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
     .prio { font-size:.75rem; background:#212830; color:#fff; padding:2px 8px; border-radius:4px; }
     .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
-    .body { white-space:pre-wrap; font-size:.93rem; margin:0 0 12px; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; font-size:.9rem; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; font-size:.9rem; margin-top:10px; }
     .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
     button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
     .btn-hint { background:#57606a; color:#fff; }
-    .btn-hint:hover { background:#424a53; }
     .btn-sol { background:#a40e26; color:#fff; }
-    .btn-sol:hover { background:#82071e; }
     .panel { display:none; margin-top:12px; padding:12px 14px; border-radius:8px; font-size:.88rem; }
     .panel.visible { display:block; }
     .hint-panel { background:#eaeef2; border:1px solid var(--border); }
     .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
-    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.76rem; line-height:1.4; margin:10px 0 0; }
-    pre code { background:transparent; color:inherit; }
-    .why { margin-top:10px; color:#424a53; font-size:.86rem; }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.76rem; line-height:1.4; margin:8px 0 0; }
     code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
     footer { margin-top:28px; font-size:.82rem; color:var(--muted); text-align:center; }
   </style>
@@ -37,252 +37,106 @@
 <body>
 
   <h1><span class="badge">SENIOR</span> DSP ticket notebook</h1>
-  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · difficulty increases · ownership, object model, ABI-facing APIs</p>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · ownership, object model, ABI-facing APIs</p>
 
   <div class="system">
-    <h2>System under maintenance — VoiceLink Core (VLC)</h2>
-    <p><strong>What it is:</strong> Production-adjacent VLC: certified uplink chain, vendor plugin host, AFE trim friends for factory-only paths, and abstract <code>ICodec</code>-style codec boundaries (same object-model lessons as a sink interface). Issues at this level are rarely “wrong constant”—they are lifetime, vtable, access control, and API contracts that show up under stress or certification review.</p>
-    <p><strong>Your role (senior):</strong> Own cross-module fixes, explain UB or ODR-adjacent risks in review, and ship minimal patches that preserve binary compatibility where required.</p>
-    <p><strong>Reference codebase:</strong> <code>../vlc-core-system/</code> — full tree under <code>include/vlc/</code> and <code>src/</code>; build with CMake per <code>README.md</code>.</p>
+    <h2>VoiceLink Core (VLC) — how to work a ticket</h2>
+    <p>Production-adjacent defects: virtual destructors, slicing, default-argument traps, friend access, and operator overload visibility.</p>
+    <pre><code>cd ../vlc-core-system
+cmake -S . -B build
+cmake --build build --target vlc_ticket_test
+.\build\Debug\vlc_ticket_test.exe VLC-SR-301</code></pre>
   </div>
 
   <article class="ticket">
-    <div class="ticket-head">
-      <span class="id">VLC-SR-301</span>
-      <span class="prio">P0 · Blocker</span>
-      <span class="qa">Opened by QA · Soak + ASan</span>
-    </div>
-    <h3>Random crash on teardown after loading third-party notch codec</h3>
-    <p class="body"><strong>Summary:</strong> Host HIL with ASan intermittently faults in <code>delete plugin;</code> where <code>plugin</code> is <code>ICodec*</code> pointing at a derived object with extra members.
-
-<strong>Steps:</strong> Load DLL-provided codec, run 10k init/teardown cycles.
-
-<strong>Expected:</strong> Clean shutdown.
-
-<strong>Actual:</strong> Heap corruption / invalid free.
-
-<strong>Component:</strong> <code>struct ICodec</code> — destructor not virtual.</p>
-    <div class="btn-row">
-      <button type="button" class="btn-hint" onclick="toggle('h301')">Hint</button>
-      <button type="button" class="btn-sol" onclick="toggle('s301')">Complete solution</button>
-    </div>
-    <div id="h301" class="panel hint-panel"><strong>Hint:</strong> Deleting through a base pointer without a virtual destructor is undefined behavior if the dynamic type has a non-trivial destructor or additional state.</div>
-    <div id="s301" class="panel sol-panel">
-      <pre><code>struct ICodec
-{
-    virtual void encodeFrame(double const* frame, int count) = 0;
-    virtual ~ICodec() = default; // was missing → UB on delete through ICodec*
-
-protected:
-    ICodec() = default;
-};
-
-struct NotchCodec final : ICodec
-{
-    void encodeFrame(double const*, int) override {}
-    ~NotchCodec() override { /* release notch state */ }
-};
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>Abstract class and pure virtual functions</code> + polymorphic ownership—public API bases used for <code>delete</code> must have <code>virtual ~I</code>.</p>
-    </div>
+    <div class="ticket-head"><span class="id">VLC-SR-301</span><span class="prio">P0 · Blocker</span><span class="qa">Soak + ASan</span></div>
+    <h3>Crash on teardown deleting codec through ICodec*</h3>
+    <div class="section"><h4>Problem</h4><p>Host deletes a derived codec through <code>ICodec*</code>. Without a <code>virtual</code> destructor, the delete is undefined behavior and ASan reports invalid free.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>include/vlc/icodec.hpp</code> — <code>ICodec::~ICodec</code> must be <code>virtual</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-SR-301</code></pre>
+      <pre><code>observed has_virtual_destructor_v&lt;ICodec&gt;: 0
+expected has_virtual_destructor_v&lt;ICodec&gt;: 1</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-SR-301 PASS</code></div>
+    <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h301')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s301')">Complete solution</button></div>
+    <div id="h301" class="panel hint-panel"><strong>Hint:</strong> Any polymorphic base deleted through a pointer needs <code>virtual ~Base()</code>.</div>
+    <div id="s301" class="panel sol-panel"><pre><code>struct ICodec {
+    virtual void encode_frame(...) = 0;
+    virtual ~ICodec() = default;
+};</code></pre></div>
   </article>
 
   <article class="ticket">
-    <div class="ticket-head">
-      <span class="id">VLC-SR-302</span>
-      <span class="prio">P1 · Critical</span>
-      <span class="qa">Opened by QA · Certification review</span>
-    </div>
-    <h3>“Safety” DSP box reports wrong channel ID after refactor to value semantics</h3>
-    <p class="body"><strong>Summary:</strong> Telemetry uses <code>Box idBox = FancyBox{};</code> then logs <code>idBox.id()</code> for routing. After refactor, Fancy path never appears in logs.
-
-<strong>Expected:</strong> Fancy identifier when constructed as <code>FancyBox</code>.
-
-<strong>Actual:</strong> Base identifier only.
-
-<strong>Component:</strong> <code>telemetry.cpp</code> + <code>Box</code> hierarchy (non-virtual API).</p>
-    <div class="btn-row">
-      <button type="button" class="btn-hint" onclick="toggle('h302')">Hint</button>
-      <button type="button" class="btn-sol" onclick="toggle('s302')">Complete solution</button>
-    </div>
-    <div id="h302" class="panel hint-panel"><strong>Hint:</strong> Slicing plus static binding: value-typed base object stores only the base subobject unless you use pointers/references or virtuals.</div>
-    <div id="s302" class="panel sol-panel">
-      <pre><code>class Box
-{
-public:
-    int id() const { return 1; }
-};
-
-class FancyBox : public Box
-{
-public:
-    int id() const { return 2; }
-};
-
-// Wrong for polymorphic identity:
-// Box idBox = FancyBox{}; idBox.id(); // → 1
-
-// Fix: reference / pointer to complete object, or virtual id().
-FancyBox fb{};
-int const routed = fb.id(); // 2 — static binding on correct static type
-
-// If polymorphic logging is required, introduce virtual id() + pointers/references.
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>Static Binding</code> vs polymorphism—senior fix is either correct type for value semantics or redesign with <code>virtual</code> + pointers.</p>
-    </div>
+    <div class="ticket-head"><span class="id">VLC-SR-302</span><span class="prio">P1 · Critical</span><span class="qa">Certification</span></div>
+    <h3>FancyBox route id lost in telemetry</h3>
+    <div class="section"><h4>Problem</h4><p><code>route_box_by_value</code> takes <code>Box</code> by value, slicing a <code>FancyBox</code> to its base subobject. Logs show id <code>1</code> instead of <code>2</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>include/vlc/box_telemetry.hpp</code> — <code>route_box_by_value</code> parameter type (or make <code>id()</code> virtual and pass by reference/pointer).</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-SR-302</code></pre>
+      <pre><code>observed FancyBox.id(): 2
+observed route_box_by_value(FancyBox): 1
+expected route_box_by_value(FancyBox): 2</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-SR-302 PASS</code></div>
+    <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h302')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s302')">Complete solution</button></div>
+    <div id="h302" class="panel hint-panel"><strong>Hint:</strong> Value parameters slice derived objects unless the API uses references/pointers or virtual functions.</div>
+    <div id="s302" class="panel sol-panel"><pre><code>inline int route_box_by_value(FancyBox const&amp; box) {
+    return box.id();
+}</code></pre></div>
   </article>
 
   <article class="ticket">
-    <div class="ticket-head">
-      <span class="id">VLC-SR-303</span>
-      <span class="prio">P1 · Critical</span>
-      <span class="qa">Opened by QA · A/B with golden FFT</span>
-    </div>
-    <h3>Golden FFT harness disagrees with device when curve normalisation flag omitted</h3>
-    <p class="body"><strong>Summary:</strong> <code>ICurve const*</code> path calls <code>eval(0.5)</code> one-arg; harness expects default second argument <code>norm=false</code> on <code>LabCurve</code> override, but device applies <code>true</code>.
-
-<strong>Expected:</strong> Same numeric path as harness.
-
-<strong>Actual:</strong> Mismatch; audit shows default arguments bound at compile time to static type.
-
-<strong>Component:</strong> <code>Curve::eval</code> virtual with default parameter.</p>
-    <div class="btn-row">
-      <button type="button" class="btn-hint" onclick="toggle('h303')">Hint</button>
-      <button type="button" class="btn-sol" onclick="toggle('s303')">Complete solution</button>
-    </div>
-    <div id="h303" class="panel hint-panel"><strong>Hint:</strong> Default arguments are not “virtual”; they depend on the static type used at the call site. Prefer overload sets or a single parameter struct.</div>
-    <div id="s303" class="panel sol-panel">
-      <pre><code>class ICurve
-{
-public:
-    virtual double eval(double x) const = 0;
-    virtual ~ICurve() = default;
-};
-
-class LabCurve : public ICurve
-{
-public:
-    double eval(double const x) const override
-    {
-        return eval(x, false);
-    }
-
-    double eval(double const x, bool const norm) const
-    {
-        return norm ? x * 2.0 : x;
-    }
-};
-
-// Call sites that go through ICurve* must use the one-arg virtual,
-// not a defaulted second parameter on a static type-only overload.
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>virtual override w/ default args</code> footgun—public polymorphic APIs should avoid defaulted parameters on split overloads; seniors split into explicit functions or flags structs.</p>
-    </div>
+    <div class="ticket-head"><span class="id">VLC-SR-303</span><span class="prio">P1 · Critical</span><span class="qa">Golden FFT</span></div>
+    <h3>LabCurve eval wrong through ICurve*</h3>
+    <div class="section"><h4>Problem</h4><p>The one-argument <code>LabCurve::eval</code> delegates with <code>norm=true</code>, doubling the sample when called through <code>ICurve const*</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/lab_curve.cpp</code> — <code>LabCurve::eval(double)</code> should delegate with <code>norm=false</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-SR-303</code></pre>
+      <pre><code>observed ICurve::eval(0.5): 1
+expected ICurve::eval(0.5): 0.5</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-SR-303 PASS</code></div>
+    <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h303')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s303')">Complete solution</button></div>
+    <div id="h303" class="panel hint-panel"><strong>Hint:</strong> Default arguments are not virtual; the one-arg override must pick the correct explicit overload.</div>
+    <div id="s303" class="panel sol-panel"><pre><code>double LabCurve::eval(double const x) const {
+    return eval(x, false);
+}</code></pre></div>
   </article>
 
   <article class="ticket">
-    <div class="ticket-head">
-      <span class="id">VLC-SR-304</span>
-      <span class="prio">P1 · Critical</span>
-      <span class="qa">Opened by QA · Stereo image collapse</span>
-    </div>
-    <h3>Stereo PSD merge drops right channel after operator+ refactor</h3>
-    <p class="body"><strong>Summary:</strong> Free <code>operator+</code> for <code>StereoPsd</code> summed left via base but read <code>right_</code> through a non-friend path; shipping build zeroed right.
-
-<strong>Steps:</strong> Add two stereo bins, compare L/R.
-
-<strong>Expected:</strong> Both channels accumulate.
-
-<strong>Actual:</strong> Right stays zero.
-
-<strong>Component:</strong> <code>stereo_psd.cpp</code></p>
-    <div class="btn-row">
-      <button type="button" class="btn-hint" onclick="toggle('h304')">Hint</button>
-      <button type="button" class="btn-sol" onclick="toggle('s304')">Complete solution</button>
-    </div>
-    <div id="h304" class="panel hint-panel"><strong>Hint:</strong> Free <code>operator+</code> is not a member; it cannot read private <code>right_</code> unless it is a <code>friend</code> or you use public accessors only.</div>
-    <div id="s304" class="panel sol-panel">
-      <pre><code>class MonoPsd
-{
-public:
-    explicit MonoPsd(double const e) : e_{e} {}
-    double energy() const { return e_; }
-protected:
-    double e_;
-};
-
-class StereoPsd : public MonoPsd
-{
-public:
-    StereoPsd(double const L, double const R) : MonoPsd{L}, r_{R} {}
-    double right() const { return r_; }
-    friend StereoPsd operator+(StereoPsd const&amp; a, StereoPsd const&amp; b);
-private:
-    double r_;
-};
-
-StereoPsd operator+(StereoPsd const&amp; a, StereoPsd const&amp; b)
-{
-    return StereoPsd{a.energy() + b.energy(), a.right() + b.right()};
-}
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>operator overloading (left and right, inheritance)</code>—friends or narrow public accessors; never assume private layout access from a free function.</p>
-    </div>
+    <div class="ticket-head"><span class="id">VLC-SR-304</span><span class="prio">P1 · Critical</span><span class="qa">Stereo image</span></div>
+    <h3>Stereo PSD operator+ drops right channel</h3>
+    <div class="section"><h4>Problem</h4><p>Free <code>operator+</code> sums left energy but copies only <code>a.right()</code>, omitting <code>b.right()</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/stereo_psd.cpp</code> — <code>operator+(StereoPsd const&amp;, StereoPsd const&amp;)</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-SR-304</code></pre>
+      <pre><code>observed (a + b).right(): 0.5
+expected (a + b).right(): 0.75</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-SR-304 PASS</code></div>
+    <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h304')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s304')">Complete solution</button></div>
+    <div id="h304" class="panel hint-panel"><strong>Hint:</strong> Both operands contribute to each channel: <code>a.right() + b.right()</code>.</div>
+    <div id="s304" class="panel sol-panel"><pre><code>return StereoPsd{
+    a.energy() + b.energy(),
+    a.right() + b.right()
+};</code></pre></div>
   </article>
 
   <article class="ticket">
-    <div class="ticket-head">
-      <span class="id">VLC-SR-305</span>
-      <span class="prio">P0 · Blocker</span>
-      <span class="qa">Opened by QA · Security + factory audit</span>
-    </div>
-    <h3>Factory calibration friend can write base trim from unrelated TU (linker + access leak)</h3>
-    <p class="body"><strong>Summary:</strong> <code>setFactoryTrim(CalAmp&amp;, double)</code> was declared <code>friend</code> inside <code>CalAmp</code> but defined in a TU that also tried to poke <code>protected</code> base members on a non-friend code path. Nightly build broke; even when it links, another engineer “helpfully” added <code>using Base::trim_;</code> in <code>public</code> for diagnostics.
-
-<strong>Expected:</strong> Trim writable only via audited friend; diagnostics build should not widen access in production defines.
-
-<strong>Actual:</strong> Access soup + fragile ODR story.
-
-<strong>Component:</strong> <code>CalAmp</code>, <code>GainBase</code>, factory TU.</p>
-    <div class="btn-row">
-      <button type="button" class="btn-hint" onclick="toggle('h305')">Hint</button>
-      <button type="button" class="btn-sol" onclick="toggle('s305')">Complete solution</button>
-    </div>
-    <div id="h305" class="panel hint-panel"><strong>Hint:</strong> Keep <code>friend</code> definitions adjacent to the class; remove <code>using</code> resurrections from production headers. If diagnostics need visibility, isolate behind <code>#ifdef VLC_DIAGNOSTIC_BUILD</code> and code review.</div>
-    <div id="s305" class="panel sol-panel">
-      <pre><code>class GainBase
-{
-protected:
-    double trim_{1.0};
-};
-
-class CalAmp : public GainBase
-{
-    friend void setFactoryTrim(CalAmp&amp; a, double v);
-
-public:
-    double trim() const { return trim_; }
-};
-
-void setFactoryTrim(CalAmp&amp; a, double const v)
-{
-    a.trim_ = v; // OK: friend of CalAmp may access protected base subobject
-}
-
-// Remove from shipping headers:
-// class CalAmp : public GainBase { public: using GainBase::trim_; };
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>friend in inheritance</code> + <code>resurrect members in a more relaxed access level</code>—senior work is policy: who may touch <code>trim_</code>, and never accidentally exporting protected state in release.</p>
-    </div>
+    <div class="ticket-head"><span class="id">VLC-SR-305</span><span class="prio">P0 · Blocker</span><span class="qa">Factory audit</span></div>
+    <h3>Factory trim write is a no-op</h3>
+    <div class="section"><h4>Problem</h4><p><code>set_factory_trim</code> is a friend but its body ignores the request, leaving <code>trim_</code> at the default.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/cal_amp.cpp</code> — <code>set_factory_trim</code> / <code>setFactoryTrim</code> must assign <code>a.trim_</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-SR-305</code></pre>
+      <pre><code>observed trim() after set_factory_trim(1.05): 1
+expected trim(): 1.05</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-SR-305 PASS</code></div>
+    <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h305')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s305')">Complete solution</button></div>
+    <div id="h305" class="panel hint-panel"><strong>Hint:</strong> Friends may write protected base members: <code>a.trim_ = v;</code></div>
+    <div id="s305" class="panel sol-panel"><pre><code>void setFactoryTrim(CalAmp&amp; a, double const v) {
+    a.trim_ = v;
+}</code></pre></div>
   </article>
 
   <footer>VoiceLink Core · Senior ticket notebook · 5 tickets</footer>
-
-  <script>
-    function toggle(id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.toggle('visible');
-    }
-  </script>
+  <script>function toggle(id){var el=document.getElementById(id);if(el)el.classList.toggle('visible');}</script>
 </body>
 </html>

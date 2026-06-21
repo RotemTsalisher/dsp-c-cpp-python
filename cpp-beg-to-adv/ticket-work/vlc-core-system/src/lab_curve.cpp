@@ -4,7 +4,7 @@ namespace vlc {
 
 double LabCurve::eval(double const x) const
 {
-    return eval(x, false);
+    return eval(x, true);
 }
 
 double LabCurve::eval(double const x, bool const norm) const

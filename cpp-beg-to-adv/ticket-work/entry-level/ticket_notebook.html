@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ticket Work — Entry Level DSP / C++</title>
   <style>
-    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#1a7f37; --qa:#8250df; --muted:#57606a; }
+    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#1a7f37; --muted:#57606a; }
     body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
     h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
     .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:.04em; }
@@ -15,9 +15,12 @@
     .ticket-head { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:10px; }
     .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
     .prio { font-size:.75rem; background:#fff8c5; border:1px solid #d4a72c; padding:2px 8px; border-radius:4px; }
-    .ticket h3 { margin:4px 0 10px; font-size:1.05rem; }
     .qa { font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
-    .body { white-space:pre-wrap; font-size:.93rem; margin:0 0 12px; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; font-size:.9rem; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; font-size:.9rem; margin-top:10px; }
     .btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
     button { padding:7px 16px; font-size:.85rem; font-weight:600; border:none; border-radius:6px; cursor:pointer; }
     .btn-hint { background:#bf8700; color:#fff; }
@@ -28,7 +31,7 @@
     .panel.visible { display:block; }
     .hint-panel { background:#fff8c5; border:1px solid #d4a72c; }
     .sol-panel { background:#f6f8fa; border:1px solid var(--border); }
-    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:10px 0 0; }
+    pre { background:#0d1117; color:#e6edf3; padding:12px 14px; border-radius:8px; overflow-x:auto; font-size:.78rem; line-height:1.4; margin:8px 0 0; }
     pre code { background:transparent; color:inherit; }
     .why { margin-top:10px; color:#424a53; font-size:.86rem; }
     code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; font-size:.88em; }
@@ -38,216 +41,158 @@
 <body>
 
   <h1><span class="badge">ENTRY</span> DSP ticket notebook</h1>
-  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · difficulty increases · C++20 training subset (no STL containers)</p>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:-6px;">Five tickets · increasing difficulty · C++20 training subset (no STL containers)</p>
 
   <div class="system">
-    <h2>System under maintenance — VoiceLink Core (VLC)</h2>
-    <p><strong>What it is:</strong> Embedded voice uplink path for a duplex intercom product. 48 kHz PCM in, optional stereo-to-mono mix before narrowband wind PSD, software trims on an AFE register block, and a small <code>HeapBins</code>-style scratch buffer for PSD bins.</p>
-    <p><strong>Your role (entry):</strong> QA files straightforward defects—wrong constants, obvious leaks, missing returns on chained configurators, and arithmetic slip-ups in scaling helpers. You read the ticket, reproduce mentally from the snippet, patch the C++, and explain the fix in the review comment.</p>
-    <p><strong>Reference codebase:</strong> the buildable VLC tree lives in <code>../vlc-core-system/</code> (<code>include/vlc/</code>, <code>src/</code>, <code>CMakeLists.txt</code>). Open the matching headers and sources while working each ticket.</p>
+    <h2>VoiceLink Core (VLC) — how to work a ticket</h2>
+    <p><strong>System:</strong> Embedded voice uplink for a duplex intercom. 48 kHz PCM, stereo-to-mono mix, ADC scaling helpers, mic gain chain, and a small heap-backed PSD buffer.</p>
+    <p><strong>Your job:</strong> Each ticket describes one defect already present in the codebase. Patch only the files listed under <em>Fix</em>, then re-run that ticket’s test until it prints <code>PASS</code>.</p>
+    <p><strong>Code:</strong> <code>../vlc-core-system/</code> · <strong>Build &amp; test once:</strong></p>
+    <pre><code>cd ../vlc-core-system
+cmake -S . -B build
+cmake --build build --target vlc_ticket_test
+.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-101</code></pre>
+    <p>List every ticket id: <code>.\build\Debug\vlc_ticket_test.exe --list</code></p>
   </div>
 
-  <!-- T1 -->
   <article class="ticket">
     <div class="ticket-head">
       <span class="id">VLC-ENTRY-101</span>
       <span class="prio">P3 · Minor</span>
-      <span class="qa">Opened by QA · Field soak</span>
+      <span class="qa">Field soak</span>
     </div>
     <h3>Mono mix sounds 6 dB hot on uplink</h3>
-    <p class="body"><strong>Summary:</strong> Uplink mono downmix from L/R appears louder than lab reference when both channels carry the same tone.
-
-<strong>Steps:</strong> (1) Play 1 kHz −20 dBFS identical on L and R. (2) Enable uplink mono mix. (3) Measure uplink level.
-
-<strong>Expected:</strong> Same RMS as single-channel reference within 0.2 dB.
-
-<strong>Actual:</strong> ~+6 dB vs reference.
-
-<strong>Component:</strong> <code>monoMixDown()</code> in <code>uplink_mix.cpp</code>.</p>
+    <div class="section"><h4>Problem</h4>
+      <p>When left and right carry the same tone, uplink mono RMS is about <strong>6 dB above</strong> the lab reference. The downmix doubles correlated energy instead of preserving it.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/mono_mix.cpp</code> — function <code>mono_mix_down</code> (alias <code>monoMixDown</code> in <code>include/vlc/mono_mix.hpp</code>).</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-101</code></pre>
+      <p><strong>Bug output (before fix):</strong></p>
+      <pre><code>observed mono_mix_down(0.2, 0.2): 0.4
+expected mono_mix_down(0.2, 0.2): 0.2</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> Test prints <code>VLC-ENTRY-101 PASS</code> and exit code 0.</div>
     <div class="btn-row">
       <button type="button" class="btn-hint" onclick="toggle('h101')">Hint</button>
       <button type="button" class="btn-sol" onclick="toggle('s101')">Complete solution</button>
     </div>
-    <div id="h101" class="panel hint-panel"><strong>Hint:</strong> When L and R are equal, what coefficient on <code>(L+R)</code> keeps energy invariant?</div>
+    <div id="h101" class="panel hint-panel"><strong>Hint:</strong> For equal L and R, what factor on <code>(L + R)</code> keeps amplitude unchanged?</div>
     <div id="s101" class="panel sol-panel">
-      <p><strong>Root cause:</strong> Summing L+R without halving doubles amplitude for correlated signals.</p>
-      <pre><code>double monoMixDown(double const left, double const right)
-{
-    return 0.5 * (left + right);
-}
-</code></pre>
-      <p class="why"><strong>Review note:</strong> Plain <code>functions</code> / simple arithmetic—coefficient must be 0.5 for energy-preserving mono mix of floating PCM.</p>
+      <p><strong>Root cause:</strong> Summing without the 0.5 coefficient doubles amplitude for correlated signals.</p>
+      <pre><code>return 0.5 * (left + right);</code></pre>
     </div>
   </article>
 
-  <!-- T2 -->
   <article class="ticket">
     <div class="ticket-head">
       <span class="id">VLC-ENTRY-102</span>
       <span class="prio">P3 · Minor</span>
-      <span class="qa">Opened by QA · Bench</span>
+      <span class="qa">Bench</span>
     </div>
     <h3>ADC full-scale mapping reads 2× high</h3>
-    <p class="body"><strong>Summary:</strong> Calibrated voltage readout from 12-bit ADC counts is systematically ~2× high vs DMM on DC input.
-
-<strong>Steps:</strong> Apply 1.25 V known DC, read driver output.
-
-<strong>Expected:</strong> 1.25 V ± tolerance.
-
-<strong>Actual:</strong> ~2.5 V.
-
-<strong>Component:</strong> <code>countsToVolts()</code></p>
+    <div class="section"><h4>Problem</h4>
+      <p>12-bit ADC counts are converted to volts with the wrong full-scale denominator. A 1.25 V input reads about <strong>2.5 V</strong> on the bench.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/adc_counts.cpp</code> — <code>counts_to_volts</code> (alias <code>countsToVolts</code>).</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-102</code></pre>
+      <pre><code>observed counts_to_volts(2047, 2.5, 12): 2.49878
+expected counts_to_volts(2047, 2.5, 12): 1.25</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-ENTRY-102 PASS</code></div>
     <div class="btn-row">
       <button type="button" class="btn-hint" onclick="toggle('h102')">Hint</button>
       <button type="button" class="btn-sol" onclick="toggle('s102')">Complete solution</button>
     </div>
-    <div id="h102" class="panel hint-panel"><strong>Hint:</strong> Check the denominator: is it <code>2^bits</code> or <code>2^bits - 1</code> for a unipolar ADC spanning 0…full scale?</div>
+    <div id="h102" class="panel hint-panel"><strong>Hint:</strong> Unipolar 12-bit full scale is code <code>2^12 - 1</code>, not <code>2^11</code>.</div>
     <div id="s102" class="panel sol-panel">
-      <p><strong>Root cause:</strong> Used <code>1 &lt;&lt; bits</code> as scale; last code is <code>2^bits - 1</code>.</p>
-      <pre><code>#include &lt;cmath&gt;
-
-double countsToVolts(double const counts, double const fullScaleVolts, int const bits)
-{
-    double const denom = std::ldexp(1.0, bits) - 1.0;
-    return (counts / denom) * fullScaleVolts;
-}
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>constexpr</code>-friendly pattern often uses <code>ldexp</code> for the denominator; this is a classic off-by-one-scale bug in <code>functions</code>.</p>
+      <pre><code>double const denom = std::ldexp(1.0, bits) - 1.0;
+return (counts / denom) * fullScaleVolts;</code></pre>
     </div>
   </article>
 
-  <!-- T3 -->
   <article class="ticket">
     <div class="ticket-head">
       <span class="id">VLC-ENTRY-103</span>
       <span class="prio">P2 · Major</span>
-      <span class="qa">Opened by QA · Long-run soak</span>
+      <span class="qa">Long-run soak</span>
     </div>
-    <h3>PSD soak test leaks memory (heap growth)</h3>
-    <p class="body"><strong>Summary:</strong> Overnight PSD logging soak shows slow RSS climb on host HIL; embedded counterpart shows allocator failures after ~6 h.
-
-<strong>Steps:</strong> Cycle wind PSD capture 1e6 times with fixed bin count.
-
-<strong>Expected:</strong> Stable heap.
-
-<strong>Actual:</strong> Linear growth.
-
-<strong>Component:</strong> class <code>HeapBins</code> (constructor allocates; suspect destructor).</p>
+    <h3>PSD soak test leaks memory</h3>
+    <div class="section"><h4>Problem</h4>
+      <p><code>HeapBins</code> allocates with <code>new[]</code> in the constructor but never releases the buffer. Long soak runs climb RSS until the allocator fails.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/heap_bins.cpp</code> — destructor <code>HeapBins::~HeapBins</code> (class in <code>include/vlc/heap_bins.hpp</code>).</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-103</code></pre>
+      <pre><code>observed live_instances after scope: 1
+expected live_instances after scope: 0</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-ENTRY-103 PASS</code> — live instance count returns to zero after the object is destroyed.</div>
     <div class="btn-row">
       <button type="button" class="btn-hint" onclick="toggle('h103')">Hint</button>
       <button type="button" class="btn-sol" onclick="toggle('s103')">Complete solution</button>
     </div>
-    <div id="h103" class="panel hint-panel"><strong>Hint:</strong> Every <code>new[]</code> needs a matching cleanup in the object lifetime end.</div>
+    <div id="h103" class="panel hint-panel"><strong>Hint:</strong> Every <code>new[]</code> needs a matching <code>delete[]</code> in the destructor.</div>
     <div id="s103" class="panel sol-panel">
-      <p><strong>Root cause:</strong> Destructor empty or missing <code>delete[]</code>.</p>
-      <pre><code>#include &lt;cstddef&gt;
-
-class HeapBins
-{
-public:
-    explicit HeapBins(std::size_t const n) : bins_{new double[n]{}} {}
-    ~HeapBins() { delete[] bins_; }
-    HeapBins(HeapBins const&amp;) = delete;
-    HeapBins&amp; operator=(HeapBins const&amp;) = delete;
-    double* data() { return bins_; }
-private:
-    double* bins_{};
-};
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>Classes: Destructors</code> + <code>managing class objects through pointers</code> hygiene—RAII lesson before smart pointers enter the curriculum.</p>
+      <pre><code>~HeapBins() { delete[] bins_; }</code></pre>
     </div>
   </article>
 
-  <!-- T4 -->
   <article class="ticket">
     <div class="ticket-head">
       <span class="id">VLC-ENTRY-104</span>
       <span class="prio">P3 · Minor</span>
-      <span class="qa">Opened by QA · UI automation</span>
+      <span class="qa">UI automation</span>
     </div>
     <h3>Fluent mic gain API no longer chains</h3>
-    <p class="body"><strong>Summary:</strong> Factory test calls <code>g.setDb(-6).setDb(-3)</code> but second call does not apply; only first sticks.
-
-<strong>Steps:</strong> See attached one-liner repro.
-
-<strong>Expected:</strong> Final gain matches last <code>setDb</code>.
-
-<strong>Actual:</strong> Intermediate value frozen.
-
-<strong>Component:</strong> <code>MicGainChain</code></p>
+    <div class="section"><h4>Problem</h4>
+      <p>Factory test code calls <code>g.setDb(-6).setDb(-3)</code>. The second call does not compile / apply because <code>set_db</code> returns <code>void</code> instead of <code>MicGainChain&amp;</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/mic_gain_chain.cpp</code> and <code>include/vlc/mic_gain_chain.hpp</code> — <code>MicGainChain::set_db</code> / <code>setDb</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-104</code></pre>
+      <pre><code>observed set_db returns MicGainChain& (chainable): 0
+expected set_db returns MicGainChain&: 1</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-ENTRY-104 PASS</code></div>
     <div class="btn-row">
       <button type="button" class="btn-hint" onclick="toggle('h104')">Hint</button>
       <button type="button" class="btn-sol" onclick="toggle('s104')">Complete solution</button>
     </div>
-    <div id="h104" class="panel hint-panel"><strong>Hint:</strong> Fluent setters must return a reference to the same object.</div>
+    <div id="h104" class="panel hint-panel"><strong>Hint:</strong> Fluent setters return a reference to the same object: <code>return *this;</code></div>
     <div id="s104" class="panel sol-panel">
-      <p><strong>Root cause:</strong> <code>setDb</code> returned <code>void</code> or a temporary copy instead of <code>*this</code>.</p>
-      <pre><code>#include &lt;cmath&gt;
-
-class MicGainChain
-{
-public:
-    MicGainChain&amp; setDb(double const db)
-    {
-        linear_ = std::pow(10.0, db / 20.0);
-        return *this;
-    }
-    double linear() const { return linear_; }
-private:
-    double linear_{1.0};
-};
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>this</code> pointer / <code>chaining class functions</code>—return type must be <code>MicGainChain&amp;</code>.</p>
+      <pre><code>MicGainChain&amp; setDb(double const db) {
+    linear_ = std::pow(10.0, db / 20.0);
+    return *this;
+}</code></pre>
     </div>
   </article>
 
-  <!-- T5 -->
   <article class="ticket">
     <div class="ticket-head">
       <span class="id">VLC-ENTRY-105</span>
       <span class="prio">P2 · Major</span>
-      <span class="qa">Opened by QA · Regression</span>
+      <span class="qa">Regression</span>
     </div>
-    <h3>Wind PSD bin #0 always zero after “const cleanup”</h3>
-    <p class="body"><strong>Summary:</strong> After a const-correctness refactor, DC bin of PSD never updates; higher bins OK.
-
-<strong>Steps:</strong> White noise input, dump bin 0 vs bin 4.
-
-<strong>Expected:</strong> Bin 0 tracks low-frequency energy.
-
-<strong>Actual:</strong> Bin 0 stuck at 0.
-
-<strong>Component:</strong> <code>WindPsdScratch::writeBin(int i, double v)</code> marked <code>const</code> by mistake.</p>
+    <h3>Wind PSD bin #0 always zero</h3>
+    <div class="section"><h4>Problem</h4>
+      <p>After a refactor, DC bin 0 never updates while higher bins (e.g. bin 4) still work. Low-frequency wind energy is under-reported.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4>
+      <p><code>src/wind_psd_scratch.cpp</code> — <code>WindPsdScratch::write_bin</code> (alias <code>writeBin</code>).</p></div>
+    <div class="section test"><h4>Reproduce</h4>
+      <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-ENTRY-105</code></pre>
+      <pre><code>observed read_bin(0): 0
+observed read_bin(4): 0.12
+expected read_bin(0): 0.42</code></pre></div>
+    <div class="pass"><strong>Pass criteria:</strong> <code>VLC-ENTRY-105 PASS</code></div>
     <div class="btn-row">
       <button type="button" class="btn-hint" onclick="toggle('h105')">Hint</button>
       <button type="button" class="btn-sol" onclick="toggle('s105')">Complete solution</button>
     </div>
-    <div id="h105" class="panel hint-panel"><strong>Hint:</strong> Mutating member state is not allowed on a <code>const</code> member function.</div>
+    <div id="h105" class="panel hint-panel"><strong>Hint:</strong> All valid bin indices, including 0, must write through to <code>bins_</code>.</div>
     <div id="s105" class="panel sol-panel">
-      <p><strong>Root cause:</strong> <code>writeBin</code> incorrectly declared <code>const</code> while writing <code>bins_[i]</code>.</p>
-      <pre><code>#include &lt;cstddef&gt;
-
-class WindPsdScratch
-{
-public:
-    void writeBin(int const i, double const v)
-    {
-        bins_[static_cast&lt;std::size_t&gt;(i)] = v;
-    }
-    double readBin(int const i) const
-    {
-        return bins_[static_cast&lt;std::size_t&gt;(i)];
-    }
-private:
-    double bins_[64]{};
-};
-</code></pre>
-      <p class="why"><strong>Review note:</strong> <code>Classes: const correctness</code>—writers are non-<code>const</code>; readers stay <code>const</code>.</p>
+      <pre><code>bins_[static_cast&lt;std::size_t&gt;(i)] = v;  // for every in-range i, including 0</code></pre>
     </div>
   </article>
 
   <footer>VoiceLink Core · Entry ticket notebook · 5 tickets</footer>
-
   <script>
     function toggle(id) {
       var el = document.getElementById(id);

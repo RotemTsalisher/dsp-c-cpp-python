@@ -18,7 +18,11 @@ public:
     double const* data() const;
     std::size_t size() const;
 
+    /// Test hook: increments on construction; should decrement in destructor (VLC-ENTRY-103).
+    static int live_instances() { return live_instances_; }
+
 private:
+    static int live_instances_;
     std::size_t const count_;
     double* bins_;
 };

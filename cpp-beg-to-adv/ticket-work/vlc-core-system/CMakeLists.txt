@@ -27,3 +27,7 @@ target_compile_features(vlc_core PUBLIC cxx_std_20)
 
 add_executable(vlc_demo src/main.cpp)
 target_link_libraries(vlc_demo PRIVATE vlc_core)
+
+add_executable(vlc_ticket_test tests/ticket_tests.cpp)
+target_link_libraries(vlc_ticket_test PRIVATE vlc_core)
+target_include_directories(vlc_ticket_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tests")

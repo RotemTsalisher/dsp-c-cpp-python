@@ -12,7 +12,8 @@ bool over_noise_floor(double const x)
 
 bool gate_tap(double const x, TapPredicate const pred)
 {
-    return pred(x);
+    (void)pred;
+    return true;
 }
 
 } // namespace vlc

@@ -14,6 +14,12 @@ public:
     int id() const { return 2; }
 };
 
+/// Slices derived routing id when passed by value (VLC-SR-302 repro).
+inline int route_box_by_value(Box box)
+{
+    return box.id();
+}
+
 } // namespace vlc
 
 #endif

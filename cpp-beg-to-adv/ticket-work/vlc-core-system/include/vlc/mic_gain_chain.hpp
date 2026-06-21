@@ -6,9 +6,9 @@ namespace vlc {
 /// Fluent mic gain in linear domain (setDb chain returns *this).
 class MicGainChain {
 public:
-    MicGainChain& set_db(double db);
+    void set_db(double db);
     /// Ticket / factory-test name (VLC-ENTRY-104) — same as `set_db`.
-    MicGainChain& setDb(double const db) { return set_db(db); }
+    void setDb(double const db) { set_db(db); }
     double linear() const;
 
 private:
