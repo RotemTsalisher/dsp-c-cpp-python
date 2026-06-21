@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <string>
-#include <thread>
 #include <type_traits>
 
 namespace {
@@ -42,17 +41,11 @@ struct can_masked_or<T, std::void_t<decltype(::dsp::afe::maskedOr(
 int test_entry_101()
 {
     print_header("VLC-ENTRY-101", "Mono mix downmix level");
-    double const left = 0.2;
-    double const right = 0.2;
-    double const observed = vlc::mono_mix_down(left, right);
+    double const observed = vlc::mono_mix_down(0.2, 0.2);
     double const expected = 0.2;
     print_observed("mono_mix_down(0.2, 0.2)", observed);
     print_expected("mono_mix_down(0.2, 0.2)", expected);
-    if (nearly_equal(observed, expected)) {
-        return pass("VLC-ENTRY-101", "Energy-preserving 0.5*(L+R) mix is correct.");
-    }
-    return fail("VLC-ENTRY-101",
-                "Mix is too hot. Fix mono_mix_down in src/mono_mix.cpp (missing 0.5 scale).");
+    return nearly_equal(observed, expected) ? pass("VLC-ENTRY-101") : fail("VLC-ENTRY-101");
 }
 
 int test_entry_102()
@@ -62,11 +55,7 @@ int test_entry_102()
     double const expected = 1.25;
     print_observed("counts_to_volts(2047, 2.5, 12)", observed);
     print_expected("counts_to_volts(2047, 2.5, 12)", expected);
-    if (nearly_equal(observed, expected)) {
-        return pass("VLC-ENTRY-102", "Full-scale mapping uses (2^bits - 1) as the denominator.");
-    }
-    return fail("VLC-ENTRY-102",
-                "Voltage reads about 2x high. Fix counts_to_volts in src/adc_counts.cpp (denominator).");
+    return nearly_equal(observed, expected) ? pass("VLC-ENTRY-102") : fail("VLC-ENTRY-102");
 }
 
 int test_entry_103()
@@ -80,11 +69,7 @@ int test_entry_103()
     int const after = vlc::HeapBins::live_instances();
     print_observed("live_instances after { HeapBins(16); } scope", after);
     print_expected("live_instances after scope", before);
-    if (after == before) {
-        return pass("VLC-ENTRY-103", "HeapBins releases its buffer in the destructor.");
-    }
-    return fail("VLC-ENTRY-103",
-                "Live instance count did not drop. Fix ~HeapBins in src/heap_bins.cpp (delete[]).");
+    return after == before ? pass("VLC-ENTRY-103") : fail("VLC-ENTRY-103");
 }
 
 int test_entry_104()
@@ -92,7 +77,7 @@ int test_entry_104()
     print_header("VLC-ENTRY-104", "Fluent MicGainChain chaining");
     bool const chainable =
         std::is_same_v<vlc::MicGainChain&, decltype(std::declval<vlc::MicGainChain>().set_db(0.0))>;
-    print_observed("set_db returns MicGainChain& (chainable)", chainable);
+    print_observed("set_db returns MicGainChain&", chainable);
     print_expected("set_db returns MicGainChain&", true);
 
     vlc::MicGainChain gain;
@@ -102,12 +87,7 @@ int test_entry_104()
     double const expected = std::pow(10.0, -3.0 / 20.0);
     print_observed("linear() after set_db(-6); set_db(-3);", observed);
     print_expected("linear()", expected);
-    if (chainable && nearly_equal(observed, expected)) {
-        return pass("VLC-ENTRY-104", "Fluent set_db returns *this and the last dB value wins.");
-    }
-    return fail("VLC-ENTRY-104",
-                "Factory one-liner g.setDb(-6).setDb(-3) cannot chain. Fix MicGainChain::set_db in "
-                "src/mic_gain_chain.cpp and include/vlc/mic_gain_chain.hpp (return MicGainChain&).");
+    return chainable && nearly_equal(observed, expected) ? pass("VLC-ENTRY-104") : fail("VLC-ENTRY-104");
 }
 
 int test_entry_105()
@@ -121,11 +101,9 @@ int test_entry_105()
     print_observed("read_bin(0)", bin0);
     print_observed("read_bin(4)", bin4);
     print_expected("read_bin(0)", 0.42);
-    if (nearly_equal(bin0, 0.42) && nearly_equal(bin4, 0.12)) {
-        return pass("VLC-ENTRY-105", "Bin 0 accepts writes like the other bins.");
-    }
-    return fail("VLC-ENTRY-105",
-                "Bin 0 stayed at zero. Fix WindPsdScratch::write_bin in src/wind_psd_scratch.cpp.");
+    print_expected("read_bin(4)", 0.12);
+    return nearly_equal(bin0, 0.42) && nearly_equal(bin4, 0.12) ? pass("VLC-ENTRY-105")
+                                                                : fail("VLC-ENTRY-105");
 }
 
 struct BinTag {
@@ -140,16 +118,11 @@ int test_jr_201()
     auto const bogus = vlc::quantizeSample(tag, tag);
     print_observed("quantizeSample(3.3f, 0.5f)", vlc::quantize_sample(3.3f, 0.5f));
     print_observed("quantizeSample(BinTag, BinTag).x", bogus.x);
-    print_expected("compile-time rejection for BinTag", "template requires std::is_arithmetic_v<T>");
+    print_expected("quantizeSample(BinTag, BinTag).x", "not accepted");
     if (!arithmetic_ok) {
-        return fail("VLC-JR-201", "Arithmetic quantize path regressed.");
+        return fail("VLC-JR-201");
     }
-    if (bogus.x == tag.x) {
-        return fail("VLC-JR-201",
-                    "Non-arithmetic BinTag is accepted. Add requires std::is_arithmetic_v<T> in "
-                    "include/vlc/quantize.hpp.");
-    }
-    return pass("VLC-JR-201", "Non-arithmetic types are rejected at compile time.");
+    return bogus.x != tag.x ? pass("VLC-JR-201") : fail("VLC-JR-201");
 }
 
 int test_jr_202()
@@ -159,12 +132,7 @@ int test_jr_202()
     vlc::run_telemetry_slice_once(summary);
     print_observed("summary after run_telemetry_slice_once", summary);
     print_expected("summary", 0.125);
-    if (nearly_equal(summary, 0.125)) {
-        return pass("VLC-JR-202", "Worker finished before the caller reads summary (join).");
-    }
-    return fail("VLC-JR-202",
-                "Summary still zero or stale. Fix run_telemetry_slice_once in "
-                "src/telemetry_slice.cpp (join the worker thread).");
+    return nearly_equal(summary, 0.125) ? pass("VLC-JR-202") : fail("VLC-JR-202");
 }
 
 int test_jr_203()
@@ -174,36 +142,26 @@ int test_jr_203()
     vlc::Source* source = &notch;
     double const observed = source->next();
     print_observed("Source* -> NotchSource::next()", observed);
-    print_expected("dynamic dispatch into NotchSource", "> 0 (not base silence)");
-    if (observed > 0.0) {
-        return pass("VLC-JR-203", "NotchSource::next runs through a Source*.");
-    }
-    return fail("VLC-JR-203",
-                "Base Source::next returned silence. Mark Source::next virtual in "
-                "include/vlc/source.hpp and override in NotchSource.");
+    print_expected("Source* -> NotchSource::next()", "> 0");
+    return observed > 0.0 ? pass("VLC-JR-203") : fail("VLC-JR-203");
 }
 
 int test_jr_204()
 {
     print_header("VLC-JR-204", "AFE maskedOr field width");
-
     bool const accepts_u16 = can_masked_or<std::uint16_t>::value;
     print_observed("uint16_t field accepted at compile time", accepts_u16);
+    print_expected("uint16_t field accepted at compile time", false);
 
     if (accepts_u16) {
         std::uint32_t const observed =
             ::dsp::afe::maskedOr(0u, 0xFFFF'0000u, static_cast<std::uint16_t>(0x0001u));
         print_observed("maskedOr(0, 0xFFFF0000, uint16_t(1))", observed);
-        print_expected("upper-half field via uint32_t", "0x00010000");
-        if (observed == 0x0001'0000u) {
-            return pass("VLC-JR-204", "32-bit field path only.");
-        }
-        return fail("VLC-JR-204",
-                    "16-bit field compiled and cleared upper-half bits. Constrain masked_or / "
-                    "maskedOr in include/vlc/afe_registers.hpp to std::uint32_t.");
+        print_expected("maskedOr(0, 0xFFFF0000, uint32_t(1))", "0x10000");
+        return observed == 0x0001'0000u ? pass("VLC-JR-204") : fail("VLC-JR-204");
     }
 
-    return pass("VLC-JR-204", "Only 32-bit register fields are accepted at compile time.");
+    return pass("VLC-JR-204");
 }
 
 int test_jr_205()
@@ -213,13 +171,9 @@ int test_jr_205()
     bool const loud = vlc::gate_tap(1e-3, &vlc::over_noise_floor);
     print_observed("gate_tap(1e-8, over_noise_floor)", quiet);
     print_observed("gate_tap(1e-3, over_noise_floor)", loud);
-    print_expected("quiet sample gated out", "false");
-    print_expected("loud sample passes", "true");
-    if (!quiet && loud) {
-        return pass("VLC-JR-205", "Predicate is honored by gate_tap.");
-    }
-    return fail("VLC-JR-205",
-                "Gate ignores the predicate. Fix gate_tap in src/tap_gate.cpp to call pred(x).");
+    print_expected("gate_tap(1e-8, over_noise_floor)", false);
+    print_expected("gate_tap(1e-3, over_noise_floor)", true);
+    return !quiet && loud ? pass("VLC-JR-205") : fail("VLC-JR-205");
 }
 
 int test_sr_301()
@@ -228,12 +182,7 @@ int test_sr_301()
     bool const has_virtual_dtor = std::has_virtual_destructor_v<vlc::ICodec>;
     print_observed("has_virtual_destructor_v<ICodec>", has_virtual_dtor);
     print_expected("has_virtual_destructor_v<ICodec>", true);
-    if (has_virtual_dtor) {
-        return pass("VLC-SR-301", "Deleting through ICodec* is safe for derived codecs.");
-    }
-    return fail("VLC-SR-301",
-                "ICodec lacks a virtual destructor. Fix include/vlc/icodec.hpp "
-                "(virtual ~ICodec() = default).");
+    return has_virtual_dtor ? pass("VLC-SR-301") : fail("VLC-SR-301");
 }
 
 int test_sr_302()
@@ -245,13 +194,7 @@ int test_sr_302()
     print_observed("FancyBox.id()", direct);
     print_observed("route_box_by_value(FancyBox)", routed);
     print_expected("route_box_by_value(FancyBox)", 2);
-    if (direct == 2 && routed == 2) {
-        return pass("VLC-SR-302", "Fancy routing id survives the telemetry call path.");
-    }
-    return fail("VLC-SR-302",
-                "FancyBox sliced to Box inside route_box_by_value. Fix "
-                "route_box_by_value in include/vlc/box_telemetry.hpp (pass by const& or "
-                "pointer, or make id() virtual).");
+    return direct == 2 && routed == 2 ? pass("VLC-SR-302") : fail("VLC-SR-302");
 }
 
 int test_sr_303()
@@ -262,12 +205,7 @@ int test_sr_303()
     double const observed = iface->eval(0.5);
     print_observed("ICurve::eval(0.5)", observed);
     print_expected("ICurve::eval(0.5)", 0.5);
-    if (nearly_equal(observed, 0.5)) {
-        return pass("VLC-SR-303", "One-arg virtual path matches the non-normalized curve.");
-    }
-    return fail("VLC-SR-303",
-                "Normalisation flag applied incorrectly. Fix LabCurve::eval(double) in "
-                "src/lab_curve.cpp (delegate with norm=false).");
+    return nearly_equal(observed, 0.5) ? pass("VLC-SR-303") : fail("VLC-SR-303");
 }
 
 int test_sr_304()
@@ -278,12 +216,10 @@ int test_sr_304()
     vlc::StereoPsd const sum = a + b;
     print_observed("(a + b).energy()", sum.energy());
     print_observed("(a + b).right()", sum.right());
+    print_expected("(a + b).energy()", 1.25);
     print_expected("(a + b).right()", 0.75);
-    if (nearly_equal(sum.energy(), 1.25) && nearly_equal(sum.right(), 0.75)) {
-        return pass("VLC-SR-304", "Both channels accumulate in operator+.");
-    }
-    return fail("VLC-SR-304",
-                "Right channel did not accumulate. Fix operator+ in src/stereo_psd.cpp.");
+    return nearly_equal(sum.energy(), 1.25) && nearly_equal(sum.right(), 0.75) ? pass("VLC-SR-304")
+                                                                                 : fail("VLC-SR-304");
 }
 
 int test_sr_305()
@@ -293,12 +229,7 @@ int test_sr_305()
     vlc::set_factory_trim(amp, 1.05);
     print_observed("trim() after set_factory_trim(1.05)", amp.trim());
     print_expected("trim()", 1.05);
-    if (nearly_equal(amp.trim(), 1.05)) {
-        return pass("VLC-SR-305", "Audited friend can write protected trim_.");
-    }
-    return fail("VLC-SR-305",
-                "Factory trim did not stick. Fix set_factory_trim in src/cal_amp.cpp "
-                "(friend must assign a.trim_).");
+    return nearly_equal(amp.trim(), 1.05) ? pass("VLC-SR-305") : fail("VLC-SR-305");
 }
 
 using TestFn = int (*)();

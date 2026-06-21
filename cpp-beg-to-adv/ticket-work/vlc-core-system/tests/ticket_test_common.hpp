@@ -2,7 +2,6 @@
 #define VLC_TICKET_TEST_COMMON_HPP
 
 #include <cmath>
-#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -13,17 +12,15 @@ inline bool nearly_equal(double const a, double const b, double const eps = 1e-9
     return std::abs(a - b) <= eps;
 }
 
-inline int fail(std::string const& ticket, std::string const& message)
+inline int fail(std::string const& ticket)
 {
-    std::cout << ticket << " FAIL (bug still present)\n"
-              << "  " << message << '\n';
+    std::cout << ticket << " FAIL\n";
     return 1;
 }
 
-inline int pass(std::string const& ticket, std::string const& message)
+inline int pass(std::string const& ticket)
 {
-    std::cout << ticket << " PASS\n"
-              << "  " << message << '\n';
+    std::cout << ticket << " PASS\n";
     return 0;
 }
 
@@ -39,7 +36,7 @@ inline void print_observed(std::string const& label, auto const& value)
 
 inline void print_expected(std::string const& label, auto const& value)
 {
-    std::cout << "  expected " << label << ": " << value << " (after your fix)\n";
+    std::cout << "  expected " << label << ": " << value << '\n';
 }
 
 } // namespace vlc::test
