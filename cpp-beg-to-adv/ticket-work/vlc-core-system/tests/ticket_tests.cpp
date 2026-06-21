@@ -29,13 +29,16 @@ using vlc::test::print_expected;
 using vlc::test::print_header;
 using vlc::test::print_observed;
 
-template <typename T, typename = void>
-struct can_masked_or : std::false_type {
+template <typename T>
+constexpr bool accepts_masked_or_field_v = requires {
+    {
+        ::dsp::afe::maskedOr(std::uint32_t{0}, std::uint32_t{0}, std::declval<T>())
+    } -> std::same_as<std::uint32_t>;
 };
 
 template <typename T>
-struct can_masked_or<T, std::void_t<decltype(::dsp::afe::maskedOr(
-                             std::uint32_t{0}, std::uint32_t{0}, T{}))>> : std::true_type {
+constexpr bool accepts_quantize_v = requires(T a, T b) {
+    { vlc::quantizeSample(a, b) } -> std::same_as<T>;
 };
 
 int test_entry_101()
@@ -114,15 +117,15 @@ int test_jr_201()
 {
     print_header("VLC-JR-201", "quantizeSample type constraint");
     bool const arithmetic_ok = nearly_equal(vlc::quantize_sample(3.3f, 0.5f), 3.0f);
-    BinTag tag{7};
-    auto const bogus = vlc::quantizeSample(tag, tag);
+    bool const accepts_bin_tag = accepts_quantize_v<BinTag>;
     print_observed("quantizeSample(3.3f, 0.5f)", vlc::quantize_sample(3.3f, 0.5f));
-    print_observed("quantizeSample(BinTag, BinTag).x", bogus.x);
-    print_expected("quantizeSample(BinTag, BinTag).x", "not accepted");
+    print_observed("accepts BinTag", accepts_bin_tag);
+    print_expected("quantizeSample(3.3f, 0.5f)", 3.0f);
+    print_expected("accepts BinTag", false);
     if (!arithmetic_ok) {
         return fail("VLC-JR-201");
     }
-    return bogus.x != tag.x ? pass("VLC-JR-201") : fail("VLC-JR-201");
+    return !accepts_bin_tag ? pass("VLC-JR-201") : fail("VLC-JR-201");
 }
 
 int test_jr_202()
@@ -149,19 +152,10 @@ int test_jr_203()
 int test_jr_204()
 {
     print_header("VLC-JR-204", "AFE maskedOr field width");
-    bool const accepts_u16 = can_masked_or<std::uint16_t>::value;
+    bool const accepts_u16 = accepts_masked_or_field_v<std::uint16_t>;
     print_observed("uint16_t field accepted at compile time", accepts_u16);
     print_expected("uint16_t field accepted at compile time", false);
-
-    if (accepts_u16) {
-        std::uint32_t const observed =
-            ::dsp::afe::maskedOr(0u, 0xFFFF'0000u, static_cast<std::uint16_t>(0x0001u));
-        print_observed("maskedOr(0, 0xFFFF0000, uint16_t(1))", observed);
-        print_expected("maskedOr(0, 0xFFFF0000, uint32_t(1))", "0x10000");
-        return observed == 0x0001'0000u ? pass("VLC-JR-204") : fail("VLC-JR-204");
-    }
-
-    return pass("VLC-JR-204");
+    return !accepts_u16 ? pass("VLC-JR-204") : fail("VLC-JR-204");
 }
 
 int test_jr_205()

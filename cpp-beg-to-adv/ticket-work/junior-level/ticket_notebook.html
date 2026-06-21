@@ -55,8 +55,8 @@ cmake --build build --target vlc_ticket_test
     <div class="section fix"><h4>Fix (bug is here)</h4><p><code>include/vlc/quantize.hpp</code> — <code>quantize_sample</code> / <code>quantizeSample</code>.</p></div>
     <div class="section test"><h4>Reproduce</h4>
       <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-JR-201</code></pre>
-      <pre><code>observed quantizeSample(BinTag, BinTag).x: 7
-expected compile-time rejection for BinTag</code></pre></div>
+      <pre><code>observed accepts BinTag: 1
+expected accepts BinTag: 0</code></pre></div>
     <div class="pass"><strong>Pass criteria:</strong> <code>VLC-JR-201 PASS</code></div>
     <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h201')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s201')">Complete solution</button></div>
     <div id="h201" class="panel hint-panel"><strong>Hint:</strong> Add <code>requires std::is_arithmetic_v&lt;T&gt;</code> on the template.</div>
@@ -111,8 +111,7 @@ class NotchSource : public Source {
     <div class="section test"><h4>Reproduce</h4>
       <pre><code>.\build\Debug\vlc_ticket_test.exe VLC-JR-204</code></pre>
       <pre><code>observed uint16_t field accepted at compile time: 1
-observed maskedOr(0, 0xFFFF0000, uint16_t(1)): 0
-expected upper-half field via uint32_t: 0x00010000</code></pre></div>
+expected uint16_t field accepted at compile time: 0</code></pre></div>
     <div class="pass"><strong>Pass criteria:</strong> <code>VLC-JR-204 PASS</code></div>
     <div class="btn-row"><button type="button" class="btn-hint" onclick="toggle('h204')">Hint</button><button type="button" class="btn-sol" onclick="toggle('s204')">Complete solution</button></div>
     <div id="h204" class="panel hint-panel"><strong>Hint:</strong> Constrain the field type with a <code>Word32</code> concept / <code>requires</code>.</div>
