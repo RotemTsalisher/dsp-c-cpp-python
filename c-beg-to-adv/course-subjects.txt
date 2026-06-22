@@ -1,0 +1,9 @@
+- drawing shapes with prints
+- variables
+- data types (integers, double, float, char, string)
+- printf function (general usage, format specifires)
+- working with numbers (basic math operations, combining integers and floating points, ontegers with floating point results, basic c math functions {not libraries}, )
+- constants
+- user inputs (integers, double, float, character, string, strings with white spaces {fgets})
+- milestone (1) project with all of the so far established knowledge
+- milestone (2) building a small game with all the current knowledge
