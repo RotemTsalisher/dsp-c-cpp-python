@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work — Batch 01 Staff (C)</title>
+  <style>
+    :root { --bg:#f0f1f3; --accent:#a40e26; --muted:#57606a; --border:#d0d7de; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); color:#24292f; }
+    h1 { border-bottom:3px solid var(--accent); padding-bottom:10px; font-size:1.45rem; }
+    .badge { background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+    .subj { font-size:.75rem; background:#ffebe9; border:1px solid #ff8182; padding:2px 8px; border-radius:4px; }
+    .ticket { background:#fff; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .section h4 { font-size:.88rem; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; margin:12px 0; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; margin-top:10px; }
+    button { padding:7px 16px; font-weight:600; border:none; border-radius:6px; cursor:pointer; background:#a40e26; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px; background:#f6f8fa; border:1px solid var(--border); border-radius:8px; }
+    .panel.visible { display:block; }
+    pre { background:#0d1117; color:#e6edf3; padding:12px; border-radius:8px; font-size:.78rem; overflow-x:auto; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; }
+    footer { text-align:center; color:var(--muted); font-size:.82rem; margin-top:28px; }
+  </style>
+</head>
+<body>
+  <h1><span class="badge">BATCH 01 · STAFF</span> C ticket notebook</h1>
+  <p style="color:var(--muted);font-size:.9rem;">Subject <strong>12</strong> (functions) + milestones <strong>8–9</strong></p>
+  <p><code>../dsp-core-system</code> · <code>.\build\Debug\dsp_ticket_test.exe DSP-STAFF-301</code></p>
+
+  <article class="ticket">
+    <span class="id">DSP-STAFF-301</span> <span class="subj">Subject 12 · void function</span>
+    <h3>gain_stage_set_db is a no-op</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/gain_stage.c</code> — <code>gain_stage_set_db</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected gain_stage_linear: 0.501187</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-STAFF-301 PASS</code></div>
+    <button onclick="toggle('s301')">Solution</button>
+    <div id="s301" class="panel"><pre><code>stage-&gt;linear = pow(10.0, db / 20.0);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-STAFF-302</span> <span class="subj">Subject 12 · return value</span>
+    <h3>Power dB uses 20·log10 instead of 10·log10</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/linear_to_db.c</code> — <code>linear_power_to_db</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected linear_power_to_db(0.5): -3.0103</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-STAFF-302 PASS</code></div>
+    <button onclick="toggle('s302')">Solution</button>
+    <div id="s302" class="panel"><pre><code>return 10.0 * log10(linear_power);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-STAFF-303</span> <span class="subj">Subject 12 · function pointer</span>
+    <h3>apply_gain_fn ignores callback</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/apply_gain_fn.c</code> — <code>apply_gain_fn</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected apply_gain_fn(1.0, unity_gain): 0.5</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-STAFF-303 PASS</code></div>
+    <button onclick="toggle('s303')">Solution</button>
+    <div id="s303" class="panel"><pre><code>return fn(sample);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-STAFF-304</span> <span class="subj">Subject 8 · milestone project</span>
+    <h3>Bring-up headroom percent inverted</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/bringup_report.c</code> — <code>bringup_headroom_percent</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected bringup_headroom_percent(1.0, 2.5): 60</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-STAFF-304 PASS</code></div>
+    <button onclick="toggle('s304')">Solution</button>
+    <div id="s304" class="panel"><pre><code>return 100.0 * (1.0 - mono_volts / full_scale_volts);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-STAFF-305</span> <span class="subj">Subject 9 · milestone game</span>
+    <h3>PSD Peak Hunt score stuck on hit</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/game_score.c</code> — <code>game_score_on_hit</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected game_score_on_hit: 20</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-STAFF-305 PASS</code></div>
+    <button onclick="toggle('s305')">Solution</button>
+    <div id="s305" class="panel"><pre><code>return score + 10;</code></pre></div>
+  </article>
+
+  <footer>batch-01 · staff · subject 12 + milestones 8–9</footer>
+  <script>function toggle(id){document.getElementById(id).classList.toggle('visible');}</script>
+</body>
+</html>

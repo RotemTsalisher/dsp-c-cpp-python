@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Workbook — Second Half of Curriculum</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #8250df; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #fbefff; border-left: 4px solid #8250df; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #bf8700; color: #fff; }
+    .lvl-2 { background: #bc4c00; color: #fff; }
+    .lvl-3 { background: #a40e26; color: #fff; }
+    .lvl-4 { background: #212830; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .hint { color: #656d76; font-size: 0.88rem; margin-top: 12px; border-top: 1px dashed #d8dee4; padding-top: 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #8250df; color: #fff; }
+    button.reveal-btn:hover { background: #6639ba; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.meta { font-size: 0.88rem; color: #444; margin: 8px 0 0 1.1em; }
+    ol.meta { font-size: 0.88rem; color: #444; margin: 8px 0 0 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>C Workbook — Second Half of Curriculum</h1>
+  <p class="subtitle">Advanced EE framing · Subjects 7–12 from <code>course-subjects.txt</code> · ANSI C (C11) · No external libraries beyond <code>&lt;stdio.h&gt;</code> and <code>&lt;math.h&gt;</code></p>
+
+  <div class="scope">
+    <strong>Scope (second half, subjects 7–12):</strong> interactive input with <code>scanf</code> and whitespace-safe strings via <code>fgets</code>; static arrays of numeric and string data; filling arrays from user input; and decomposing logic into functions (parameters, <code>void</code>, typed returns, <code>math.h</code> helpers). Exercises 6–7 are milestone-scale: a multi-step AFE bring-up console and a small scoring game. Topics from subjects 1–6 (drawing, types, <code>printf</code>, numbers, constants) may appear cumulatively in later exercises. Comb-delay, PSD, AFE, and mono-mix narratives thread through every problem.
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Exercise 1 — Bench session capture (advanced)</span>
+    <p><strong>Context:</strong> Before a comb-filter HIL run, the operator must log session metadata — including a free-text bench location that may contain spaces.</p>
+    <p>Prompt and read with <code>scanf</code>: <code>int sample_rate_hz</code>, <code>double comb_delay_ms</code>, <code>double feedback_gain</code>, and <code>char uplink_mode</code> (<code>'M'</code> mono-mix or <code>'S'</code> stereo passthrough). Flush the leftover newline, then read a line with <code>fgets</code> into <code>char bench_location[64]</code> (strip trailing <code>\n</code>). Compute <code>delay_samples = (comb_delay_ms / 1000.0) * sample_rate_hz</code> and print a formatted session card.</p>
+    <p class="hint">Topics: user inputs — <code>scanf</code> for numeric/char types; <code>fgets</code> for strings with whitespace.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>/* gcc -std=c11 -Wall -Wextra -O2 main.c -lm */
+#include &lt;stdio.h&gt;
+
+static void trim_newline(char *s)
+{
+    if (s == NULL) {
+        return;
+    }
+    for (int i = 0; s[i] != '\0'; ++i) {
+        if (s[i] == '\n') {
+            s[i] = '\0';
+            break;
+        }
+    }
+}
+
+int main(void)
+{
+    int sample_rate_hz = 0;
+    double comb_delay_ms = 0.0;
+    double feedback_gain = 0.0;
+    char uplink_mode = '?';
+    char bench_location[64] = {0};
+
+    printf("=== Comb-filter HIL session log ===\n");
+    printf("Sample rate (Hz): ");
+    scanf("%d", &amp;sample_rate_hz);
+    printf("Comb delay (ms): ");
+    scanf("%lf", &amp;comb_delay_ms);
+    printf("Feedback gain (0..1): ");
+    scanf("%lf", &amp;feedback_gain);
+    printf("Uplink mode (M=mono / S=stereo): ");
+    scanf(" %c", &amp;uplink_mode);
+    (void)getchar();
+    printf("Bench location (free text): ");
+    if (fgets(bench_location, (int)sizeof bench_location, stdin) == NULL) {
+        bench_location[0] = '\0';
+    }
+    trim_newline(bench_location);
+
+    double const delay_samples =
+        (comb_delay_ms / 1000.0) * (double)sample_rate_hz;
+
+    printf("\n--- Session card ---\n");
+    printf("Location : %s\n", bench_location);
+    printf("Fs       : %d Hz\n", sample_rate_hz);
+    printf("Delay    : %.3f ms -&gt; %.2f samples\n",
+           comb_delay_ms, delay_samples);
+    printf("Feedback : %.4f\n", feedback_gain);
+    printf("Uplink   : %c\n", uplink_mode);
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Mixing <code>scanf</code> and <code>fgets</code> is the classic C input pitfall — flushing the newline before reading a spaced string mirrors real bench scripts. Delay-sample math reuses first-half numeric skills without repeating the workbook&nbsp;01 scope trace.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Exercise 2</span>
+    <p><strong>Context:</strong> A comb delay line holds the last eight mono-mix samples in a circular buffer for notch visualization.</p>
+    <p>Declare <code>static double delay_ring[8]</code> pre-filled with sample values. Write <code>void print_ring(double const *buf, int len)</code> (no return) that prints each slot as <code>[i] %8.4f</code>. Write <code>double ring_energy(double const *buf, int len)</code> returning mean-square energy <code>sum(x*x)/len</code>. Call both from <code>main</code> and print energy in dB with <code>10*log10</code> when &gt; 0.</p>
+    <p class="hint">Topics: static arrays (<code>double</code>); functions with parameters and typed return; <code>math.h</code>.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+static void print_ring(double const *buf, int len)
+{
+    for (int i = 0; i &lt; len; ++i) {
+        printf("[%d] %8.4f\n", i, buf[i]);
+    }
+}
+
+static double ring_energy(double const *buf, int len)
+{
+    double sum = 0.0;
+    for (int i = 0; i &lt; len; ++i) {
+        sum += buf[i] * buf[i];
+    }
+    return sum / (double)len;
+}
+
+int main(void)
+{
+    static double delay_ring[8] = {
+        0.12, -0.08, 0.05, 0.31, -0.22, 0.17, -0.04, 0.09
+    };
+    int const len = 8;
+
+    printf("=== Comb delay ring snapshot ===\n");
+    print_ring(delay_ring, len);
+
+    double const energy = ring_energy(delay_ring, len);
+    printf("Mean-square energy: %.6f\n", energy);
+    if (energy &gt; 0.0) {
+        printf("PSD level: %.2f dB\n", 10.0 * log10(energy));
+    } else {
+        printf("PSD level: -inf dB\n");
+    }
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> A fixed-size ring models on-chip delay memory — array indexing plus small functions separate display (<code>void</code>) from measurement (typed return). Unlike workbook&nbsp;01’s eight named variables, the buffer is a first-class static array.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-2">Exercise 3</span>
+    <p><strong>Context:</strong> AFE driver helpers convert raw counts, downmix to mono, and flag clipping before uplink.</p>
+    <p>Implement these functions (use <code>math.h</code> where needed):</p>
+    <ul class="meta">
+      <li><code>double counts_to_volts(int counts, int bits, double full_scale_v)</code></li>
+      <li><code>double mono_mix(double left, double right)</code> — comb-safe <code>0.5*(L+R)</code></li>
+      <li><code>int is_clipping(double sample, double full_scale_v)</code> — returns <code>1</code> if <code>|sample| &gt;= 0.98 * full_scale</code>, else <code>0</code></li>
+      <li><code>void print_afe_row(char tag, int counts, double volts, int clip)</code></li>
+    </ul>
+    <p>From <code>main</code>, process two hard-coded channel count pairs and print a two-row table plus the mixed output line.</p>
+    <p class="hint">Topics: functions — parameters, <code>void</code> return, typed returns, math conversion.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+static double counts_to_volts(int counts, int bits, double full_scale_v)
+{
+    double const denom = pow(2.0, (double)bits) - 1.0;
+    return ((double)counts / denom) * full_scale_v;
+}
+
+static double mono_mix(double left, double right)
+{
+    return 0.5 * (left + right);
+}
+
+static int is_clipping(double sample, double full_scale_v)
+{
+    return (fabs(sample) &gt;= 0.98 * full_scale_v) ? 1 : 0;
+}
+
+static void print_afe_row(char tag, int counts, double volts, int clip)
+{
+    printf("CH %c | counts=%04d | V=%7.4f | clip=%s\n",
+           tag, counts, volts, clip ? "YES" : "no");
+}
+
+int main(void)
+{
+    int const bits = 12;
+    double const fs_v = 2.5;
+    int const counts_l = 3950;
+    int const counts_r = 4010;
+
+    double const v_l = counts_to_volts(counts_l, bits, fs_v);
+    double const v_r = counts_to_volts(counts_r, bits, fs_v);
+    double const mono = mono_mix(v_l, v_r);
+
+    printf("=== AFE mono-mix clip guard ===\n");
+    print_afe_row('L', counts_l, v_l, is_clipping(v_l, fs_v));
+    print_afe_row('R', counts_r, v_r, is_clipping(v_r, fs_v));
+    printf("MONO mix: %7.4f V | clip=%s\n",
+           mono, is_clipping(mono, fs_v) ? "YES" : "no");
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Decomposing ADC math into reusable functions is how firmware headers grow — each helper has a single EE meaning. The clip threshold uses a ratio constant, not the dual-channel snapshot duplicated in workbook&nbsp;01.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Exercise 4</span>
+    <p><strong>Context:</strong> A technician types measured PSD bin powers from a spectrum analyzer into firmware for a quick uplink sanity plot.</p>
+    <p>Declare <code>static double psd_bins[16]</code>. Ask the user for <code>int bin_count</code> (1–16), then read that many powers with <code>scanf("%lf", ...)</code>. Implement <code>double find_peak(double const *arr, int n)</code> and <code>void draw_psd_bars(double const *arr, int n, double peak)</code> (ASCII bars scaled to 28 chars). Print peak and total energy after the chart.</p>
+    <p class="hint">Topics: static arrays with user inputs; functions; <code>printf</code> drawing (subjects 1–6 cumulative).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+static double find_peak(double const *arr, int n)
+{
+    double peak = arr[0];
+    for (int i = 1; i &lt; n; ++i) {
+        if (arr[i] &gt; peak) {
+            peak = arr[i];
+        }
+    }
+    return peak;
+}
+
+static void draw_psd_bars(double const *arr, int n, double peak)
+{
+    for (int k = 0; k &lt; n; ++k) {
+        int const bar_len = (peak &gt; 0.0) ? (int)(arr[k] / peak * 28.0) : 0;
+        printf("bin %2d | %7.4f | ", k, arr[k]);
+        for (int i = 0; i &lt; bar_len; ++i) {
+            putchar('#');
+        }
+        putchar('\n');
+    }
+}
+
+int main(void)
+{
+    static double psd_bins[16];
+    int bin_count = 0;
+
+    printf("=== Manual PSD bin entry ===\n");
+    printf("How many bins (1-16)? ");
+    scanf("%d", &amp;bin_count);
+    if (bin_count &lt; 1) {
+        bin_count = 1;
+    }
+    if (bin_count &gt; 16) {
+        bin_count = 16;
+    }
+
+    for (int k = 0; k &lt; bin_count; ++k) {
+        printf("Bin %d power: ", k);
+        scanf("%lf", &amp;psd_bins[k]);
+    }
+
+    double const peak = find_peak(psd_bins, bin_count);
+    double total = 0.0;
+    for (int k = 0; k &lt; bin_count; ++k) {
+        total += psd_bins[k];
+    }
+
+    printf("\n--- Normalized strip ---\n");
+    draw_psd_bars(psd_bins, bin_count, peak);
+    printf("peak=%.4f  total=%.4f\n", peak, total);
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Subject&nbsp;11 pairs array storage with interactive fill — the bounded 16-slot buffer matches analyzer export limits. Peak-normalized bars reuse drawing skills from the first half but driven by runtime data, not hard-coded variables.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-3">Exercise 5</span>
+    <p><strong>Context:</strong> AFE register documentation uses parallel string labels and integer shadow values; one register may be patched at bring-up.</p>
+    <p>Declare <code>static char reg_names[5][20]</code> and <code>static unsigned int reg_values[5]</code> with meaningful comb/AFE names and sample hex values. Write <code>void print_reg_table(char names[][20], unsigned int const *vals, int n)</code> and <code>unsigned int decode_gain_field(unsigned int raw)</code> returning <code>(raw &gt;&gt; 8) &amp; 0xFF</code>. Prompt the user for a register index (0–4) and a new hex value (<code>%x</code>), update the array, then reprint the table with decoded gain fields.</p>
+    <p class="hint">Topics: static arrays (<code>char</code> strings + <code>unsigned int</code>); user input; functions.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+static unsigned int decode_gain_field(unsigned int raw);
+
+static void print_reg_table(char names[][20], unsigned int const *vals, int n)
+{
+    printf("%-18s  RAW        GAIN_FLD\n", "REGISTER");
+    for (int i = 0; i &lt; n; ++i) {
+        unsigned int const gain = decode_gain_field(vals[i]);
+        printf("%-18s  0x%08X  0x%02X\n", names[i], vals[i], gain);
+    }
+}
+
+static unsigned int decode_gain_field(unsigned int raw)
+{
+    return (raw &gt;&gt; 8) &amp; 0xFFu;
+}
+
+int main(void)
+{
+    static char reg_names[5][20] = {
+        "COMB_DELAY",
+        "COMB_FB",
+        "MONO_MIX",
+        "PSD_WINDOW",
+        "AFE_CTRL"
+    };
+    static unsigned int reg_values[5] = {
+        0x000003C0u,
+        0x0000F333u,
+        0x00008000u,
+        0x00000400u,
+        0x80000001u
+    };
+    int const n = 5;
+    int index = 0;
+    unsigned int patch = 0u;
+
+    printf("=== AFE shadow register editor ===\n");
+    print_reg_table(reg_names, reg_values, n);
+
+    printf("\nPatch register index (0-4): ");
+    scanf("%d", &amp;index);
+    if (index &lt; 0) {
+        index = 0;
+    }
+    if (index &gt;= n) {
+        index = n - 1;
+    }
+    printf("New hex value (e.g. DEADBEEF): ");
+    scanf("%x", &amp;patch);
+    reg_values[index] = patch;
+
+    printf("\n--- After patch ---\n");
+    print_reg_table(reg_names, reg_values, n);
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Parallel string and integer arrays model register-map headers. User patching exercises in-place array update plus hex <code>scanf</code> — distinct from workbook&nbsp;01’s read-only four-register dump.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Exercise 6 — Milestone project (1)</span>
+    <p><strong>Context:</strong> Factory AFE bring-up console — one interactive program that walks an operator through capture, conversion, mono-mix headroom check, and a live PSD strip sketch.</p>
+    <p>Build a single program combining subjects 1–12:</p>
+    <ol class="meta">
+      <li><code>fgets</code> the operator name (spaces allowed) and <code>scanf</code> for <code>adc_bits</code>, <code>full_scale_v</code>, and L/R counts.</li>
+      <li>Store five PSD reference bins in <code>static double ref_psd[5]</code>; let the user overwrite each bin.</li>
+      <li>Functions: <code>counts_to_volts</code>, <code>mono_mix</code>, <code>headroom_pct</code>, <code>draw_psd_strip</code>.</li>
+      <li>Print a boxed report: operator, volts, mono, headroom %, ASCII PSD strip normalized to peak, footer line of <code>=</code> characters.</li>
+    </ol>
+    <p class="hint">Topics: milestone (1) project — all knowledge through subject 12; cumulative first-half skills.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+static void trim_newline(char *s)
+{
+    if (s == NULL) {
+        return;
+    }
+    for (int i = 0; s[i] != '\0'; ++i) {
+        if (s[i] == '\n') {
+            s[i] = '\0';
+            break;
+        }
+    }
+}
+
+static double counts_to_volts(int counts, int bits, double full_scale_v)
+{
+    double const denom = pow(2.0, (double)bits) - 1.0;
+    return ((double)counts / denom) * full_scale_v;
+}
+
+static double mono_mix(double left, double right)
+{
+    return 0.5 * (left + right);
+}
+
+static double headroom_pct(double sample, double full_scale_v)
+{
+    return 100.0 * (1.0 - fabs(sample) / full_scale_v);
+}
+
+static double find_peak5(double const *arr)
+{
+    double peak = arr[0];
+    for (int i = 1; i &lt; 5; ++i) {
+        if (arr[i] &gt; peak) {
+            peak = arr[i];
+        }
+    }
+    return peak;
+}
+
+static void draw_psd_strip(double const *arr, double peak)
+{
+    for (int k = 0; k &lt; 5; ++k) {
+        int const n = (peak &gt; 0.0) ? (int)(arr[k] / peak * 22.0) : 0;
+        printf(" %d |%6.4f| ", k, arr[k]);
+        for (int i = 0; i &lt; n; ++i) {
+            putchar('*');
+        }
+        putchar('\n');
+    }
+}
+
+int main(void)
+{
+    char operator_name[48] = {0};
+    int adc_bits = 12;
+    double full_scale_v = 2.5;
+    int counts_l = 0;
+    int counts_r = 0;
+    static double ref_psd[5] = {0.06, 0.14, 0.38, 0.20, 0.07};
+
+    printf("========================================\n");
+    printf(" AFE Bring-up Console — Milestone (1)\n");
+    printf("========================================\n");
+
+    printf("Operator name: ");
+    if (fgets(operator_name, (int)sizeof operator_name, stdin) == NULL) {
+        operator_name[0] = '\0';
+    }
+    trim_newline(operator_name);
+
+    printf("ADC bits: ");
+    scanf("%d", &amp;adc_bits);
+    printf("Full scale (V): ");
+    scanf("%lf", &amp;full_scale_v);
+    printf("Counts L: ");
+    scanf("%d", &amp;counts_l);
+    printf("Counts R: ");
+    scanf("%d", &amp;counts_r);
+
+    printf("\nEnter 5 PSD reference bin powers:\n");
+    for (int k = 0; k &lt; 5; ++k) {
+        printf("  ref_psd[%d]: ", k);
+        scanf("%lf", &amp;ref_psd[k]);
+    }
+
+    double const v_l = counts_to_volts(counts_l, adc_bits, full_scale_v);
+    double const v_r = counts_to_volts(counts_r, adc_bits, full_scale_v);
+    double const mono = mono_mix(v_l, v_r);
+    double const headroom = headroom_pct(mono, full_scale_v);
+    double const peak = find_peak5(ref_psd);
+
+    printf("\n========================================\n");
+    printf("Operator : %s\n", operator_name);
+    printf("ADC L/R  : %04d / %04d  -&gt; %.4f / %.4f V\n",
+           counts_l, counts_r, v_l, v_r);
+    printf("Mono mix : %.4f V  |  headroom: %.1f%%\n", mono, headroom);
+    printf("PSD reference strip:\n");
+    draw_psd_strip(ref_psd, peak);
+    printf("========================================\n");
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Milestone&nbsp;(1) demands a coherent workflow — not a snippet. Inputs, arrays, functions, formatted drawing, and physical-unit math appear in one factory-style screen, extending (not copying) the first-half capstone by making every stage interactive.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff lvl-4">Exercise 7 — Milestone game (2)</span>
+    <p><strong>Context:</strong> Training game <em>PSD Peak Hunt</em> — the hidden loudest bin in a comb-notch spectrum must be found in limited guesses; score tracks how quickly trainees locate uplink interference.</p>
+    <p>Implement a turn-based console game using subjects 1–12:</p>
+    <ol class="meta">
+      <li>Seed a <code>static double spectrum[8]</code> with a hidden peak (hard-code or pick index 5 with value <code>0.85</code>, others lower).</li>
+      <li><code>fgets</code> the player name; <code>scanf</code> each guess as a bin index.</li>
+      <li>Functions: <code>double bin_power(int k)</code>, <code>const char *hint_for(double guess_pwr, double peak_pwr)</code>, <code>void print_board(double const *spec, int n, int revealed_peak)</code>, <code>int update_score(int score, int turns_left)</code>.</li>
+      <li>Five guesses max; hints: <code>"COLD"</code> / <code>"WARM"</code> / <code>"HOT"</code> by power ratio; reveal chart and final score at end.</li>
+    </ol>
+    <p class="hint">Topics: milestone (2) small game; arrays, inputs, functions, ASCII display.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7')">Reveal solution</button>
+    <div id="sol7" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+static void trim_newline(char *s)
+{
+    if (s == NULL) {
+        return;
+    }
+    for (int i = 0; s[i] != '\0'; ++i) {
+        if (s[i] == '\n') {
+            s[i] = '\0';
+            break;
+        }
+    }
+}
+
+static double bin_power(int k)
+{
+    static double const spectrum[8] = {
+        0.04, 0.07, 0.11, 0.19, 0.28, 0.85, 0.16, 0.05
+    };
+    if (k &lt; 0 || k &gt;= 8) {
+        return 0.0;
+    }
+    return spectrum[k];
+}
+
+static int peak_index(void)
+{
+    return 5;
+}
+
+static char const *hint_for(double guess_pwr, double peak_pwr)
+{
+    if (peak_pwr &lt;= 0.0) {
+        return "COLD";
+    }
+    double const ratio = guess_pwr / peak_pwr;
+    if (ratio &gt;= 0.75) {
+        return "HOT";
+    }
+    if (ratio &gt;= 0.35) {
+        return "WARM";
+    }
+    return "COLD";
+}
+
+static void print_board(double const *spec, int n, int revealed_peak)
+{
+    double peak = spec[0];
+    for (int i = 1; i &lt; n; ++i) {
+        if (spec[i] &gt; peak) {
+            peak = spec[i];
+        }
+    }
+    for (int k = 0; k &lt; n; ++k) {
+        int const bar = (peak &gt; 0.0) ? (int)(spec[k] / peak * 18.0) : 0;
+        printf("%d |%5.2f| ", k, spec[k]);
+        for (int i = 0; i &lt; bar; ++i) {
+            putchar(revealed_peak ? '#' : '?');
+        }
+        putchar('\n');
+    }
+}
+
+static int update_score(int score, int turns_left)
+{
+    return score + turns_left * 10;
+}
+
+int main(void)
+{
+    static double spectrum[8] = {
+        0.04, 0.07, 0.11, 0.19, 0.28, 0.85, 0.16, 0.05
+    };
+    char player[40] = {0};
+    int const max_turns = 5;
+    int turns_left = max_turns;
+    int score = 0;
+    int won = 0;
+    int const answer = peak_index();
+    double const peak_pwr = spectrum[answer];
+
+    printf("=== PSD Peak Hunt (training) ===\n");
+    printf("Find the hidden comb-notch peak bin (0-7).\n");
+    printf("Player name: ");
+    if (fgets(player, (int)sizeof player, stdin) == NULL) {
+        player[0] = '\0';
+    }
+    trim_newline(player);
+
+    while (turns_left &gt; 0 &amp;&amp; !won) {
+        int guess = -1;
+        printf("\nGuesses left: %d  |  Enter bin index: ", turns_left);
+        if (scanf("%d", &amp;guess) != 1) {
+            break;
+        }
+        if (guess &lt; 0 || guess &gt;= 8) {
+            printf("Out of range — try 0..7.\n");
+            continue;
+        }
+
+        double const pwr = bin_power(guess);
+        printf("Bin %d power=%.2f  hint: %s\n",
+               guess, pwr, hint_for(pwr, peak_pwr));
+
+        if (guess == answer) {
+            won = 1;
+            score = update_score(score, turns_left);
+            printf("Correct! Interference bin located.\n");
+        }
+        --turns_left;
+    }
+
+    printf("\n--- Final spectrum ---\n");
+    print_board(spectrum, 8, 1);
+    printf("\nPlayer: %s  |  Score: %d  |  %s\n",
+           player, score, won ? "PASS" : "RETRY");
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Milestone&nbsp;(2) turns the same C toolkit into engagement — arrays hold the hidden spectrum, <code>scanf</code>/<code>fgets</code> drive rounds, and helper functions keep game logic readable. The masked-then-revealed ASCII chart reinforces PSD literacy under time pressure.</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Subjects 7–12 · second half · 7 exercises · advanced track</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

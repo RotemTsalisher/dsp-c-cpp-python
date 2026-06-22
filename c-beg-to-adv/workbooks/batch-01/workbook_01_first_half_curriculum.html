@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Workbook — First Half of Curriculum</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #1f6feb; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #ddf4ff; border-left: 4px solid #1f6feb; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #bf8700; color: #fff; }
+    .lvl-2 { background: #bc4c00; color: #fff; }
+    .lvl-3 { background: #a40e26; color: #fff; }
+    .lvl-4 { background: #212830; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .hint { color: #656d76; font-size: 0.88rem; margin-top: 12px; border-top: 1px dashed #d8dee4; padding-top: 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #1f6feb; color: #fff; }
+    button.reveal-btn:hover { background: #1158c7; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.meta { font-size: 0.88rem; color: #444; margin: 8px 0 0 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>C Workbook — First Half of Curriculum</h1>
+  <p class="subtitle">Advanced EE framing · Subjects 1–6 from <code>course-subjects.txt</code> · ANSI C (C11) · No external libraries beyond <code>&lt;stdio.h&gt;</code> and <code>&lt;math.h&gt;</code></p>
+
+  <div class="scope">
+    <strong>Scope (first half, subjects 1–6):</strong> drawing with <code>printf</code>, variables, fundamental data types, format specifiers, numeric expressions (integer/float mixing, basic math), and <code>const</code> / <code>#define</code> constants. Seven exercises with a steep difficulty curve — warm-up starts at lab-bench depth; the last two are system-style panels that combine every topic in this half. Comb-delay / mono-mix / PSD narratives appear where they fit the current C subset.
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Exercise 1 — Bench warm-up (advanced)</span>
+    <p><strong>Context:</strong> A field tech needs a quick ASCII scope trace of one period of a comb-delay test tone before the uplink chain is enabled.</p>
+    <p>Write a program that uses <strong>variables</strong> <code>int samples</code>, <code>double amplitude</code>, <code>double frequency_hz</code>, and <code>double sample_rate_hz</code>. For each sample index <code>n</code> from <code>0</code> to <code>samples - 1</code>, compute <code>x = amplitude * sin(2*pi*frequency_hz*n/sample_rate_hz)</code> (use <code>math.h</code>) and <strong>draw</strong> one row: a centered vertical bar whose height is proportional to <code>|x|</code> (map to 0–20 <code>*</code> characters, pad with spaces). Print the numeric value with <code>printf</code> using <code>%6.3f</code> beside the bar.</p>
+    <p class="hint">Topics: drawing shapes with prints; variables; <code>printf</code> format specifiers; working with numbers.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>/* gcc -std=c11 -Wall -Wextra -O2 main.c -lm */
+#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int const samples = 32;
+    double const amplitude = 0.85;
+    double const frequency_hz = 440.0;
+    double const sample_rate_hz = 48000.0;
+    double const two_pi = 2.0 * 3.14159265358979323846;
+
+    printf("=== Comb-line tone scope (1 period) ===\n");
+    for (int n = 0; n &lt; samples; ++n) {
+        double const t = (double)n / sample_rate_hz;
+        double const x = amplitude * sin(two_pi * frequency_hz * t);
+        int const bar_len = (int)(fabs(x) * 20.0 / amplitude);
+        printf("%6.3f |", x);
+        for (int s = 0; s &lt; 20 - bar_len; ++s) {
+            printf(" ");
+        }
+        for (int b = 0; b &lt; bar_len; ++b) {
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Variables hold physical units (Hz, amplitude). <code>printf</code> combines a fixed-width float field with hand-built ASCII graphics — the “drawing shapes” skill applied to a real bench readout, not toy art.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Exercise 2</span>
+    <p><strong>Context:</strong> Dual ADC channels feed a mono-mix front-end. The log must show raw counts, converted volts, and a channel tag.</p>
+    <p>Declare <code>int counts_left</code>, <code>int counts_right</code>, <code>char channel_tag</code> (<code>'L'</code> or <code>'R'</code> for the row being printed), and <code>double volts</code>. Given <code>int resolution_bits = 12</code> and <code>double full_scale_volts = 2.5</code>, print one formatted line per channel:</p>
+    <p><code>CH %c | counts=%04d | V=%7.4f</code></p>
+    <p>Use the correct conversion: <code>volts = (counts / (2^bits - 1)) * full_scale</code> with <code>double</code> arithmetic (promote before divide). Demonstrate both channels in <code>main</code>.</p>
+    <p class="hint">Topics: data types (<code>int</code>, <code>double</code>, <code>char</code>); <code>printf</code> specifiers <code>%c</code>, <code>%04d</code>, <code>%7.4f</code>; numeric promotion.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int const resolution_bits = 12;
+    double const full_scale_volts = 2.5;
+    double const denom = pow(2.0, (double)resolution_bits) - 1.0;
+
+    int const counts_left = 2047;
+    int const counts_right = 1024;
+
+    printf("=== AFE dual-channel snapshot ===\n");
+    {
+        char const tag = 'L';
+        int const counts = counts_left;
+        double const volts = ((double)counts / denom) * full_scale_volts;
+        printf("CH %c | counts=%04d | V=%7.4f\n", tag, counts, volts);
+    }
+    {
+        char const tag = 'R';
+        int const counts = counts_right;
+        double const volts = ((double)counts / denom) * full_scale_volts;
+        printf("CH %c | counts=%04d | V=%7.4f\n", tag, counts, volts);
+    }
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Mixing <code>int</code> counts with <code>double</code> full-scale requires explicit promotion — a common EE bug if left implicit. Width/precision specifiers keep columns aligned for HIL logs.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-2">Exercise 3</span>
+    <p><strong>Context:</strong> Uplink mono-mix and PSD reference level for a correlated stereo tone.</p>
+    <p>Given <code>double left</code> and <code>double right</code> (linear samples), compute:</p>
+    <ul class="meta">
+      <li><code>mono = 0.5 * (left + right)</code> (comb-safe downmix)</li>
+      <li><code>quad_energy = 0.5 * (left*left + right*right)</code></li>
+      <li><code>db10 = 10.0 * log10(quad_energy)</code> when <code>quad_energy &gt; 0</code>, else print <code>-inf</code> as text</li>
+    </ul>
+    <p>Store the logic in <code>main</code> only (functions are a later subject). Print all three values with <code>printf</code>. Test with <code>left = right = 0.25</code> and with <code>left = 0.3</code>, <code>right = -0.3</code>.</p>
+    <p class="hint">Topics: working with numbers; <code>float</code>/<code>double</code> math; <code>printf</code> for mixed outputs.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    printf("=== Mono-mix / PSD reference ===\n");
+
+    for (int case_id = 0; case_id &lt; 2; ++case_id) {
+        double left = 0.25;
+        double right = 0.25;
+        if (case_id == 1) {
+            left = 0.3;
+            right = -0.3;
+        }
+        double const mono = 0.5 * (left + right);
+        double const quad_energy = 0.5 * (left * left + right * right);
+        printf("L=% .3f R=% .3f -&gt; mono=% .4f energy=% .6f ",
+               left, right, mono, quad_energy);
+        if (quad_energy &gt; 0.0) {
+            double const db10 = 10.0 * log10(quad_energy);
+            printf("PSD_ref=% .2f dB\n", db10);
+        } else {
+            printf("PSD_ref=-inf dB\n");
+        }
+    }
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> The <code>0.5</code> factors encode EE semantics (mono mix + mean-square energy). <code>log10</code> from <code>math.h</code> is the minimal math extension for dB readouts at this course stage.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Exercise 4</span>
+    <p><strong>Context:</strong> Firmware headers document immutable calibration constants for an AFE register block.</p>
+    <p>Define:</p>
+    <ul class="meta">
+      <li><code>#define AFE_ADC_BITS 12</code></li>
+      <li><code>const double AFE_FULL_SCALE_V = 2.5;</code></li>
+      <li><code>const float COMB_FEEDBACK_MAX = 0.95f;</code></li>
+    </ul>
+    <p>Print a three-row table from <code>main</code> (no functions yet — subject 12 comes later). Compute and print <code>counts_per_volt = (2^AFE_ADC_BITS - 1) / AFE_FULL_SCALE_V</code> as a <code>double</code> derived constant.</p>
+    <p class="hint">Topics: constants (<code>#define</code> and <code>const</code>); data types; formatted output.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+#define AFE_ADC_BITS 12
+
+static double const AFE_FULL_SCALE_V = 2.5;
+static float const COMB_FEEDBACK_MAX = 0.95f;
+
+int main(void)
+{
+    double const counts_per_volt =
+        (pow(2.0, (double)AFE_ADC_BITS) - 1.0) / AFE_FULL_SCALE_V;
+
+    printf("=== AFE calibration constants ===\n");
+    printf("%-22s %8d  (int/#define)\n", "AFE_ADC_BITS", AFE_ADC_BITS);
+    printf("%-22s %8.4lf (double const)\n", "AFE_FULL_SCALE_V", AFE_FULL_SCALE_V);
+    printf("%-22s %8.4f  (float const)\n", "COMB_FEEDBACK_MAX", COMB_FEEDBACK_MAX);
+    printf("%-22s %8.2lf (derived)\n", "counts_per_volt", counts_per_volt);
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Splitting macro vs <code>const</code> mirrors real headers: macros for compile-time integers, typed <code>const</code> for physical units. Derived constants stay in <code>double</code> to avoid precision loss in PSD scaling.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-3">Exercise 5</span>
+    <p><strong>Context:</strong> Bring-up script dumps the first four AFE shadow registers as a hex table with decoded fields.</p>
+    <p>Use <code>unsigned int</code> values <code>0x00000A01</code>, <code>0x80001234</code>, <code>0x000000FF</code>, <code>0xDEAD0000</code>. Print a header row, then each row as:</p>
+    <p><code>REG[%d]  raw=0x%08X  low_byte=0x%02X  msb_set=%c</code></p>
+    <p>where <code>low_byte</code> is <code>raw &amp; 0xFF</code> and <code>msb_set</code> is <code>'Y'</code> if bit 31 is set else <code>'N'</code>. Right-align columns. No arrays yet — unroll four calls or use four labeled variables.</p>
+    <p class="hint">Topics: integers and hex formatting (<code>%X</code>, <code>%02X</code>); <code>char</code> flags; variables; ASCII table drawing.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    unsigned int const reg0 = 0x00000A01u;
+    unsigned int const reg1 = 0x80001234u;
+    unsigned int const reg2 = 0x000000FFu;
+    unsigned int const reg3 = 0xDEAD0000u;
+
+    printf("=== AFE shadow register map ===\n");
+    printf("IDX      RAW        LOW   MSB\n");
+
+    for (int index = 0; index &lt; 4; ++index) {
+        unsigned int raw = reg0;
+        if (index == 1) raw = reg1;
+        else if (index == 2) raw = reg2;
+        else if (index == 3) raw = reg3;
+        unsigned int const low_byte = raw &amp; 0xFFu;
+        char const msb_set = (raw &amp; 0x80000000u) ? 'Y' : 'N';
+        printf("REG[%d]  raw=0x%08X  low_byte=0x%02X  msb_set=%c\n",
+               index, raw, low_byte, msb_set);
+    }
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Hex <code>printf</code> specifiers are mandatory for register work. Bit tests return <code>char</code> markers — a bridge between integer math and human-readable logs.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Exercise 6 — System panel</span>
+    <p><strong>Context:</strong> Offline PSD sanity check — eight narrowband bins must be sketched as an ASCII histogram before FFT firmware ships.</p>
+    <p>Store eight <code>double</code> bin powers in individual variables <code>b0…b7</code> (use values like <code>0.02, 0.05, 0.11, 0.40, 0.22, 0.08, 0.03, 0.01</code>). Find <code>max_power</code> with a chain of comparisons (no arrays). For each bin, print:</p>
+    <p><code>bin %d | %5.3f | &lt;bar&gt;</code> where bar length is <code>(int)(power / max_power * 30)</code> asterisks. Print <code>max_power</code> and total energy <code>sum(b0..b7)</code> after the chart.</p>
+    <p class="hint">Topics: drawing with prints; variables; numbers; constants for bin count; <code>printf</code> alignment.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int const bin_count = 8;
+    double const b0 = 0.02, b1 = 0.05, b2 = 0.11, b3 = 0.40;
+    double const b4 = 0.22, b5 = 0.08, b6 = 0.03, b7 = 0.01;
+
+    double max_power = b0;
+    if (b1 &gt; max_power) max_power = b1;
+    if (b2 &gt; max_power) max_power = b2;
+    if (b3 &gt; max_power) max_power = b3;
+    if (b4 &gt; max_power) max_power = b4;
+    if (b5 &gt; max_power) max_power = b5;
+    if (b6 &gt; max_power) max_power = b6;
+    if (b7 &gt; max_power) max_power = b7;
+
+    double const total = b0 + b1 + b2 + b3 + b4 + b5 + b6 + b7;
+
+    printf("=== PSD bin histogram (pre-FFT) ===\n");
+    for (int k = 0; k &lt; bin_count; ++k) {
+        double power = 0.0;
+        if (k == 0) power = b0;
+        else if (k == 1) power = b1;
+        else if (k == 2) power = b2;
+        else if (k == 3) power = b3;
+        else if (k == 4) power = b4;
+        else if (k == 5) power = b5;
+        else if (k == 6) power = b6;
+        else power = b7;
+        int const bar_len = (int)(power / max_power * 30.0);
+        printf("bin %d | %5.3f | ", k, power);
+        for (int i = 0; i &lt; bar_len; ++i) {
+            putchar('*');
+        }
+        putchar('\n');
+    }
+    printf("max_power=%.4f  total_energy=%.4f\n", max_power, total);
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> Eight named <code>double</code> variables plus an index loop avoid static arrays (subject 10) while still building a histogram. Normalizing by <code>max_power</code> is core PSD display logic.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff lvl-4">Exercise 7 — Half capstone</span>
+    <p><strong>Context:</strong> Comb-line bench report — one screen summarizing delay metadata, mono-mix headroom, and a mini spectrum sketch for factory QA.</p>
+    <p>Using only topics from subjects 1–6, build one <code>main</code> that:</p>
+    <ol class="meta">
+      <li>Declares <code>const</code> / <code>#define</code> constants: <code>SAMPLE_RATE_HZ</code>, <code>COMB_DELAY_MS</code>, <code>ADC_BITS</code>, <code>FULL_SCALE_V</code>.</li>
+      <li>Computes <code>delay_samples = (COMB_DELAY_MS / 1000.0) * SAMPLE_RATE_HZ</code> as <code>double</code>.</li>
+      <li>Reads hard-coded <code>int</code> counts for L/R, converts to volts, mono-mixes, prints headroom to full scale in percent.</li>
+      <li>Draws a 5-bin ASCII PSD strip (variables <code>p0…p4</code>) normalized to the peak.</li>
+      <li>Prints a boxed footer using only <code>printf</code> (e.g. a line of <code>=</code> characters).</li>
+    </ol>
+    <p class="hint">Topics: all six — drawing, variables, types, <code>printf</code>, numbers, constants.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7')">Reveal solution</button>
+    <div id="sol7" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+#define SAMPLE_RATE_HZ 48000
+#define COMB_DELAY_MS 2.5
+#define ADC_BITS 12
+
+static double const FULL_SCALE_V = 2.5;
+
+int main(void)
+{
+    int const counts_left = 1800;
+    int const counts_right = 2200;
+
+    double const denom = pow(2.0, (double)ADC_BITS) - 1.0;
+    double const delay_samples = (COMB_DELAY_MS / 1000.0) * (double)SAMPLE_RATE_HZ;
+    double const volts_left = ((double)counts_left / denom) * FULL_SCALE_V;
+    double const volts_right = ((double)counts_right / denom) * FULL_SCALE_V;
+    double const mono = 0.5 * (volts_left + volts_right);
+    double const headroom_pct = 100.0 * (1.0 - fabs(mono) / FULL_SCALE_V);
+
+    double const p0 = 0.04, p1 = 0.09, p2 = 0.35, p3 = 0.18, p4 = 0.06;
+    double peak = p0;
+    if (p1 &gt; peak) peak = p1;
+    if (p2 &gt; peak) peak = p2;
+    if (p3 &gt; peak) peak = p3;
+    if (p4 &gt; peak) peak = p4;
+
+    printf("========================================\n");
+    printf(" CardoLink AFE — Comb-line QA panel\n");
+    printf("========================================\n");
+    printf("Delay: %.2f ms -&gt; %.1f samples @ %d Hz\n",
+           COMB_DELAY_MS, delay_samples, SAMPLE_RATE_HZ);
+    printf("ADC: L=%04d R=%04d | mono=%7.4f V | headroom=%5.1f%%\n",
+           counts_left, counts_right, mono, headroom_pct);
+    printf("PSD strip (normalized):\n");
+
+    for (int k = 0; k &lt; 5; ++k) {
+        double power = 0.0;
+        if (k == 0) power = p0;
+        else if (k == 1) power = p1;
+        else if (k == 2) power = p2;
+        else if (k == 3) power = p3;
+        else power = p4;
+        int const n = (int)(power / peak * 24.0);
+        printf(" %d |%5.3f| ", k, power);
+        for (int i = 0; i &lt; n; ++i) {
+            putchar('#');
+        }
+        putchar('\n');
+    }
+    printf("========================================\n");
+    return 0;
+}
+</code></pre>
+      <div class="why"><strong>Why this fits the curriculum:</strong> The capstone mirrors a single QA terminal screen: constants define the hardware, numeric promotion handles ADC math, mono-mix checks uplink headroom, and ASCII graphics communicate PSD shape — all with first-half C only.</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Subjects 1–6 · first half · 7 exercises · advanced track</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

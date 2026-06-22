@@ -1,0 +1,6 @@
+#include "dsp/mono_mix.h"
+
+double mono_mix_down(double const left, double const right)
+{
+    return left + right;
+}

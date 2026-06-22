@@ -7,3 +7,6 @@
 - user inputs (integers, double, float, character, string, strings with white spaces {fgets})
 - milestone (1) project with all of the so far established knowledge
 - milestone (2) building a small game with all the current knowledge
+- static arrays (integers, doubles, floats, chars and strings)
+- static arrays : using user inputs
+- functions : empty params, params, void return, other type return, math functions, complex functions

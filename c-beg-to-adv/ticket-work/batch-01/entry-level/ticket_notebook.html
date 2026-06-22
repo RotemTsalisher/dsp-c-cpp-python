@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work — Batch 01 Entry (C)</title>
+  <style>
+    :root { --bg:#f4f6f8; --card:#fff; --border:#d0d7de; --accent:#1a7f37; --muted:#57606a; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; color:#24292f; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); }
+    h1 { font-size:1.45rem; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+    .badge { display:inline-block; background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+    .subj { font-size:.75rem; background:#ddf4ff; border:1px solid #54aeff; padding:2px 8px; border-radius:4px; }
+    .system { background:#ddf4ff; border-left:4px solid #0969da; padding:14px 16px; margin:18px 0; border-radius:0 8px 8px 0; font-size:.92rem; }
+    .ticket { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .section { margin:12px 0; font-size:.93rem; }
+    .section h4 { margin:0 0 6px; font-size:.88rem; text-transform:uppercase; color:var(--muted); }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; margin-top:10px; }
+    button { padding:7px 16px; font-weight:600; border:none; border-radius:6px; cursor:pointer; margin-right:8px; }
+    .btn-hint { background:#bf8700; color:#fff; }
+    .btn-sol { background:#0969da; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px; border-radius:8px; font-size:.88rem; }
+    .panel.visible { display:block; }
+    pre { background:#0d1117; color:#e6edf3; padding:12px; border-radius:8px; overflow-x:auto; font-size:.78rem; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; border-radius:4px; }
+    footer { text-align:center; color:var(--muted); font-size:.82rem; margin-top:28px; }
+  </style>
+</head>
+<body>
+  <h1><span class="badge">BATCH 01 · ENTRY</span> C ticket notebook</h1>
+  <p style="color:var(--muted);font-size:.9rem;">Subjects <strong>1–6</strong> from <code>course-subjects.txt</code> · ANSI C11</p>
+  <div class="system">
+    <strong>Path:</strong> <code>../dsp-core-system/</code><br>
+    <pre><code>cd ../dsp-core-system
+cmake -S . -B build
+cmake --build build --target dsp_ticket_test
+.\build\Debug\dsp_ticket_test.exe DSP-ENTRY-101</code></pre>
+  </div>
+
+  <article class="ticket">
+    <span class="id">DSP-ENTRY-101</span> <span class="subj">Subject 5 · numbers</span>
+    <h3>Mono mix 6 dB hot</h3>
+    <div class="section"><h4>Problem</h4><p>Correlated L/R doubles after <code>mono_mix_down</code>.</p></div>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/mono_mix.c</code> — <code>mono_mix_down</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>observed mono_mix_down(0.2, 0.2): 0.4
+expected mono_mix_down(0.2, 0.2): 0.2</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-ENTRY-101 PASS</code></div>
+    <button class="btn-sol" onclick="toggle('s101')">Solution</button>
+    <div id="s101" class="panel"><pre><code>return 0.5 * (left + right);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-ENTRY-102</span> <span class="subj">Subjects 3+5 · types + numbers</span>
+    <h3>ADC volts read 2× high</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/adc_counts.c</code> — <code>counts_to_volts</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected counts_to_volts(2047, 2.5, 12): 1.25</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-ENTRY-102 PASS</code></div>
+    <button class="btn-sol" onclick="toggle('s102')">Solution</button>
+    <div id="s102" class="panel"><pre><code>double const denom = pow(2.0, (double)bits) - 1.0;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-ENTRY-103</span> <span class="subj">Subject 4 · printf</span>
+    <h3>Bench line truncates fractional volts</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/format_adc_line.c</code> — <code>format_adc_line</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected format_adc_line text: counts=2047 volts=1.2500</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-ENTRY-103 PASS</code></div>
+    <button class="btn-sol" onclick="toggle('s103')">Solution</button>
+    <div id="s103" class="panel"><pre><code>snprintf(buf, buf_size, "counts=%d volts=%7.4f", counts, volts);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-ENTRY-104</span> <span class="subj">Subject 6 · constants</span>
+    <h3>Sample-rate constant mismatch</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/afe_constants.c</code> — <code>dsp_sample_rate_hz</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected dsp_sample_rate_hz(): 48000</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-ENTRY-104 PASS</code></div>
+    <button class="btn-sol" onclick="toggle('s104')">Solution</button>
+    <div id="s104" class="panel"><pre><code>return DSP_SAMPLE_RATE_HZ;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-ENTRY-105</span> <span class="subj">Subjects 1+2 · drawing + variables</span>
+    <h3>Negative sample draws zero-length bar</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/scope_draw.c</code> — <code>scope_bar_length</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected scope_bar_length(-0.5, 0.5): 20</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-ENTRY-105 PASS</code></div>
+    <button class="btn-sol" onclick="toggle('s105')">Solution</button>
+    <div id="s105" class="panel"><pre><code>return (int)(fabs(sample) / full_scale * 20.0);</code></pre></div>
+  </article>
+
+  <footer>batch-01 · entry · subjects 1–6</footer>
+  <script>function toggle(id){document.getElementById(id).classList.toggle('visible');}</script>
+</body>
+</html>

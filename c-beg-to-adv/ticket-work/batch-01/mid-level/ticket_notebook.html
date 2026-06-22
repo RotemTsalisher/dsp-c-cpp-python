@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Work — Batch 01 Mid (C)</title>
+  <style>
+    :root { --bg:#f6f4ef; --accent:#bf8700; --muted:#57606a; --border:#d0d7de; }
+    body { font-family:'Segoe UI',Tahoma,sans-serif; line-height:1.55; max-width:960px; margin:0 auto; padding:28px 18px 48px; background:var(--bg); color:#24292f; }
+    h1 { border-bottom:3px solid var(--accent); padding-bottom:10px; font-size:1.45rem; }
+    .badge { background:var(--accent); color:#fff; font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+    .subj { font-size:.75rem; background:#fff8c5; border:1px solid #d4a72c; padding:2px 8px; border-radius:4px; }
+    .ticket { background:#fff; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+    .id { font-family:Consolas,monospace; font-weight:700; color:#0969da; }
+    .section h4 { font-size:.88rem; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+    .fix { background:#fff1e5; border:1px solid #fd8c73; border-radius:8px; padding:10px 12px; margin:12px 0; }
+    .test { background:#eef6ff; border:1px solid #54aeff; border-radius:8px; padding:10px 12px; font-size:.88rem; }
+    .pass { background:#dafbe1; border:1px solid #4ac26b; border-radius:8px; padding:10px 12px; margin-top:10px; }
+    button { padding:7px 16px; font-weight:600; border:none; border-radius:6px; cursor:pointer; background:#bf8700; color:#fff; }
+    .panel { display:none; margin-top:12px; padding:12px; background:#f6f8fa; border:1px solid var(--border); border-radius:8px; }
+    .panel.visible { display:block; }
+    pre { background:#0d1117; color:#e6edf3; padding:12px; border-radius:8px; font-size:.78rem; overflow-x:auto; }
+    code { font-family:Consolas,monospace; background:#eff1f3; padding:1px 5px; }
+    footer { text-align:center; color:var(--muted); font-size:.82rem; margin-top:28px; }
+  </style>
+</head>
+<body>
+  <h1><span class="badge">BATCH 01 · MID</span> C ticket notebook</h1>
+  <p style="color:var(--muted);font-size:.9rem;">Subjects <strong>7–11</strong> · input, static arrays, arrays filled from input</p>
+  <p><code>../dsp-core-system</code> · <code>.\build\Debug\dsp_ticket_test.exe DSP-MID-201</code></p>
+
+  <article class="ticket">
+    <span class="id">DSP-MID-201</span> <span class="subj">Subject 7 · scanf</span>
+    <h3>Gain text parsed as integer</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/read_session.c</code> — <code>parse_gain_db_text</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected parsed gain_db: -6.5</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-MID-201 PASS</code></div>
+    <button onclick="toggle('s201')">Solution</button>
+    <div id="s201" class="panel"><pre><code>return sscanf(text, "%lf", gain_db_out);</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-MID-202</span> <span class="subj">Subject 7 · fgets</span>
+    <h3>Label with newline fails uplink match</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/channel_label.c</code> — <code>channel_label_is_uplink</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected channel_label_is_uplink: 1</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-MID-202 PASS</code></div>
+    <button onclick="toggle('s202')">Solution</button>
+    <div id="s202" class="panel"><pre><code>/* strip trailing \n / \r before strcmp */</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-MID-203</span> <span class="subj">Subject 10 · static arrays</span>
+    <h3>PSD writer accepts index 8</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/psd_buffer.c</code> — <code>psd_write_bin</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected psd_write_bin index 8: 0</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-MID-203 PASS</code></div>
+    <button onclick="toggle('s203')">Solution</button>
+    <div id="s203" class="panel"><pre><code>if (index &gt;= DSP_PSD_BIN_COUNT) return 0;</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-MID-204</span> <span class="subj">Subject 10 · static arrays</span>
+    <h3>Peak bin search skips last element</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/psd_buffer.c</code> — <code>psd_max_bin_index</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected psd_max_bin_index: 2</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-MID-204 PASS</code></div>
+    <button onclick="toggle('s204')">Solution</button>
+    <div id="s204" class="panel"><pre><code>for (int i = 0; i &lt; count; ++i)</code></pre></div>
+  </article>
+
+  <article class="ticket">
+    <span class="id">DSP-MID-205</span> <span class="subj">Subject 11 · arrays + input</span>
+    <h3>Uniform bin loader stops one short</h3>
+    <div class="section fix"><h4>Fix (bug is here)</h4><p><code>src/bin_loader.c</code> — <code>load_uniform_bins</code>.</p></div>
+    <div class="section test"><h4>Reproduce</h4><pre><code>expected load_uniform_bins filled: 4
+expected bins[3]: 0.25</code></pre></div>
+    <div class="pass"><strong>Pass:</strong> <code>DSP-MID-205 PASS</code></div>
+    <button onclick="toggle('s205')">Solution</button>
+    <div id="s205" class="panel"><pre><code>for (int i = 0; i &lt; count; ++i) { bins[i] = value; }
+return count;</code></pre></div>
+  </article>
+
+  <footer>batch-01 · mid · subjects 7–11</footer>
+  <script>function toggle(id){document.getElementById(id).classList.toggle('visible');}</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/c-beg-to-adv/ticket-work/batch-01/dsp-core-system/build/CMakeFiles/dsp_core.dir
+C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/c-beg-to-adv/ticket-work/batch-01/dsp-core-system/build/CMakeFiles/dsp_ticket_test.dir
+C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/c-beg-to-adv/ticket-work/batch-01/dsp-core-system/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/rotemt/OneDrive - Cardo Systems LTD/Desktop/SW/dsp-c-cpp-python/c-beg-to-adv/ticket-work/batch-01/dsp-core-system/build/CMakeFiles/ZERO_CHECK.dir
