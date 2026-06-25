@@ -11,8 +11,7 @@ void gain_stage_init(GainStage* const stage)
 
 void gain_stage_set_db(GainStage* const stage, double const db)
 {
-    (void)stage;
-    (void)db;
+    stage->linear = pow(10, (db / 20.0)); 
 }
 
 double gain_stage_linear(GainStage const* const stage)
