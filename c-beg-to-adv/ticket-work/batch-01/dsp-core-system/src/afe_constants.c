@@ -2,5 +2,5 @@
 
 int dsp_sample_rate_hz(void)
 {
-    return 44100;
+    return 48000;
 }

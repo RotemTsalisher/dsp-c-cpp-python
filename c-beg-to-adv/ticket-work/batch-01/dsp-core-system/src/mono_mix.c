@@ -2,5 +2,5 @@
 
 double mono_mix_down(double const left, double const right)
 {
-    return left + right;
+    return 0.5 * (left + right);
 }
