@@ -12,6 +12,9 @@ int psd_write_bin(double bins[DSP_PSD_BIN_COUNT], int const index, double const 
     if (index < 0) {
         return 0;
     }
+    else if (index > DSP_PSD_BIN_COUNT - 1){
+        return 0;
+    }
     bins[index] = value;
     return 1;
 }
