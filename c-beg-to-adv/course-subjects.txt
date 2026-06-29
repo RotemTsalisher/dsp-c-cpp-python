@@ -10,3 +10,13 @@
 - static arrays (integers, doubles, floats, chars and strings)
 - static arrays : using user inputs
 - functions : empty params, params, void return, other type return, math functions, complex functions
+- if statements
+- logic statements and comparison operators
+- milestone (3) project with all of the so far established knowledge
+- switch case
+- structs
+- while loops
+- milestone (4) project with all of the so far established knowledge
+- for loops
+- 2D arrays
+- Nested Loops
