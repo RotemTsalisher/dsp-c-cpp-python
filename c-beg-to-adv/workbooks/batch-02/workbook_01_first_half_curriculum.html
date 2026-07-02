@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Workbook — Batch 02 · First Half</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #0e8a6a; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #dafbe1; border-left: 4px solid #0e8a6a; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .subject-block { margin: 32px 0 18px; padding: 10px 0 4px; border-bottom: 2px solid #0e8a6a; }
+    .subject-block h2 { margin: 0; font-size: 1.05rem; color: #0e8a6a; }
+    .subject-block .subj-num { font-weight: 400; color: #57606a; font-size: 0.88rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; margin-right: 8px; }
+    .medium { background: #bf8700; color: #fff; }
+    .hard { background: #bc4c00; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.78rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #0e8a6a; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.9); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.req, ol.req { font-size: 0.93rem; margin: 8px 0 0 1.2em; }
+    ul.req li, ol.req li { margin: 4px 0; }
+</style>
+</head>
+<body>
+  <h1>C Workbook — Batch 02 · First Half</h1>
+  <p class="subtitle">Subjects 1–14 · 28 exercises (2 per subject: medium + hard) · ANSI C11</p>
+  <div class="scope"><strong>Batch 02 · first half:</strong> Two exercises per subject in curriculum order. Within each subject the first card is <strong>medium</strong>, the second is <strong>hard</strong>. Instructions state deliverables only — solutions are hidden. Subjects 1–14 from <code>course-subjects.txt</code>.</div>
+
+  <div class="subject-block">
+    <h2>Subject 1 <span class="subj-num">— drawing shapes with prints</span></h2>
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Bench firmware prints a rectangular frame around the AFE ready message.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print a hollow rectangle 20 characters wide and 8 lines tall using only `*` and spaces.</li><li>Top and bottom rows are all `*`; interior rows are `*` at column 0 and 19 only.</li><li>Center line 4 must contain the text `AFE READY` starting at column 5 (overwrite interior spaces).</li><li>Use `putchar` and/or `printf`; no loops required but loops are allowed.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex1')">Reveal solution</button>
+    <div id="solex1" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    for (int row = 0; row &lt; 8; ++row) {
+        for (int col = 0; col &lt; 20; ++col) {
+            int edge = (row == 0 || row == 7 || col == 0 || col == 19);
+            if (row == 4 &amp;&amp; col &gt;= 5 &amp;&amp; col &lt; 5 + 9) {
+                char const *msg = "AFE READY";
+                putchar(msg[col - 5]);
+            } else if (edge) {
+                putchar('*');
+            } else {
+                putchar(' ');
+            }
+        }
+        putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Drawing with prints: nested character placement builds a framed status panel.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex2">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> A comb-filter magnitude sketch is rendered as ASCII per tap index.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print exactly 9 rows labeled `tap 0` … `tap 8`.</li><li>Each row shows `tap N |` then a bar of `=` characters whose length equals `10 - abs(4 - N)` (tap 4 is longest).</li><li>After the bar, print `|` and the numeric length as `%2d`.</li><li>Align columns so every `|` in the label column lines up.</li><li>Use only print functions and arithmetic — no arrays.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex2')">Reveal solution</button>
+    <div id="solex2" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    for (int tap = 0; tap &lt; 9; ++tap) {
+        int const bar_len = 10 - (tap &gt; 4 ? tap - 4 : 4 - tap);
+        printf("tap %d |", tap);
+        for (int i = 0; i &lt; bar_len; ++i) {
+            putchar('=');
+        }
+        printf("| %2d\n", bar_len);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Harder ASCII layout: symmetric bar lengths from index math only.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 2 <span class="subj-num">— variables</span></h2>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Three acquisition channels each store a raw offset count before scaling.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Declare separate variables for channels A, B, and C as `int` offsets: 12, -3, and 7.</li><li>Declare `double` scale factors for each channel: 1.0, 0.5, and 2.0.</li><li>Compute scaled values into three new `double` variables without reusing one name.</li><li>Print one line per channel: `CH A raw=%d scaled=%.3f` (and B, C).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex3')">Reveal solution</button>
+    <div id="solex3" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int offset_a = 12;
+    int offset_b = -3;
+    int offset_c = 7;
+    double scale_a = 1.0;
+    double scale_b = 0.5;
+    double scale_c = 2.0;
+    double scaled_a = (double)offset_a * scale_a;
+    double scaled_b = (double)offset_b * scale_b;
+    double scaled_c = (double)offset_c * scale_c;
+    printf("CH A raw=%d scaled=%.3f\n", offset_a, scaled_a);
+    printf("CH B raw=%d scaled=%.3f\n", offset_b, scaled_b);
+    printf("CH C raw=%d scaled=%.3f\n", offset_c, scaled_c);
+    return 0;
+}</code></pre>
+      <div class="why">Variables hold distinct per-channel state before formatting.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex4">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> A mini telemetry snapshot tracks running totals while samples stream in.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Start with `int frame_count = 0`, `double energy_sum = 0.0`, `double peak = 0.0`.</li><li>Process five samples given as literals: 0.2, -0.5, 0.5, 0.5, -0.1 (assign each to a `double sample` variable in sequence).</li><li>After each sample, update all three trackers.</li><li>Print final line: `frames=%d sum=%.4f peak=%.4f`.</li><li>Use a separate `double abs_sample` variable when comparing magnitude.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex4')">Reveal solution</button>
+    <div id="solex4" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int frame_count = 0;
+    double energy_sum = 0.0;
+    double peak = 0.0;
+    double samples[5] = {0.2, -0.5, 0.5, 0.5, -0.1};
+
+    for (int i = 0; i &lt; 5; ++i) {
+        double sample = samples[i];
+        double abs_sample = sample &lt; 0.0 ? -sample : sample;
+        ++frame_count;
+        energy_sum += sample * sample;
+        if (abs_sample &gt; peak) {
+            peak = abs_sample;
+        }
+    }
+    printf("frames=%d sum=%.4f peak=%.4f\n", frame_count, energy_sum, peak);
+    return 0;
+}</code></pre>
+      <div class="why">Multiple cooperating variables updated across a processing sequence.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 3 <span class="subj-num">— data types (integers, double, float, char, string)</span></h2>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> A register dump mixes integer addresses, float telemetry, and a bus ID character.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Store `unsigned int addr = 0x40001234`, `float temp_c = 37.5f`, `char bus_id = 'I'`, and `char name[] = "SPI-AFE"`.</li><li>Print address as `0x%08X`, temperature with one decimal, bus as `%c`, name as string.</li><li>Print `sizeof` for `addr`, `temp_c`, `bus_id`, and `name` on a second line (use `%zu`).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex5')">Reveal solution</button>
+    <div id="solex5" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    unsigned int addr = 0x40001234u;
+    float temp_c = 37.5f;
+    char bus_id = 'I';
+    char name[] = "SPI-AFE";
+    printf("addr=0x%08X temp=%.1f bus=%c name=%s\n", addr, (double)temp_c, bus_id, name);
+    printf("sizes: addr=%zu temp=%zu bus=%zu name=%zu\n",
+           sizeof addr, sizeof temp_c, sizeof bus_id, sizeof name);
+    return 0;
+}</code></pre>
+      <div class="why">Contrasts integer, float, char, and char-array types in one log line.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex6">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Firmware converts a 16-bit signed ADC code to volts and must expose both integer microvolts and double volts.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Given `short raw = -8192` and `double vref = 3.3`, full scale is `32767`.</li><li>Compute `double volts` and `long uv` (microvolts, truncated toward zero).</li><li>Print `raw=%hd volts=%.6f uv=%ld`.</li><li>Demonstrate promotion: division must use floating full-scale, not integer-only division.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex6')">Reveal solution</button>
+    <div id="solex6" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    short raw = -8192;
+    double vref = 3.3;
+    double const fs = 32767.0;
+    double volts = ((double)raw / fs) * vref;
+    long uv = (long)(volts * 1000000.0);
+    printf("raw=%hd volts=%.6f uv=%ld\n", raw, volts, uv);
+    return 0;
+}</code></pre>
+      <div class="why">Mixes `short`, `double`, and `long` with explicit promotion rules.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 4 <span class="subj-num">— printf function (format specifiers)</span></h2>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Format a fixed-width PSD bin table for serial logging.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print header `BIN    POWER     PCT`.</li><li>Print three data rows for bins 7, 8, 9 with powers 0.031, 0.120, 0.449.</li><li>Columns: bin `%3d`, power `%9.6f`, percent `%6.2f%%` where percent is power times 100.</li><li>Numbers must align under the header.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex7')">Reveal solution</button>
+    <div id="solex7" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    printf("BIN    POWER     PCT\n");
+  double p[3] = {0.031, 0.120, 0.449};
+    for (int i = 0; i &lt; 3; ++i) {
+        int bin = 7 + i;
+        printf("%3d %9.6f %6.2f%%\n", bin, p[i], p[i] * 100.0);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Field width and precision control column alignment.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex8">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> A multi-line calibration certificate must match factory layout exactly.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Line 1: `CERT | SN=%08d | REV=%c%c` with serial 12004567 and revision chars 'B' and '3'.</li><li>Line 2: `LIMIT | clip=%.4f | nominal=%.4f` with 1.0000 and 0.8913.</li><li>Line 3: forty dashes `-`.</li><li>Line 4: `PASS @ %02d:%02d:%02d` with hours 14, minutes 6, seconds 3.</li><li>Use a single `printf` per line.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex8')">Reveal solution</button>
+    <div id="solex8" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    printf("CERT | SN=%08d | REV=%c%c\n", 12004567, 'B', '3');
+    printf("LIMIT | clip=%.4f | nominal=%.4f\n", 1.0000, 0.8913);
+    for (int i = 0; i &lt; 40; ++i) putchar('-');
+    putchar('\n');
+    printf("PASS @ %02d:%02d:%02d\n", 14, 6, 3);
+    return 0;
+}</code></pre>
+      <div class="why">Combines zero-pad, float width, and repeated characters.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 5 <span class="subj-num">— working with numbers</span></h2>
+  </div>
+
+  <div class="exercise" id="ex9">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Convert comb delay in milliseconds to sample count at 48 kHz.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Given `double delay_ms = 2.5` and `int sample_rate = 48000`, compute `double samples_exact` and `int samples_rounded` (truncate toward zero).</li><li>Print both with labels on one line.</li><li>Use multiplication and division; include `&lt;math.h&gt;` only if you choose rounding other than truncate.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex9')">Reveal solution</button>
+    <div id="solex9" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double delay_ms = 2.5;
+    int sample_rate = 48000;
+    double samples_exact = delay_ms * 0.001 * (double)sample_rate;
+    int samples_rounded = (int)samples_exact;
+    printf("exact=%.3f rounded=%d\n", samples_exact, samples_rounded);
+    return 0;
+}</code></pre>
+      <div class="why">Integer and floating operands in one physical conversion.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex10">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Given left and right PCM samples, compute mono mix, peak magnitude, and headroom in dB (relative to 1.0).</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`double L = 0.73`, `R = -0.41`.</li><li>Compute mono `m = (L + R) / 2`.</li><li>Compute peak `p` as the larger of `|L|`, `|R|`, `|m|`.</li><li>Compute `headroom_db = 20 * log10(1.0 / p)` when `p &gt; 0`, else print `INF`.</li><li>Print three lines: mono, peak, headroom (use `%.4f` or `INF`).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex10')">Reveal solution</button>
+    <div id="solex10" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double L = 0.73;
+    double R = -0.41;
+    double m = (L + R) / 2.0;
+    double aL = L &lt; 0 ? -L : L;
+    double aR = R &lt; 0 ? -R : R;
+    double am = m &lt; 0 ? -m : m;
+    double p = aL;
+    if (aR &gt; p) p = aR;
+    if (am &gt; p) p = am;
+    printf("mono=%.4f\n", m);
+    printf("peak=%.4f\n", p);
+    if (p &gt; 0.0) {
+        printf("headroom_db=%.4f\n", 20.0 * log10(1.0 / p));
+    } else {
+        printf("headroom_db=INF\n");
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Combines basic math with `&lt;math.h&gt;` for log10 in a monitor path.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 6 <span class="subj-num">— constants</span></h2>
+  </div>
+
+  <div class="exercise" id="ex11">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Compile-time STFT constants drive a one-page parameter sheet.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`#define FFT_LEN 512` and `#define HOP 128`.</li><li>`const double FS = 48000.0;`</li><li>Derive `const int overlap` and `const double frame_ms` from the above.</li><li>Print all five values with labels.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex11')">Reveal solution</button>
+    <div id="solex11" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+#define FFT_LEN 512
+#define HOP 128
+
+int main(void)
+{
+    const double FS = 48000.0;
+    const int overlap = FFT_LEN - HOP;
+    const double frame_ms = (double)FFT_LEN / FS * 1000.0;
+    printf("FFT_LEN=%d\nHOP=%d\noverlap=%d\nFS=%.1f\nframe_ms=%.4f\n",
+           FFT_LEN, HOP, overlap, FS, frame_ms);
+    return 0;
+}</code></pre>
+      <div class="why">Macros plus const objects for derived timing.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex12">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Header-style limits guard a fixed uplink buffer description.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Define macros: `MAX_FRAMES 64`, `CHANNELS 2`, `TAG_LEN 8`.</li><li>Define `const int frame_bytes = CHANNELS * (int)sizeof(double) + TAG_LEN`.</li><li>Define `const int buffer_bytes = MAX_FRAMES * frame_bytes`.</li><li>Print a three-row table with `%s` labels left-aligned in 16 chars and values `%8d`.</li><li>Do not use magic numbers in print statements except through the constants.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex12')">Reveal solution</button>
+    <div id="solex12" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+#define MAX_FRAMES 64
+#define CHANNELS 2
+#define TAG_LEN 8
+
+int main(void)
+{
+    const int frame_bytes = CHANNELS * (int)sizeof(double) + TAG_LEN;
+    const int buffer_bytes = MAX_FRAMES * frame_bytes;
+    printf("%-16s %8d\n", "MAX_FRAMES", MAX_FRAMES);
+    printf("%-16s %8d\n", "frame_bytes", frame_bytes);
+    printf("%-16s %8d\n", "buffer_bytes", buffer_bytes);
+    return 0;
+}</code></pre>
+      <div class="why">Chains macro and const expressions for memory budgeting.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 7 <span class="subj-num">— user inputs (scanf, fgets, etc.)</span></h2>
+  </div>
+
+  <div class="exercise" id="ex13">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Operator enters board ID, path letter, and analog gain for a quick check.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `int board_id`, `char path`, `float gain_db` with separate prompts.</li><li>Read location string with `fgets` into `char site[40]` after clearing newline from prior reads.</li><li>Print summary `BOARD %04d PATH %c GAIN %+.1f dB @ %s`.</li><li>No validation required.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex13')">Reveal solution</button>
+    <div id="solex13" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+static void trim_nl(char *s)
+{
+    size_t n = strlen(s);
+    if (n &amp;&amp; s[n-1] == '\n') s[n-1] = '\0';
+}
+
+int main(void)
+{
+    int board_id = 0;
+    char path = '?';
+    float gain_db = 0.0f;
+    char site[40] = {0};
+    printf("Board id: "); scanf("%d", &amp;board_id);
+    printf("Path (A/B): "); scanf(" %c", &amp;path);
+    printf("Gain dB: "); scanf("%f", &amp;gain_db);
+    printf("Site: "); (void)getchar();
+    fgets(site, sizeof site, stdin);
+    trim_nl(site);
+    printf("BOARD %04d PATH %c GAIN %+.1f dB @ %s\n",
+           board_id, path, (double)gain_db, site);
+    return 0;
+}</code></pre>
+      <div class="why">Mixed scanf types plus fgets for spaced text.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex14">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Batch entry: operator types how many captures, then each capture&#x27;s index and voltage.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `int n` (accept 1–8 only; otherwise print `ERR` and exit 1).</li><li>For each capture read `int idx` and `double volts`.</li><li>Store in parallel arrays `int ids[8]` and `double v[8]`.</li><li>Print reversed order: `capture %d = %.5f` per line.</li><li>Use only stdin; no files.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex14')">Reveal solution</button>
+    <div id="solex14" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int n = 0;
+    int ids[8] = {0};
+    double v[8] = {0};
+    printf("Count (1-8): ");
+    if (scanf("%d", &amp;n) != 1 || n &lt; 1 || n &gt; 8) {
+        printf("ERR\n");
+        return 1;
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        printf("idx volts: ");
+        scanf("%d %lf", &amp;ids[i], &amp;v[i]);
+    }
+    for (int i = n - 1; i &gt;= 0; --i) {
+        printf("capture %d = %.5f\n", ids[i], v[i]);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Controlled count then paired reads into fixed buffers.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 8 <span class="subj-num">— milestone (1) project</span></h2>
+  </div>
+
+  <div class="exercise" id="ex15">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> AFE bring-up console: banner, operator record, and one conversion result.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Draw a 40-char `=` border and title `AFE Bring-Up v1`.</li><li>Read operator initials (3 chars via `scanf %3s`) and `int serial`.</li><li>Read `int counts` and `int bits`; print volts to 6 decimals.</li><li>End with `DONE` line.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex15')">Reveal solution</button>
+    <div id="solex15" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char op[4] = {0};
+    int serial = 0, counts = 0, bits = 0;
+    for (int i = 0; i &lt; 40; ++i) putchar('=');
+    putchar('\n');
+    printf("AFE Bring-Up v1\n");
+    for (int i = 0; i &lt; 40; ++i) putchar('=');
+    putchar('\n');
+    printf("Operator (3 letters): "); scanf("%3s", op);
+    printf("Serial: "); scanf("%d", &amp;serial);
+    printf("Counts bits: "); scanf("%d %d", &amp;counts, &amp;bits);
+    double denom = pow(2.0, bits) - 1.0;
+    double volts = (double)counts / denom * 2.5;
+    printf("OP %s SN %06d volts=%.6f\n", op, serial, volts);
+    printf("DONE\n");
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 1 medium: subjects 1–7 in one bench flow.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex16">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Extended bring-up: multiple channels, table output, and pass/fail line.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Reuse banner and operator capture from a structured flow.</li><li>Read `int num_ch` (1–3). For each channel read name (3-char token) and raw `int` count (12-bit, 2.5 V ref).</li><li>Print table `CH | NAME | COUNTS | VOLTS | FLAG` where FLAG is `OK` if volts in [0.0, 2.5], else `RNG`.</li><li>Print `SESSION COMPLETE` with count of OK channels.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex16')">Reveal solution</button>
+    <div id="solex16" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int num_ch = 0;
+    printf("=== AFE Bring-Up v2 ===\n");
+    printf("Channels (1-3): ");
+    if (scanf("%d", &amp;num_ch) != 1 || num_ch &lt; 1 || num_ch &gt; 3) return 1;
+    printf("CH | NAME | COUNTS | VOLTS | FLAG\n");
+    int ok = 0;
+    for (int c = 0; c &lt; num_ch; ++c) {
+        char name[4] = {0};
+        int counts = 0;
+        printf("name counts: ");
+        scanf("%3s %d", name, &amp;counts);
+        double volts = (double)counts / 4095.0 * 2.5;
+        char const *flag = (volts &gt;= 0.0 &amp;&amp; volts &lt;= 2.5) ? "OK" : "RNG";
+        if (flag[0] == 'O') ++ok;
+        printf("%2d | %3s | %6d | %6.4f | %s\n", c, name, counts, volts, flag);
+    }
+    printf("SESSION COMPLETE ok=%d\n", ok);
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 1 hard: multi-channel table with conditional flags.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 9 <span class="subj-num">— milestone (2) game</span></h2>
+  </div>
+
+  <div class="exercise" id="ex17">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Gain Quiz: player guesses which of four listed gains is unity.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print four options labeled A–D with numeric gains (only one is exactly 1.0).</li><li>Read player choice letter.</li><li>Print `WIN` or `LOSE` and reveal correct letter.</li><li>Use variables for each gain; no arrays required.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex17')">Reveal solution</button>
+    <div id="solex17" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double gA = 0.5, gB = 1.0, gC = 1.5, gD = 2.0;
+    char pick = '?';
+    printf("A) %.2f  B) %.2f  C) %.2f  D) %.2f\n", gA, gB, gC, gD);
+    printf("Unity gain? "); scanf(" %c", &amp;pick);
+    char correct = 'B';
+    if (pick == correct) printf("WIN\n");
+    else printf("LOSE (answer %c)\n", correct);
+    return 0;
+}</code></pre>
+      <div class="why">Small game using input, variables, and conditionals.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex18">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Spectrum Hunter: four trials to find the loudest bin among eight hidden values.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Store eight `double` bin powers in a static array (fixed in source).</li><li>Read player name with `fgets`.</li><li>Four turns: read bin index; print `LOW`, `MID`, or `HIGH` comparing to max (define tiers in solution).</li><li>On exact max index print `FOUND` and exit early with score `100 * turns_left`.</li><li>After game print ASCII spectrum bars for all bins.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex18')">Reveal solution</button>
+    <div id="solex18" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+static void trim(char *s){ size_t n=strlen(s); if(n&amp;&amp;s[n-1]=='\n')s[n-1]=0; }
+
+int main(void)
+{
+    double bins[8]={0.04,0.07,0.11,0.22,0.58,0.19,0.09,0.05};
+    char name[32]={0}; int turns=4, score=0, won=0;
+    double peak=bins[0]; for(int i=1;i&lt;8;++i) if(bins[i]&gt;peak) peak=bins[i];
+    int peak_i=0; for(int i=1;i&lt;8;++i) if(bins[i]&gt;=peak) peak_i=i;
+    printf("=== Spectrum Hunter ===\nPlayer: ");
+    fgets(name,sizeof name,stdin); trim(name);
+    while(turns&gt;0 &amp;&amp; !won){
+        int g=-1; printf("Guess bin (0-7) [%d left]: ",turns);
+        if(scanf("%d",&amp;g)!=1) break;
+        if(g&lt;0||g&gt;7){ printf("bad index\n"); continue; }
+        double r=bins[g]/peak;
+        if(g==peak_i){ printf("FOUND\n"); won=1; score=100*turns; }
+        else if(r&gt;=0.5) printf("HIGH\n"); else if(r&gt;=0.2) printf("MID\n"); else printf("LOW\n");
+        --turns;
+    }
+    for(int i=0;i&lt;8;++i){
+        int bar=(int)(bins[i]/peak*20);
+        printf("%d |",i); for(int k=0;k&lt;bar;++k) putchar('#'); putchar('\n');
+    }
+    printf("%s score %d\n", name, score);
+    return 0;
+}</code></pre>
+      <div class="why">Milestone game hard: trials, feedback, ASCII reveal.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 10 <span class="subj-num">— static arrays</span></h2>
+  </div>
+
+  <div class="exercise" id="ex19">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Store eight mono mixdown samples and print min, max, and average.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Initialize `double samples[8]` with distinct values.</li><li>Compute min, max, and arithmetic mean in one pass.</li><li>Print `min=%.4f max=%.4f mean=%.4f`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex19')">Reveal solution</button>
+    <div id="solex19" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double samples[8] = {0.1,-0.2,0.3,0.0,-0.4,0.25,0.15,-0.05};
+    double min = samples[0], max = samples[0], sum = 0.0;
+    for (int i = 0; i &lt; 8; ++i) {
+        if (samples[i] &lt; min) min = samples[i];
+        if (samples[i] &gt; max) max = samples[i];
+        sum += samples[i];
+    }
+    printf("min=%.4f max=%.4f mean=%.4f\n", min, max, sum / 8.0);
+    return 0;
+}</code></pre>
+      <div class="why">Single-pass aggregation over a static double array.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex20">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Interleave two char channel labels and int frame IDs into a combined log table.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`char ch[5] = {'L','R','L','R','L'};`</li><li>`int fid[5] = {10,10,11,11,12};`</li><li>Print `frame %3d | ch %c | hash %04X` where hash is `(fid[i]*31 + ch[i]) &amp; 0xFFFF`.</li><li>Use only arrays and loops.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex20')">Reveal solution</button>
+    <div id="solex20" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char ch[5] = {'L','R','L','R','L'};
+    int fid[5] = {10,10,11,11,12};
+    for (int i = 0; i &lt; 5; ++i) {
+        unsigned hash = (unsigned)((fid[i] * 31 + ch[i]) &amp; 0xFFFF);
+        printf("frame %3d | ch %c | hash %04X\n", fid[i], ch[i], hash);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Parallel char and int arrays in one formatted report.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 11 <span class="subj-num">— static arrays with user inputs</span></h2>
+  </div>
+
+  <div class="exercise" id="ex21">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Operator enters up to six tap gains; print normalized bar chart.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Ask `n` (1–6). Read `n` doubles into `gains[6]`.</li><li>Find peak among entered values.</li><li>Print each tap index and a `|` bar of `*` scaled to peak (peak = 20 stars).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex21')">Reveal solution</button>
+    <div id="solex21" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double gains[6] = {0};
+    int n = 0;
+    printf("Taps (1-6): "); scanf("%d", &amp;n);
+    if (n &lt; 1 || n &gt; 6) return 1;
+    for (int i = 0; i &lt; n; ++i) scanf("%lf", &amp;gains[i]);
+    double peak = gains[0];
+    for (int i = 1; i &lt; n; ++i) if (gains[i] &gt; peak) peak = gains[i];
+    for (int i = 0; i &lt; n; ++i) {
+        int bar = peak &gt; 0 ? (int)(gains[i]/peak*20) : 0;
+        printf("%d |", i); for (int k=0;k&lt;bar;++k) putchar('*'); putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">User-filled static array then visualization.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex22">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Read N channel names (3-letter tokens) and offset integers; output sorted by offset ascending.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`n` from 1 to 8.</li><li>Parallel `char names[8][4]` and `int offs[8]`.</li><li>Sort indices by `offs` using nested loops (no qsort).</li><li>Print `name off` rows in sorted order.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex22')">Reveal solution</button>
+    <div id="solex22" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+int main(void)
+{
+    char names[8][4] = {{0}};
+    int offs[8] = {0};
+    int n = 0;
+    scanf("%d", &amp;n);
+    for (int i = 0; i &lt; n; ++i) scanf("%3s %d", names[i], &amp;offs[i]);
+    int idx[8]; for (int i=0;i&lt;n;++i) idx[i]=i;
+    for (int i=0;i&lt;n-1;++i) for (int j=i+1;j&lt;n;++j)
+        if (offs[idx[j]] &lt; offs[idx[i]]) { int t=idx[i]; idx[i]=idx[j]; idx[j]=t; }
+    for (int k=0;k&lt;n;++k) printf("%s %d\n", names[idx[k]], offs[idx[k]]);
+    return 0;
+}</code></pre>
+      <div class="why">Hard: user data + in-array sort by selection-style swap.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 12 <span class="subj-num">— functions</span></h2>
+  </div>
+
+  <div class="exercise" id="ex23">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Implement mono mix and dB-from-amplitude helpers.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`double mono(double l, double r)` returns average.</li><li>`double to_db(double amp)` returns `20*log10(amp)` for `amp&gt;0`, else `-120.0`.</li><li>Print results for test pairs in `main`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex23')">Reveal solution</button>
+    <div id="solex23" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+double mono(double l, double r) { return 0.5 * (l + r); }
+
+double to_db(double amp)
+{
+    if (amp &lt;= 0.0) return -120.0;
+    return 20.0 * log10(amp);
+}
+
+int main(void)
+{
+    printf("%.4f %.2f\n", mono(0.5, -0.5), to_db(0.5));
+    printf("%.4f %.2f\n", mono(1.0, 1.0), to_db(1.0));
+    return 0;
+}</code></pre>
+      <div class="why">Void and value-returning functions with math.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex24">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Chain three functions: raw to volts, volts to dBFS, dBFS to LED level 0–3.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`double counts_to_volts(int c, int bits, double vref)`</li><li>`double volts_to_dbfs(double v, double vref)`</li><li>`int led_level(double dbfs)` with four bands you define in code.</li><li>`main` prints pipeline result for three hard-coded counts.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex24')">Reveal solution</button>
+    <div id="solex24" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+double counts_to_volts(int c, int bits, double vref)
+{
+    return (double)c / ((1 &lt;&lt; bits) - 1) * vref;
+}
+double volts_to_dbfs(double v, double vref)
+{
+    if (v &lt;= 0.0) return -120.0;
+    return 20.0 * log10(v / vref);
+}
+int led_level(double dbfs)
+{
+    if (dbfs &lt; -40.0) return 0;
+    if (dbfs &lt; -20.0) return 1;
+    if (dbfs &lt; -6.0) return 2;
+    return 3;
+}
+int main(void)
+{
+    int tests[] = {100, 2000, 4000};
+    for (int i = 0; i &lt; 3; ++i) {
+        double v = counts_to_volts(tests[i], 12, 3.3);
+        double db = volts_to_dbfs(v, 3.3);
+        printf("c=%d v=%.4f db=%.2f led=%d\n", tests[i], v, db, led_level(db));
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Complex function pipeline — params and returns combined.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 13 <span class="subj-num">— if statements</span></h2>
+  </div>
+
+  <div class="exercise" id="ex25">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Classify each sample as negative, zero, or positive.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Process array of five doubles in a loop.</li><li>Print `i: SIGN` where SIGN is `NEG`, `ZERO`, or `POS`.</li><li>Use `if` / `else if` / `else` only.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex25')">Reveal solution</button>
+    <div id="solex25" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double s[5] = {-1.0, 0.0, 0.0001, -0.0, 2.0};
+    for (int i = 0; i &lt; 5; ++i) {
+        char const *tag = "POS";
+        if (s[i] == 0.0) tag = "ZERO";
+        else if (s[i] &lt; 0.0) tag = "NEG";
+        printf("%d: %s\n", i, tag);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Basic three-way branch per element.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex26">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Automatic gain reduction flag per channel with hysteresis-style bands.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>For each magnitude `m`, if `m &gt;= 1.0` → `CLIP`; else if `m &gt;= 0.85` → `REDUCE`; else if `m &gt;= 0.5` → `WATCH`; else `OK`.</li><li>Read five magnitudes from stdin.</li><li>Count how many channels need `REDUCE` or `CLIP`.</li><li>Print per-channel line then summary count.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex26')">Reveal solution</button>
+    <div id="solex26" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int hot = 0;
+    for (int ch = 0; ch &lt; 5; ++ch) {
+        double m = 0.0;
+        printf("ch %d mag: ", ch);
+        scanf("%lf", &amp;m);
+        char const *st = "OK";
+        if (m &gt;= 1.0) { st = "CLIP"; ++hot; }
+        else if (m &gt;= 0.85) { st = "REDUCE"; ++hot; }
+        else if (m &gt;= 0.5) st = "WATCH";
+        printf("  -&gt; %s\n", st);
+    }
+    printf("hot_count=%d\n", hot);
+    return 0;
+}</code></pre>
+      <div class="why">Layered thresholds with running aggregate.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 14 <span class="subj-num">— logic and comparison operators</span></h2>
+  </div>
+
+  <div class="exercise" id="ex27">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Validate register write preconditions with logical AND/OR.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Given `unsigned addr`, `unsigned val`, `int aligned`, `int range_ok`, print `WRITE OK` only if addr is 4-byte aligned AND val &lt;= 0xFFFF AND range_ok is non-zero.</li><li>Test three tuples in `main` without input.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex27')">Reveal solution</button>
+    <div id="solex27" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+static int can_write(unsigned addr, unsigned val, int range_ok)
+{
+    int aligned = (addr % 4u) == 0u;
+    if (aligned &amp;&amp; val &lt;= 0xFFFFu &amp;&amp; range_ok) {
+        printf("WRITE OK\n");
+        return 1;
+    }
+    printf("WRITE BLOCKED\n");
+    return 0;
+}
+
+int main(void)
+{
+    can_write(0x4000, 0x00FF, 1);
+    can_write(0x4001, 0x00FF, 1);
+    can_write(0x4000, 0x1FFFF, 1);
+    return 0;
+}</code></pre>
+      <div class="why">Logical combination of hardware-style guards.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex28">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> In-range detector for stereo pairs using compound conditions.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `double L` and `double R`.</li><li>Print `IN_PHASE_OK` if both in [-1,1] AND `(L*R) &gt;= 0`.</li><li>Print `LEVEL_OK` if both magnitudes &lt;= 0.95.</li><li>Print `PASS` only if both conditions true; else print which failed.</li><li>Use `&amp;&amp;`, `||`, and comparisons only — no functions beyond `main`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex28')">Reveal solution</button>
+    <div id="solex28" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double L = 0.0, R = 0.0;
+    scanf("%lf %lf", &amp;L, &amp;R);
+    int in_range = (L &gt;= -1.0 &amp;&amp; L &lt;= 1.0 &amp;&amp; R &gt;= -1.0 &amp;&amp; R &lt;= 1.0);
+    int same_sign = (L * R) &gt;= 0.0;
+    int in_phase = in_range &amp;&amp; same_sign;
+    double aL = L &lt; 0 ? -L : L;
+    double aR = R &lt; 0 ? -R : R;
+    int level_ok = (aL &lt;= 0.95 &amp;&amp; aR &lt;= 0.95);
+    if (in_phase) printf("IN_PHASE_OK\n"); else printf("IN_PHASE_FAIL\n");
+    if (level_ok) printf("LEVEL_OK\n"); else printf("LEVEL_FAIL\n");
+    printf("%s\n", (in_phase &amp;&amp; level_ok) ? "PASS" : "FAIL");
+    return 0;
+}</code></pre>
+      <div class="why">Compound boolean expressions on stereo validation.</div>
+    </div>
+  </div>
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Batch 02 · first half · 14 subjects · 28 exercises</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+
+</body>
+</html>

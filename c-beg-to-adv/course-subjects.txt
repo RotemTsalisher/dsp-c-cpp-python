@@ -20,3 +20,12 @@
 - for loops
 - 2D arrays
 - Nested Loops
+- Memory access
+- pointers logic, pointers math, usage of pointers
+- dereferencing pointers 
+- writing files: write modes
+- eriting files: general writing methods and exercises
+- writing files: building functions to weite to files
+- reading files: reading modes
+- reading files: general reading methods and exercises
+- reading files: reading in loops

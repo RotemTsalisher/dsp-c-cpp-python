@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Workbook — Batch 02 · Second Half</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #8250df; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #fbefff; border-left: 4px solid #8250df; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .subject-block { margin: 32px 0 18px; padding: 10px 0 4px; border-bottom: 2px solid #8250df; }
+    .subject-block h2 { margin: 0; font-size: 1.05rem; color: #8250df; }
+    .subject-block .subj-num { font-weight: 400; color: #57606a; font-size: 0.88rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; margin-right: 8px; }
+    .medium { background: #bf8700; color: #fff; }
+    .hard { background: #bc4c00; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.78rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #8250df; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.9); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.req, ol.req { font-size: 0.93rem; margin: 8px 0 0 1.2em; }
+    ul.req li, ol.req li { margin: 4px 0; }
+</style>
+</head>
+<body>
+  <h1>C Workbook — Batch 02 · Second Half</h1>
+  <p class="subtitle">Subjects 15–29 · 30 exercises (2 per subject: medium + hard) · ANSI C11</p>
+  <div class="scope"><strong>Batch 02 · second half:</strong> Two exercises per subject, medium then hard. Covers subjects 15–29 including milestones (3–4), control flow, loops, arrays, pointers, and file I/O. No solution hints in exercise bodies.</div>
+
+  <div class="subject-block">
+    <h2>Subject 15 <span class="subj-num">— milestone (3) project</span></h2>
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Routing console: read mode char, print delay, draw timing rail.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `char mode` (`L/M/H`).</li><li>Map to delays 2/5/9 ms with `if` chains (switch not required here if you already plan subject 16).</li><li>Print route line and ASCII delay rail.</li><li>Invalid mode → message and exit 1.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex1')">Reveal solution</button>
+    <div id="solex1" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char mode = '?'; int d = -1;
+    printf("mode: "); scanf(" %c", &amp;mode);
+    if (mode=='L') d=2; else if (mode=='M') d=5; else if (mode=='H') d=9;
+    else { printf("UNKNOWN\n"); return 1; }
+    printf("delay %d ms\n", d);
+    for(int i=0;i&lt;d;++i) putchar('|'); putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 3 medium: integrates input, branch, and ASCII timing.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex2">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Full mini-router: modes, stereo gains, and combined status word.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read mode L/M/H and two gain integers 0–100.</li><li>Use `if`/`switch` acceptable; compute float gains = value/100.</li><li>Print delay per mode, both gains, and `STATUS` hex combining mode nibble and `(gL+gR)/2` scaled to 0–255.</li><li>Reject gains &gt; 100.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex2')">Reveal solution</button>
+    <div id="solex2" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char mode='?'; int gL=0,gR=0,d=-1;
+    scanf(" %c %d %d", &amp;mode, &amp;gL, &amp;gR);
+    if (gL&lt;0||gL&gt;100||gR&lt;0||gR&gt;100){ printf("RNG\n"); return 1;}
+    switch(mode){ case 'L':d=2;break; case 'M':d=5;break; case 'H':d=9;break; default: printf("MODE\n"); return 1;}
+    double fL=gL/100.0, fR=gR/100.0;
+    unsigned status = ((unsigned)(mode &amp; 0xF) &lt;&lt; 8) | (unsigned)((fL+fR)*127.5);
+    printf("d=%d gL=%.2f gR=%.2f status=0x%04X\n", d, fL, fR, status);
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 3 hard: multi-field session with encoded status.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 16 <span class="subj-num">— switch case</span></h2>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Map filter profile ID 1–4 to names and tap counts.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `int profile`.</li><li>Switch: 1=COMB2, 2=COMB4, 3=ALLPASS, 4=FLAT.</li><li>Default: `UNKNOWN`.</li><li>Print `profile %d =&gt; %s taps %d` with taps 2,4,6,1 respectively.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex3')">Reveal solution</button>
+    <div id="solex3" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int profile = 0; scanf("%d", &amp;profile);
+    char const *name = "UNKNOWN"; int taps = 0;
+    switch (profile) {
+    case 1: name = "COMB2"; taps = 2; break;
+    case 2: name = "COMB4"; taps = 4; break;
+    case 3: name = "ALLPASS"; taps = 6; break;
+    case 4: name = "FLAT"; taps = 1; break;
+  default: break;
+    }
+    printf("profile %d =&gt; %s taps %d\n", profile, name, taps);
+    return 0;
+}</code></pre>
+      <div class="why">Straightforward int switch with default.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex4">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Fall-through style grouping: band letter sets FFT size tier.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `char band` (`A`–`D`).</li><li>Switch with grouped cases: A/B → 256, C → 512, D → 1024, else 0.</li><li>Print `band %c fft %d` and `TIER n` where tier 1/2/3 matches size.</li><li>Use at least one intentional fall-through group.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex4')">Reveal solution</button>
+    <div id="solex4" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    char band = '?'; scanf(" %c", &amp;band);
+    int fft = 0, tier = 0;
+    switch (band) {
+    case 'A':
+    case 'B':
+        fft = 256; tier = 1; break;
+    case 'C':
+        fft = 512; tier = 2; break;
+    case 'D':
+        fft = 1024; tier = 3; break;
+    default:
+        fft = 0; tier = 0; break;
+    }
+    printf("band %c fft %d\nTIER %d\n", band, fft, tier);
+    return 0;
+}</code></pre>
+      <div class="why">Switch grouping for related enumeration values.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 17 <span class="subj-num">— structs</span></h2>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Define `struct Sample` with frame id and value; print and compare.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Fields: `int id`, `double value`.</li><li>Initialize two structs; print both.</li><li>Print `EQ` or `NE` if both fields match.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex5')">Reveal solution</button>
+    <div id="solex5" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+struct Sample { int id; double value; };
+
+int main(void)
+{
+    struct Sample a = {1, 0.125};
+    struct Sample b = {1, 0.125};
+    printf("%d %.4f\n", a.id, a.value);
+    printf("%d %.4f\n", b.id, b.value);
+    printf("%s\n", (a.id==b.id &amp;&amp; a.value==b.value) ? "EQ" : "NE");
+    return 0;
+}</code></pre>
+      <div class="why">Basic struct define, init, field access.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex6">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Stereo frame struct with tag; compute peak and print CSV line.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`struct Frame { int seq; double l; double r; char tag[10]; }`</li><li>Function `double frame_peak(struct Frame f)`</li><li>Function `void print_csv(struct Frame f)` → `seq,l,r,tag`</li><li>Process array of 3 frames in `main`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex6')">Reveal solution</button>
+    <div id="solex6" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+struct Frame { int seq; double l; double r; char tag[10]; };
+
+double frame_peak(struct Frame f)
+{
+    double aL = f.l &lt; 0 ? -f.l : f.l;
+    double aR = f.r &lt; 0 ? -f.r : f.r;
+    return aL &gt; aR ? aL : aR;
+}
+
+void print_csv(struct Frame f)
+{
+    printf("%d,%.5f,%.5f,%s\n", f.seq, f.l, f.r, f.tag);
+}
+
+int main(void)
+{
+    struct Frame buf[3] = {
+        {1, 0.2, -0.1, "A"},
+        {2, 0.9, 0.8, "B"},
+        {3, -0.3, 0.1, "C"}
+    };
+    for (int i = 0; i &lt; 3; ++i) {
+        print_csv(buf[i]);
+        printf("peak=%.4f\n", frame_peak(buf[i]));
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Struct + functions + small batch processing.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 18 <span class="subj-num">— while loops</span></h2>
+  </div>
+
+  <div class="exercise" id="ex7">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Count samples until sentinel `-1` is read.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read ints in a `while` loop; stop before processing sentinel.</li><li>Track count and running sum.</li><li>Print `n=%d sum=%d`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex7')">Reveal solution</button>
+    <div id="solex7" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int stream[] = {3,5,2,8,-1};
+    int i = 0, n = 0, sum = 0, x = 0;
+    x = stream[i++];
+    while (x != -1) {
+        ++n; sum += x;
+        x = stream[i++];
+    }
+    printf("n=%d sum=%d\n", n, sum);
+    return 0;
+}</code></pre>
+      <div class="why">While with sentinel termination.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex8">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Read doubles until `0.0` sentinel; track clips above 0.98 and longest streak of positives.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Use `while`; update clip count and streak logic.</li><li>Print `count clips=%d max_streak=%d`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex8')">Reveal solution</button>
+    <div id="solex8" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double s[] = {0.2, 0.99, 0.4, 1.0, 0.1, -0.2, 0.3, 0.0};
+    int i = 0, clips = 0, streak = 0, max_streak = 0;
+    double x = s[i++];
+    while (x != 0.0) {
+        if (x &gt; 0.98) ++clips;
+        if (x &gt; 0.0) { ++streak; if (streak &gt; max_streak) max_streak = streak; }
+        else streak = 0;
+        x = s[i++];
+    }
+    printf("clips=%d max_streak=%d\n", clips, max_streak);
+    return 0;
+}</code></pre>
+      <div class="why">While with multiple running statistics.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 19 <span class="subj-num">— milestone (4) project</span></h2>
+  </div>
+
+  <div class="exercise" id="ex9">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Session logger: capture N frames in arrays, dump table to stdout.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Read `n` (1–8) and `n` pairs of `(id, power)`.</li><li>Store in parallel arrays.</li><li>Print markdown-style table with header row.</li><li>Print id of max power.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex9')">Reveal solution</button>
+    <div id="solex9" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int n=0; scanf("%d",&amp;n);
+    int id[8]={0}; double p[8]={0};
+    for(int i=0;i&lt;n;++i) scanf("%d %lf",&amp;id[i],&amp;p[i]);
+    printf("| id | power |\n");
+    int best=0;
+    for(int i=0;i&lt;n;++i){
+        printf("| %2d | %7.4f |\n", id[i], p[i]);
+        if(p[i]&gt;p[best]) best=i;
+    }
+    printf("max_id=%d\n", id[best]);
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 4 medium: capture + report without files.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex10">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Capture session then write `session.txt` and read back row count.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Same capture as medium.</li><li>Write one line per frame: `id,power`.</li><li>Reopen and count lines with while+fgets.</li><li>Print `WROTE n READ m` and `MATCH` if equal.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex10')">Reveal solution</button>
+    <div id="solex10" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int n=0; scanf("%d",&amp;n);
+    int id[8]={0}; double p[8]={0};
+    for(int i=0;i&lt;n;++i) scanf("%d %lf",&amp;id[i],&amp;p[i]);
+    FILE *fw = fopen("session.txt","w");
+    for(int i=0;i&lt;n;++i) fprintf(fw,"%d,%.6f\n",id[i],p[i]);
+    fclose(fw);
+    int m=0; char line[64];
+    FILE *fr = fopen("session.txt","r");
+    while(fgets(line,sizeof line,fr)) ++m;
+    fclose(fr);
+    printf("WROTE %d READ %d\n", n, m);
+    printf("%s\n", n==m?"MATCH":"MISMATCH");
+    return 0;
+}</code></pre>
+      <div class="why">Milestone 4 hard: memory session plus file round-trip.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 20 <span class="subj-num">— for loops</span></h2>
+  </div>
+
+  <div class="exercise" id="ex11">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Print frequency bin index and Hz for bins 0–7 given 48 kHz FFT 256.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`bin_hz = bin * (FS / FFT)`.</li><li>Print `bin %2d : %8.2f Hz`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex11')">Reveal solution</button>
+    <div id="solex11" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double FS = 48000.0; int FFT = 256;
+    double step = FS / FFT;
+    for (int bin = 0; bin &lt; 8; ++bin)
+        printf("bin %2d : %8.2f Hz\n", bin, bin * step);
+    return 0;
+}</code></pre>
+      <div class="why">Fixed-count for loop with derived formula.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex12">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Generate comb notches: for each tap `t` in 0..7 print attenuation `1/(t+1)` and cumulative sum.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Maintain `double cumulative` across iterations.</li><li>Last line prints total.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex12')">Reveal solution</button>
+    <div id="solex12" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double cumulative = 0.0;
+    for (int t = 0; t &lt; 8; ++t) {
+        double atten = 1.0 / (t + 1);
+        cumulative += atten;
+        printf("tap %d atten=%.4f cum=%.4f\n", t, atten, cumulative);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">For loop with running accumulator.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 21 <span class="subj-num">— 2D arrays</span></h2>
+  </div>
+
+  <div class="exercise" id="ex13">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Print 3×4 gain matrix rows with row labels LO/MI/HI.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Initialize `double g[3][4]`.</li><li>Print each row as four `%6.3f` fields.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex13')">Reveal solution</button>
+    <div id="solex13" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double g[3][4] = {
+        {1,0.9,0.8,0.7},
+        {0.9,1,0.9,0.8},
+        {0.8,0.9,1,0.9}
+    };
+    char const *lbl[] = {"LO","MI","HI"};
+    for (int r=0;r&lt;3;++r){
+        printf("%s:", lbl[r]);
+        for(int c=0;c&lt;4;++c) printf(" %6.3f", g[r][c]);
+        putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">2D initialization and row-major print.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex14">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Find coordinates of maximum in 4×4 ADC grid and zero that cell.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print max and position, then print grid again.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex14')">Reveal solution</button>
+    <div id="solex14" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    unsigned short grid[4][4] = {
+        {10,20,30,40},{50,90,70,80},{60,100,75,85},{110,120,130,140}
+    };
+    int mr=0, mc=0; unsigned short best=grid[0][0];
+    for(int r=0;r&lt;4;++r) for(int c=0;c&lt;4;++c)
+        if(grid[r][c]&gt;best){ best=grid[r][c]; mr=r; mc=c; }
+    printf("max=%u at %d,%d\n", (unsigned)best, mr, mc);
+    grid[mr][mc]=0;
+    for(int r=0;r&lt;4;++r){
+        for(int c=0;c&lt;4;++c) printf("%4u", (unsigned)grid[r][c]);
+        putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">2D scan and in-place update.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 22 <span class="subj-num">— nested loops</span></h2>
+  </div>
+
+  <div class="exercise" id="ex15">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Print 5×5 checkerboard of `X` and `.` starting with `X` at (0,0).</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Nested loops only.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex15')">Reveal solution</button>
+    <div id="solex15" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    for (int r=0;r&lt;5;++r){
+        for(int c=0;c&lt;5;++c)
+            putchar((r+c)%2==0?'X':'.');
+        putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Classic nested loop pattern.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex16">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Multiply 2×3 matrix by 3×2 matrix; store in 2×2 result.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print result rows.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex16')">Reveal solution</button>
+    <div id="solex16" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double A[2][3]={{1,2,3},{4,5,6}};
+    double B[3][2]={{7,8},{9,10},{11,12}};
+    double R[2][2]={0};
+    for(int i=0;i&lt;2;++i)
+        for(int j=0;j&lt;2;++j)
+            for(int k=0;k&lt;3;++k)
+                R[i][j]+=A[i][k]*B[k][j];
+    for(int i=0;i&lt;2;++i){
+        printf("%.1f %.1f\n", R[i][0], R[i][1]);
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Triple nested loop for small matrix product.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 23 <span class="subj-num">— memory access</span></h2>
+  </div>
+
+  <div class="exercise" id="ex17">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Treat `double buf[6]` as raw bytes; print byte index and value of first 12 bytes.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Cast to `unsigned char *` and walk with index.</li><li>Print `off %2zu val %3u` per byte.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex17')">Reveal solution</button>
+    <div id="solex17" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double buf[6] = {1.0,2.0,3.0,4.0,5.0,6.0};
+    unsigned char *p = (unsigned char *)buf;
+    for (size_t i = 0; i &lt; 12; ++i)
+        printf("off %2zu val %3u\n", i, (unsigned)p[i]);
+    return 0;
+}</code></pre>
+      <div class="why">Byte-level walk through numeric buffer.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex18">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Sum every other `short` in a byte buffer interpreted as little-endian shorts.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`unsigned char raw[8]` given in source.</li><li>Reconstruct shorts and sum indices 0,2 (even short index).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex18')">Reveal solution</button>
+    <div id="solex18" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    unsigned char raw[8] = {0x00,0x10, 0xFF,0x00, 0x00,0x20, 0x00,0x00};
+    int sum = 0;
+    for (int i = 0; i &lt; 4; i += 2) {
+        short v = (short)(raw[i*2] | (raw[i*2+1] &lt;&lt; 8));
+        sum += v;
+    }
+    printf("sum=%d\n", sum);
+    return 0;
+}</code></pre>
+      <div class="why">Manual layout interpretation — memory access focus.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 24 <span class="subj-num">— pointers (logic, math, usage)</span></h2>
+  </div>
+
+  <div class="exercise" id="ex19">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Use pointers to swap two ints and increment via pointer.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`void swap_int(int *a, int *b)`</li><li>Demonstrate on two variables in main.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex19')">Reveal solution</button>
+    <div id="solex19" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+void swap_int(int *a, int *b)
+{
+    int t = *a; *a = *b; *b = t;
+}
+
+int main(void)
+{
+    int x = 3, y = 9;
+    swap_int(&amp;x, &amp;y);
+    printf("%d %d\n", x, y);
+    return 0;
+}</code></pre>
+      <div class="why">Address-of and swap through pointers.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex20">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Pointer walk: compute mean of `double` array using `begin` and `end` pointers only.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>No subscript in mean function.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex20')">Reveal solution</button>
+    <div id="solex20" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+double mean_ptr(double const *begin, double const *end)
+{
+    int n = 0;
+    double sum = 0.0;
+    for (double const *p = begin; p &lt; end; ++p) {
+        sum += *p;
+        ++n;
+    }
+    return n ? sum / n : 0.0;
+}
+
+int main(void)
+{
+    double a[5] = {1,2,3,4,5};
+    printf("%.2f\n", mean_ptr(a, a+5));
+    return 0;
+}</code></pre>
+      <div class="why">Pointer iteration without indexing.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 25 <span class="subj-num">— dereferencing pointers</span></h2>
+  </div>
+
+  <div class="exercise" id="ex21">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Update three gains through pointer array.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`double g[3]` and `double *pg[3]` pointing to each element.</li><li>Multiply each gain by 0.5 through pointers.</li><li>Print values.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex21')">Reveal solution</button>
+    <div id="solex21" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double g[3] = {1.0, 0.8, 0.6};
+    double *pg[3] = {&amp;g[0], &amp;g[1], &amp;g[2]};
+    for (int i = 0; i &lt; 3; ++i) *pg[i] *= 0.5;
+    for (int i = 0; i &lt; 3; ++i) printf("%.2f ", g[i]);
+    putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Array of pointers; mutate via dereference.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex22">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> In-place reverse `int` buffer using only `*left` and `*right` pointer dereference.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print before and after.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex22')">Reveal solution</button>
+    <div id="solex22" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int buf[6] = {10,20,30,40,50,60};
+    int *left = buf;
+    int *right = buf + 5;
+    while (left &lt; right) {
+        int t = *left;
+        *left = *right;
+        *right = t;
+        ++left;
+        --right;
+    }
+    for (int i = 0; i &lt; 6; ++i) printf("%d ", buf[i]);
+    putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Dereference-based in-place reversal.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 26 <span class="subj-num">— writing files — write modes</span></h2>
+  </div>
+
+  <div class="exercise" id="ex23">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Create `cal.txt` in write mode with three register lines.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Use `fopen` mode that creates/truncates.</li><li>Write three `0xADDR=0xVAL` lines.</li><li>Close file.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex23')">Reveal solution</button>
+    <div id="solex23" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("cal.txt", "w");
+    fprintf(fp, "0x4000=0x01\n");
+    fprintf(fp, "0x4004=0xA0\n");
+    fprintf(fp, "0x4008=0xFF\n");
+    fclose(fp);
+    return 0;
+}</code></pre>
+      <div class="why">Basic write mode create/truncate.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex24">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Write header with `w`, then append two samples with `a` in same program.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>First file `log.csv`: line `id,power` then append rows.</li><li>Re-open appropriately; do not delete between writes.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex24')">Reveal solution</button>
+    <div id="solex24" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("log.csv", "w");
+    fprintf(fp, "id,power\n");
+    fclose(fp);
+    fp = fopen("log.csv", "a");
+    fprintf(fp, "1,0.125000\n");
+    fprintf(fp, "2,0.250000\n");
+    fclose(fp);
+    return 0;
+}</code></pre>
+      <div class="why">Contrasts `w` and `a` modes in one workflow.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 27 <span class="subj-num">— writing files — functions to write</span></h2>
+  </div>
+
+  <div class="exercise" id="ex25">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Function writes one CSV row to an open `FILE *`.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`int write_row(FILE *fp, int id, double p)` returns 0 on success.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex25')">Reveal solution</button>
+    <div id="solex25" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int write_row(FILE *fp, int id, double p)
+{
+    if (!fp) return 1;
+    if (fprintf(fp, "%d,%.6f\n", id, p) &lt; 0) return 1;
+    return 0;
+}
+
+int main(void)
+{
+    FILE *fp = fopen("rows.csv", "w");
+    write_row(fp, 10, 0.5);
+    write_row(fp, 11, 0.25);
+    fclose(fp);
+    return 0;
+}</code></pre>
+      <div class="why">Encapsulated fprintf row writer.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex26">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Write array of structs to file via function; include row count in first line.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>`struct Row { int id; double p; };`</li><li>`int write_session(const char *path, struct Row *r, int n)`</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex26')">Reveal solution</button>
+    <div id="solex26" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+struct Row { int id; double p; };
+
+int write_session(char const *path, struct Row *r, int n)
+{
+    FILE *fp = fopen(path, "w");
+    if (!fp) return 1;
+    fprintf(fp, "COUNT,%d\n", n);
+    for (int i = 0; i &lt; n; ++i)
+        fprintf(fp, "%d,%.6f\n", r[i].id, r[i].p);
+    fclose(fp);
+    return 0;
+}
+
+int main(void)
+{
+    struct Row rows[2] = {{1,0.1},{2,0.2}};
+    write_session("sess.csv", rows, 2);
+    return 0;
+}</code></pre>
+      <div class="why">Batch struct write behind one API.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 28 <span class="subj-num">— reading files — reading modes</span></h2>
+  </div>
+
+  <div class="exercise" id="ex27">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Open text file for read; print first line only.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Assume `cal.txt` exists from prior exercise or create in main first.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex27')">Reveal solution</button>
+    <div id="solex27" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("cal.txt", "r");
+    if (!fp) return 1;
+    char line[128];
+    if (fgets(line, sizeof line, fp))
+        fputs(line, stdout);
+    fclose(fp);
+    return 0;
+}</code></pre>
+      <div class="why">Read mode `r` and single-line consume.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex28">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Open `log.csv`, skip header line, print second data row only.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Use two fgets or one discard then one read.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex28')">Reveal solution</button>
+    <div id="solex28" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("log.csv", "r");
+    char line[128];
+    fgets(line, sizeof line, fp);
+    if (fgets(line, sizeof line, fp))
+        fputs(line, stdout);
+    fclose(fp);
+    return 0;
+}</code></pre>
+      <div class="why">Sequential read positioning in text file.</div>
+    </div>
+  </div>
+  <div class="subject-block">
+    <h2>Subject 29 <span class="subj-num">— reading files in loops</span></h2>
+  </div>
+
+  <div class="exercise" id="ex29">
+    <span class="diff medium">Medium</span>
+    <p><strong>Context:</strong> Count lines in `sess.csv` using while + fgets.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Print `lines=N`.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex29')">Reveal solution</button>
+    <div id="solex29" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("sess.csv", "r");
+    int n = 0;
+    char line[128];
+    while (fgets(line, sizeof line, fp)) ++n;
+    fclose(fp);
+    printf("lines=%d\n", n);
+    return 0;
+}</code></pre>
+      <div class="why">Loop read until EOF.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex30">
+    <span class="diff hard">Hard</span>
+    <p><strong>Context:</strong> Read `sess.csv`, parse numeric rows after header, print max power and its id.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Skip first line if it starts with `COUNT`.</li><li>Loop fgets + sscanf.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex30')">Reveal solution</button>
+    <div id="solex30" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    FILE *fp = fopen("sess.csv", "r");
+    char line[128];
+    fgets(line, sizeof line, fp);
+    int best_id = -1;
+    double best_p = -1.0;
+    while (fgets(line, sizeof line, fp)) {
+        int id = 0;
+        double p = 0.0;
+        if (sscanf(line, "%d,%lf", &amp;id, &amp;p) == 2) {
+            if (p &gt; best_p) { best_p = p; best_id = id; }
+        }
+    }
+    fclose(fp);
+    printf("max id=%d power=%.6f\n", best_id, best_p);
+    return 0;
+}</code></pre>
+      <div class="why">Parsed loop read — capstone file subject for batch second half.</div>
+    </div>
+  </div>
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Batch 02 · second half · 15 subjects · 30 exercises</p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+
+</body>
+</html>

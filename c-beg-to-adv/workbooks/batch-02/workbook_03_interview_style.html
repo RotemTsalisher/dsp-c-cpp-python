@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Workbook — Batch 02 · Interview Style</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #212830; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 28px; }
+    .scope { background: #eaeef2; border-left: 4px solid #212830; padding: 14px 16px; margin: 20px 0; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 12px; }
+    .lvl-1 { background: #0969da; color: #fff; }
+    .lvl-2 { background: #bf8700; color: #fff; }
+    .lvl-3 { background: #bc4c00; color: #fff; }
+    .lvl-4 { background: #212830; color: #fff; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #212830; color: #fff; }
+    button.reveal-btn:hover { background: #3d444d; }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.req, ol.req { font-size: 0.93rem; margin: 8px 0 0 1.2em; }
+    ul.req li, ol.req li { margin: 4px 0; }
+    .oral { font-style: italic; color: #57606a; font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <h1>C Workbook — Batch 02 · Interview Style</h1>
+  <p class="subtitle">Full curriculum · embedded / DSP screening · ANSI C11 only</p>
+
+  <div class="scope">
+    <strong>Interview workbook (batch 02):</strong> complements the two curriculum halves, which each carry <strong>two exercises per subject</strong> (medium + hard). This file keeps <strong>six integrated screening problems</strong> spanning multiple topics — not the per-subject drill format. ANSI C11 only; topics from <code>course-subjects.txt</code>. No solution hints in the prompt text; answers sit behind <strong>Reveal solution</strong>.
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff lvl-1">Problem 1 · Warm-up</span>
+    <p><strong>Prompt:</strong> <span class="oral">(Verbal + whiteboard)</span> You receive left and right PCM samples as <code>double</code> values in the range <code>[-1.0, 1.0]</code>. The product must output a mono mix for a single-earpiece monitor.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ul class="req">
+      <li>State the formula you would use and why it is appropriate for a quick monitor path.</li>
+      <li>Write a C function <code>double mono_mix(double left, double right)</code> implementing your formula.</li>
+      <li>List one pitfall when the inputs are already near full scale.</li>
+    </ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1')">Reveal solution</button>
+    <div id="sol1" class="solution">
+      <pre><code>double mono_mix(double left, double right)
+{
+    return 0.5 * (left + right);
+}
+</code></pre>
+      <p><strong>Discussion:</strong> Equal-power-ish monitoring often uses simple averaging (<code>(L+R)/2</code>) because it is cheap and symmetric. Pitfall: if <code>L</code> and <code>R</code> are both hot and in phase, the sum can exceed 1.0 before any headroom processing — a limiter or scaler downstream is required on production paths.</p>
+      <div class="why">Tests numeric literacy and basic audio domain knowledge using only doubles and arithmetic from the curriculum.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex2">
+    <span class="diff lvl-2">Problem 2 · Input / parsing</span>
+    <p><strong>Prompt:</strong> A teammate wrote firmware that reads a calibration tuple <code>offset counts gain</code> from stdin using a single <code>scanf</code> call. Operators report that multi-word site names break the parser and the gain is sometimes wrong on large values.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ul class="req">
+      <li>Explain what is likely wrong with reading all fields through one <code>scanf</code> pattern when the protocol allows spaces in the site field.</li>
+      <li>Sketch a corrected read order (pseudocode or C) that uses <code>scanf</code> and <code>fgets</code> appropriately for: integer offset, integer counts, floating gain, and a 40-character site string.</li>
+      <li>Do not implement full validation — focus on capture order and newline handling.</li>
+    </ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2')">Reveal solution</button>
+    <div id="sol2" class="solution">
+      <pre><code>int offset = 0;
+int counts = 0;
+float gain = 0.0f;
+char site[40] = {0};
+
+scanf("%d", &amp;offset);
+scanf("%d", &amp;counts);
+scanf("%f", &amp;gain);
+getchar(); /* consume newline before fgets */
+fgets(site, sizeof site, stdin);
+/* trim trailing '\n' from site */
+</code></pre>
+      <p><strong>Discussion:</strong> A single format string cannot safely span a free-text token with spaces. Mixed-type reads also leave the input buffer in a state where the next read may skip or mis-align. Reading scalars first, then consuming the line break before <code>fgets</code>, is the standard fix at this course level.</p>
+      <div class="why">Interviewers probe whether candidates understand stdin buffering — a daily issue in lab tooling.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex3">
+    <span class="diff lvl-2">Problem 3 · Functions + conditionals</span>
+    <p><strong>Prompt:</strong> Classify FFT bins for a simple LED ring: each bin index maps to an energy level that drives color coding on the bench.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ul class="req">
+      <li>Implement <code>const char *band_label(int bin_index)</code> returning <code>"SUB"</code> for 0–1, <code>"BASS"</code> for 2–5, <code>"MID"</code> for 6–9, <code>"HIGH"</code> for 10–15, and <code>"OOB"</code> otherwise.</li>
+      <li>Implement <code>int energy_level(double power, double ref)</code> returning 0–3 based on ratio <code>power/ref</code> (&lt;0.25 → 0, &lt;0.5 → 1, &lt;0.75 → 2, else 3). If <code>ref &lt;= 0</code>, return 0.</li>
+      <li>Write a short <code>main</code> that prints two example lines combining bin index, label, and level.</li>
+    </ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3')">Reveal solution</button>
+    <div id="sol3" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+char const *band_label(int bin_index)
+{
+    if (bin_index &lt; 0 || bin_index &gt; 15) {
+        return "OOB";
+    }
+    if (bin_index &lt;= 1) {
+        return "SUB";
+    }
+    if (bin_index &lt;= 5) {
+        return "BASS";
+    }
+    if (bin_index &lt;= 9) {
+        return "MID";
+    }
+    return "HIGH";
+}
+
+int energy_level(double power, double ref)
+{
+    if (ref &lt;= 0.0) {
+        return 0;
+    }
+    double const r = power / ref;
+    if (r &lt; 0.25) {
+        return 0;
+    }
+    if (r &lt; 0.50) {
+        return 1;
+    }
+    if (r &lt; 0.75) {
+        return 2;
+    }
+    return 3;
+}
+
+int main(void)
+{
+    printf("bin 3 -&gt; %s level %d\n", band_label(3), energy_level(0.40, 1.0));
+    printf("bin 12 -&gt; %s level %d\n", band_label(12), energy_level(0.90, 1.0));
+    return 0;
+}
+</code></pre>
+      <div class="why">Compact function design with chained comparisons — common live-coding pattern.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex4">
+    <span class="diff lvl-3">Problem 4 · Pointers</span>
+    <p><strong>Prompt:</strong> <span class="oral">(Live coding)</span> A DMA buffer is exposed as a pointer to the first sample. Update every other sample in place to zero without returning a new array.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ul class="req">
+      <li>Function signature: <code>void zero_even_indices(double *begin, int length)</code>.</li>
+      <li>Zero elements at indices 0, 2, 4, … using pointer arithmetic (subscripts optional for the interviewer if you explain your walk).</li>
+      <li>Demonstrate in <code>main</code> on a six-element stack array and print before/after on one line each.</li>
+    </ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4')">Reveal solution</button>
+    <div id="sol4" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+void zero_even_indices(double *begin, int length)
+{
+    if (begin == NULL || length &lt;= 0) {
+        return;
+    }
+    for (int i = 0; i &lt; length; i += 2) {
+        *(begin + i) = 0.0;
+    }
+}
+
+static void print_arr(double const *a, int n)
+{
+    for (int i = 0; i &lt; n; ++i) {
+        printf("%.1f ", a[i]);
+    }
+    putchar('\n');
+}
+
+int main(void)
+{
+    double buf[6] = {1, 2, 3, 4, 5, 6};
+    print_arr(buf, 6);
+    zero_even_indices(buf, 6);
+    print_arr(buf, 6);
+    return 0;
+}
+</code></pre>
+      <div class="why">Tests pointer indexing idioms and in-place mutation — typical firmware follow-up after array questions.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex5">
+    <span class="diff lvl-3">Problem 5 · Files + loops</span>
+    <p><strong>Prompt:</strong> <span class="oral">(Design discussion)</span> Production wants a nightly CSV dump of per-frame RMS values. Each line: <code>frame_id,rms\n</code>. The device has no heap; maximum 64 frames per file.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ul class="req">
+      <li>Describe which <code>fopen</code> mode you use for a fresh nightly file and why.</li>
+      <li>Write <code>int append_rms_row(FILE *fp, int frame_id, double rms)</code> that appends one line and returns 0 on success.</li>
+      <li>Write <code>int count_rows(const char *path)</code> that opens for read and counts newline-terminated records using a loop (no need to parse floats).</li>
+    </ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5')">Reveal solution</button>
+    <div id="sol5" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int append_rms_row(FILE *fp, int frame_id, double rms)
+{
+    if (fp == NULL) {
+        return 1;
+    }
+    if (fprintf(fp, "%d,%.6f\n", frame_id, rms) &lt; 0) {
+        return 1;
+    }
+    return 0;
+}
+
+int count_rows(char const *path)
+{
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        return -1;
+    }
+    int rows = 0;
+    char line[128];
+    while (fgets(line, (int)sizeof line, fp) != NULL) {
+        ++rows;
+    }
+    fclose(fp);
+    return rows;
+}
+
+/* Nightly create/truncate: fopen(path, "w") */
+</code></pre>
+      <p><strong>Discussion:</strong> Mode <code>"w"</code> creates or truncates — appropriate for a new nightly artifact. Append during the shift could use <code>"a"</code> if the file must survive across sessions. Fixed <code>line</code> buffer respects the no-heap constraint.</p>
+      <div class="why">Separates API knowledge (<code>fopen</code> modes) from looped reading — a frequent system-design mini question.</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="ex6">
+    <span class="diff lvl-4">Problem 6 · Integrated screen</span>
+    <p><strong>Prompt:</strong> <span class="oral">(45-minute take-home style)</span> Build a miniature PSD session logger: operator enters how many frames to capture (max 8), enters four bin powers per frame, writes them to <code>session.csv</code>, reads the file back, and prints whether the peak bin index matches between the last entered frame and the last read frame.</p>
+    <p><strong>Deliverable:</strong></p>
+    <ol class="req">
+      <li>Struct with <code>int frame_id</code> and <code>double bins[4]</code>.</li>
+      <li>Function to find index of maximum bin in one struct.</li>
+      <li>Write all captured frames to CSV (same format as curriculum workbook: id + four floats).</li>
+      <li>Read back into a static array; compare peak indices for last written vs last read.</li>
+      <li>Print <code>PEAK MATCH</code> or <code>PEAK MISMATCH</code>.</li>
+    </ol>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6')">Reveal solution</button>
+    <div id="sol6" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+struct Frame {
+    int frame_id;
+    double bins[4];
+};
+
+int peak_bin(struct Frame const *f)
+{
+    int idx = 0;
+    for (int i = 1; i &lt; 4; ++i) {
+        if (f-&gt;bins[i] &gt; f-&gt;bins[idx]) {
+            idx = i;
+        }
+    }
+    return idx;
+}
+
+int write_session(char const *path, struct Frame const *frames, int n)
+{
+    FILE *fp = fopen(path, "w");
+    if (fp == NULL) {
+        return 1;
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        fprintf(fp, "%d,%.6f,%.6f,%.6f,%.6f\n",
+                frames[i].frame_id,
+                frames[i].bins[0], frames[i].bins[1],
+                frames[i].bins[2], frames[i].bins[3]);
+    }
+    fclose(fp);
+    return 0;
+}
+
+int read_session(char const *path, struct Frame *frames, int cap, int *out_n)
+{
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        return 1;
+    }
+    int n = 0;
+    while (n &lt; cap) {
+        struct Frame *f = &amp;frames[n];
+        if (fscanf(fp, "%d,%lf,%lf,%lf,%lf",
+                   &amp;f-&gt;frame_id,
+                   &amp;f-&gt;bins[0], &amp;f-&gt;bins[1],
+                   &amp;f-&gt;bins[2], &amp;f-&gt;bins[3]) != 5) {
+            break;
+        }
+        ++n;
+    }
+    fclose(fp);
+    if (out_n) {
+        *out_n = n;
+    }
+    return 0;
+}
+
+int main(void)
+{
+    struct Frame captured[8] = {0};
+    int n = 0;
+
+    printf("Frames to capture (1-8): ");
+    if (scanf("%d", &amp;n) != 1 || n &lt; 1 || n &gt; 8) {
+        return 1;
+    }
+
+    for (int i = 0; i &lt; n; ++i) {
+        captured[i].frame_id = 1000 + i;
+        printf("Frame %d — four bin powers: ", captured[i].frame_id);
+        for (int b = 0; b &lt; 4; ++b) {
+            scanf("%lf", &amp;captured[i].bins[b]);
+        }
+    }
+
+    char const *path = "session.csv";
+    if (write_session(path, captured, n) != 0) {
+        return 1;
+    }
+
+    struct Frame loaded[8] = {0};
+    int got = 0;
+    if (read_session(path, loaded, 8, &amp;got) != 0 || got &lt; 1) {
+        return 1;
+    }
+
+    int peak_cap = peak_bin(&amp;captured[n - 1]);
+    int peak_load = peak_bin(&amp;loaded[got - 1]);
+    printf("%s\n", peak_cap == peak_load ? "PEAK MATCH" : "PEAK MISMATCH");
+    return 0;
+}
+</code></pre>
+      <div class="why">Capstone interview item tying structs, loops, arrays, file I/O, and comparison logic — scoped to course topics only.</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Batch 02 · interview style · 6 problems</p>
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
