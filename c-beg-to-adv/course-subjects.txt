@@ -29,3 +29,5 @@
 - reading files: reading modes
 - reading files: general reading methods and exercises
 - reading files: reading in loops
+- command line arguments 
+- command line arguments and passing them on to other functions
