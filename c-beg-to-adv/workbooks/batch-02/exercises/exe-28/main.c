@@ -36,6 +36,5 @@ int main() {
         printf("NOT IN THE LEGAL LEVELS!\n");
     }
 
-
     return 0;
 }
