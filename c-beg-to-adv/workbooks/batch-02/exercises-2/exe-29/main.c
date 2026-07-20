@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define FILE_PATH "../../exe-26/log.csv"
+#define FILE_PATH "../../exe-25/log.csv"
 
 #define MAX_BUFF_SIZE 1024
 static char buffer[MAX_BUFF_SIZE];
