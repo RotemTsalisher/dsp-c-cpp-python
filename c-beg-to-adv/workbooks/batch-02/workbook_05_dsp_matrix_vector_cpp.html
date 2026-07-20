@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSP Matrix &amp; Vector Operations — C++</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #1f4e79; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; }
+    .scope { background: #dceaf7; border-left: 4px solid #1f4e79; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .guide { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 18px 20px; margin-bottom: 28px; font-size: 0.94rem; }
+    .guide h2 { margin: 0 0 10px; font-size: 1.1rem; color: #1f4e79; }
+    .guide h3 { margin: 16px 0 6px; font-size: 0.98rem; }
+    .path { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .path span { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: #fff; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; margin-right: 6px; color: #fff; }
+    .foundation { background: #0969da; }
+    .building { background: #1a7f37; }
+    .intermediate { background: #bf8700; }
+    .advanced { background: #bc4c00; }
+    .senior { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; }
+    p { margin: 0.55em 0; }
+    .learn { background: #f6f8fa; border-radius: 6px; padding: 10px 12px; margin: 10px 0; font-size: 0.92rem; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.76rem; line-height: 1.45; margin: 12px 0 0 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #1f4e79; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.92); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul.req, ol.req { font-size: 0.93rem; margin: 8px 0 0 1.2em; }
+    ul.req li, ol.req li { margin: 5px 0; }
+</style>
+</head>
+<body>
+  <h1>DSP Matrix &amp; Vector Operations — C++</h1>
+  <p class="subtitle">Batch 02 · Ground zero → senior DSP kernels · C++ · no STL / no special libs · 15 exercises</p>
+  <div class="scope"><strong>Standalone deep-dive notebook (C++):</strong> same curriculum ladder as the C notebook, implemented without STL containers and without Eigen/BLAS. Use fixed arrays and raw pointers. Solutions stay behind the reveal button.</div>
+
+  <div class="guide">
+    <h2>How to use this notebook</h2>
+    <p>This guide teaches <strong>efficient matrix and vector operations for DSP</strong> in modern C++ <strong>without the STL</strong> and without Eigen, BLAS, or other linear-algebra libraries. You use fixed arrays, raw pointers, and free functions (classes optional). The mathematical path matches the C notebook so you can compare languages side by side.</p>
+    <h3>Constraints</h3>
+    <ul>
+      <li>No <code>std::vector</code>, <code>std::array</code> is discouraged for this notebook — prefer C-style fixed buffers or plain pointers.</li>
+      <li>No <code>std::string</code>, no containers, no algorithms header for numerics.</li>
+      <li>Allowed: <code>&lt;cstdio&gt;</code>, <code>&lt;cmath&gt;</code>, <code>&lt;cstring&gt;</code>, built-in types, references, <code>const</code>, namespaces for organization if you wish.</li>
+    </ul>
+    <h3>Same DSP ladder as the C notebook</h3>
+    <div class="path">
+      <span class="foundation">1–3 Foundation</span>
+      <span class="building">4–6 Building</span>
+      <span class="intermediate">7–9 Intermediate</span>
+      <span class="advanced">10–13 Advanced</span>
+      <span class="senior">14–15 Senior</span>
+    </div>
+    <p>Clear explanations; no solution hints inside the requirements. Reveal only after you try.</p>
+  </div>
+
+
+  <div class="exercise" id="ex1">
+    <span class="diff foundation">Foundation</span>
+    <div class="ex-title">Exercise 1 — Vectors as sequences of samples</div>
+    <div class="learn"><strong>What you are learning:</strong> A vector is an ordered list of numbers. In DSP it usually means a block of time-domain samples or frequency-bin magnitudes. Index 0 is the oldest or lowest-frequency sample depending on convention — you must pick one and stay consistent.</div>
+    <p><strong>DSP context:</strong> An AFE capture buffer holds eight mono samples from one hop. You need to store them, print them with indices, and report the buffer length.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Declare a fixed array of 8 doubles named samples.</li><li>Initialize it with: 0.10, -0.25, 0.40, 0.00, -0.15, 0.55, -0.05, 0.20.</li><li>Print each element as: index=&lt;i&gt; value=&lt;v&gt; with value to 4 decimals.</li><li>Print a final line: length=8.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex1')">Reveal solution</button>
+    <div id="solex1" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    double samples[8] = {
+        0.10, -0.25, 0.40, 0.00, -0.15, 0.55, -0.05, 0.20
+    };
+    int const length = 8;
+    for (int i = 0; i &lt; length; ++i) {
+        std::printf("index=%d value=%.4f\n", i, samples[i]);
+    }
+    std::printf("length=%d\n", length);
+    return 0;
+}</code></pre>
+      <div class="why">Ground zero: a vector is contiguous memory you index. Length is part of the contract — never invent it later.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex2">
+    <span class="diff foundation">Foundation</span>
+    <div class="ex-title">Exercise 2 — Scalar gain and element-wise vector add</div>
+    <div class="learn"><strong>What you are learning:</strong> Scaling multiplies every sample by one constant (digital gain). Element-wise addition mixes two buffers of equal length. These are the cheapest linear operations in a signal chain.</div>
+    <p><strong>DSP context:</strong> Channel A is attenuated by 0.5; then it is mixed with channel B for a mono monitor path.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Given vectors a[6] and b[6] with distinct values you choose.</li><li>Compute scaled[i] = 0.5 * a[i] for all i.</li><li>Compute mix[i] = scaled[i] + b[i] for all i.</li><li>Print scaled and mix as two separate lines of space-separated %.4f values.</li><li>Do not use matrices yet.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex2')">Reveal solution</button>
+    <div id="solex2" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    double a[6] = {1.0, 0.5, -0.5, 0.25, 0.0, 0.75};
+    double b[6] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+    double scaled[6];
+    double mix[6];
+    for (int i = 0; i &lt; 6; ++i) {
+        scaled[i] = 0.5 * a[i];
+        mix[i] = scaled[i] + b[i];
+    }
+    for (int i = 0; i &lt; 6; ++i) std::printf("%.4f ", scaled[i]);
+    std::putchar('\n');
+    for (int i = 0; i &lt; 6; ++i) std::printf("%.4f ", mix[i]);
+    std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Element-wise ops walk memory once. Same length is mandatory — mismatched lengths are undefined in this course style.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex3">
+    <span class="diff foundation">Foundation</span>
+    <div class="ex-title">Exercise 3 — Matrices as 2D coefficient tables (row-major)</div>
+    <div class="learn"><strong>What you are learning:</strong> A matrix is a rectangular grid of numbers. In C/C++ a common layout is row-major: all columns of row 0 sit first in memory, then row 1, and so on. Indexing A[r][c] means row r, column c. In DSP, rows often mean filter taps or channel coefficients.</div>
+    <p><strong>DSP context:</strong> A 3×4 gain matrix stores three bands (rows) across four time slots (columns) for a spectrogram-style view.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Declare double G[3][4] and initialize with non-trivial values.</li><li>Print dimensions as rows=3 cols=4.</li><li>Print the matrix as three lines of four %.3f fields each.</li><li>Also print the linear storage index for element (1,2): for row-major that is 1*4+2.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex3')">Reveal solution</button>
+    <div id="solex3" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    double G[3][4] = {
+        {1.000, 0.900, 0.800, 0.700},
+        {0.850, 1.000, 0.900, 0.800},
+        {0.700, 0.850, 1.000, 0.900}
+    };
+    int const rows = 3;
+    int const cols = 4;
+    std::printf("rows=%d cols=%d\n", rows, cols);
+    for (int r = 0; r &lt; rows; ++r) {
+        for (int c = 0; c &lt; cols; ++c) {
+            std::printf("%6.3f", G[r][c]);
+        }
+        std::putchar('\n');
+    }
+    std::printf("linear_index(1,2)=%d\n", 1 * cols + 2);
+    return 0;
+}</code></pre>
+      <div class="why">Row-major layout is the default mental model for nested C arrays. Knowing the linear index prevents silent bugs when flattening buffers.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex4">
+    <span class="diff building">Building</span>
+    <div class="ex-title">Exercise 4 — Inner product (dot product)</div>
+    <div class="learn"><strong>What you are learning:</strong> The dot product of two equal-length vectors is the sum of products of matching elements. It measures how aligned two signals are. Related DSP uses: correlation at lag 0, energy when one vector is used twice, projection onto a template.</div>
+    <p><strong>DSP context:</strong> Compare a reference comb template against a captured frame of the same length.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement a function that takes two double pointers and a length, returns the double dot product.</li><li>Use vectors of length 5 with values you choose.</li><li>Print the result with %.6f.</li><li>Document in a one-line comment that length must match.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex4')">Reveal solution</button>
+    <div id="solex4" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+/* lengths of a and b must be equal to n */
+double dot(double const *a, double const *b, int n)
+{
+    double s = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        s += a[i] * b[i];
+    }
+    return s;
+}
+
+int main()
+{
+    double ref[5] = {1.0, 0.5, 0.0, -0.5, -1.0};
+    double frame[5] = {0.8, 0.4, 0.1, -0.4, -0.9};
+    std::printf("%.6f\n", dot(ref, frame, 5));
+    return 0;
+}</code></pre>
+      <div class="why">Dot product is the backbone of almost every later matrix row operation — a matrix-vector product is many dots.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex5">
+    <span class="diff building">Building</span>
+    <div class="ex-title">Exercise 5 — Euclidean norm and unit-length normalize</div>
+    <div class="learn"><strong>What you are learning:</strong> The Euclidean (L2) norm of vector x is sqrt(sum x_i^2). Dividing each element by the norm produces a unit vector (norm 1), useful for comparing shapes independent of gain. Guard the zero-vector case.</div>
+    <p><strong>DSP context:</strong> Normalize a short PSD bin vector so peak shape can be compared across sessions with different overall power.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement norm2(x, n) returning the L2 norm.</li><li>Implement normalize(x, n) that scales x in place to unit length when norm &gt; 0; if norm == 0 leave x unchanged and return 0, else return 1.</li><li>Demonstrate on a length-4 vector; print norm before, elements after, and success flag.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex5')">Reveal solution</button>
+    <div id="solex5" class="solution">
+      <pre><code>#include &lt;cmath&gt;
+#include &lt;cstdio&gt;
+
+double norm2(double const *x, int n)
+{
+    double s = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        s += x[i] * x[i];
+    }
+    return std::sqrt(s);
+}
+
+int normalize(double *x, int n)
+{
+    double const nrm = norm2(x, n);
+    if (nrm == 0.0) {
+        return 0;
+    }
+    for (int i = 0; i &lt; n; ++i) {
+        x[i] /= nrm;
+    }
+    return 1;
+}
+
+int main()
+{
+    double x[4] = {3.0, 0.0, 4.0, 0.0};
+    std::printf("norm_before=%.6f\n", norm2(x, 4));
+    int ok = normalize(x, 4);
+    for (int i = 0; i &lt; 4; ++i) std::printf("%.6f ", x[i]);
+    std::putchar('\n');
+    std::printf("ok=%d\n", ok);
+    return 0;
+}</code></pre>
+      <div class="why">Always protect against division by zero. Norm of (3,0,4) is 5 — a classic check.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex6">
+    <span class="diff building">Building</span>
+    <div class="ex-title">Exercise 6 — Matrix–vector product y = A x</div>
+    <div class="learn"><strong>What you are learning:</strong> If A is m×n and x has length n, then y has length m and y_i is the dot product of row i of A with x. This is how a bank of FIR filters, a linear mixing stage, or a projection onto basis rows is written.</div>
+    <p><strong>DSP context:</strong> Three analysis filters (rows) process one shared input frame x of length 4.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>A is 3×4, x length 4, y length 3.</li><li>Implement matvec that writes y.</li><li>Print y with %.4f per component.</li><li>Use nested loops; document that inner dimension must match.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex6')">Reveal solution</button>
+    <div id="solex6" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void matvec(double const *A, int m, int n, double const *x, double *y)
+{
+    for (int i = 0; i &lt; m; ++i) {
+        double s = 0.0;
+        for (int j = 0; j &lt; n; ++j) {
+            s += A[i * n + j] * x[j];
+        }
+        y[i] = s;
+    }
+}
+
+int main()
+{
+    double A[3 * 4] = {
+        1, 0, 0, 0,
+        0.5, 0.5, 0, 0,
+        0.25, 0.25, 0.25, 0.25
+    };
+    double x[4] = {1.0, 2.0, 3.0, 4.0};
+    double y[3];
+    matvec(A, 3, 4, x, y);
+    for (int i = 0; i &lt; 3; ++i) std::printf("%.4f ", y[i]);
+    std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Flattened row-major storage A[i*n+j] matches how most DSP buffers are packed.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex7">
+    <span class="diff intermediate">Intermediate</span>
+    <div class="ex-title">Exercise 7 — Matrix–matrix product C = A B</div>
+    <div class="learn"><strong>What you are learning:</strong> If A is m×k and B is k×n, then C is m×n with C_ij = sum over p of A_ip * B_pj. Cost is O(m*n*k). Dimension mismatch on the shared k is a hard error — check it.</div>
+    <p><strong>DSP context:</strong> Cascade two small mixing stages: first maps 3 inputs to 2 mid channels, second maps 2 mid to 2 outputs.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>A is 2×3, B is 3×2 — wait: for cascade A (2×3) then B (3×2) gives C (2×2). Use A 2×3, B 3×2.</li><li>Implement matmul writing C as a flat row-major array.</li><li>Print C as a 2×2 grid with %.2f.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex7')">Reveal solution</button>
+    <div id="solex7" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void matmul(double const *A, int m, int k,
+            double const *B, int n,
+            double *C)
+{
+    for (int i = 0; i &lt; m; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            double s = 0.0;
+            for (int p = 0; p &lt; k; ++p) {
+                s += A[i * k + p] * B[p * n + j];
+            }
+            C[i * n + j] = s;
+        }
+    }
+}
+
+int main()
+{
+    double A[2 * 3] = {1, 2, 3, 4, 5, 6};
+    double B[3 * 2] = {7, 8, 9, 10, 11, 12};
+    double C[2 * 2];
+    matmul(A, 2, 3, B, 2, C);
+    for (int i = 0; i &lt; 2; ++i) {
+        for (int j = 0; j &lt; 2; ++j) std::printf("%6.2f", C[i * 2 + j]);
+        std::putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Classic ijk triple loop. Result for this textbook data is [[58,64],[139,154]].</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex8">
+    <span class="diff intermediate">Intermediate</span>
+    <div class="ex-title">Exercise 8 — Transpose A^T</div>
+    <div class="learn"><strong>What you are learning:</strong> Transpose swaps rows and columns: (A^T)_ij = A_ji. If A is m×n, A^T is n×m. In DSP you transpose when converting between channel-major and time-major packing, or when turning a tall analysis matrix into a wide synthesis layout.</div>
+    <p><strong>DSP context:</strong> A 2×4 measurement matrix must be written as 4×2 for a downstream API that expects the opposite orientation.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement transpose of flat row-major A (m×n) into T (n×m).</li><li>Demonstrate with m=2, n=4.</li><li>Print both matrices.</li><li>Do not mutate A unless you implement a separate in-place path (not required here).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex8')">Reveal solution</button>
+    <div id="solex8" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void transpose(double const *A, int m, int n, double *T)
+{
+    for (int i = 0; i &lt; m; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            T[j * m + i] = A[i * n + j];
+        }
+    }
+}
+
+static void print_mat(double const *M, int rows, int cols)
+{
+    for (int r = 0; r &lt; rows; ++r) {
+        for (int c = 0; c &lt; cols; ++c) std::printf("%6.2f", M[r * cols + c]);
+        std::putchar('\n');
+    }
+}
+
+int main()
+{
+    double A[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
+    double T[4 * 2];
+    transpose(A, 2, 4, T);
+    std::printf("A:\n"); print_mat(A, 2, 4);
+    std::printf("T:\n"); print_mat(T, 4, 2);
+    return 0;
+}</code></pre>
+      <div class="why">Out-of-place transpose is safest. In-place for non-square needs careful packing and is a later senior topic.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex9">
+    <span class="diff intermediate">Intermediate</span>
+    <div class="ex-title">Exercise 9 — Outer product u v^T</div>
+    <div class="learn"><strong>What you are learning:</strong> The outer product of column vector u (length m) and row vector v^T (v length n) is an m×n matrix with M_ij = u_i * v_j. It builds rank-1 updates used in adaptive filters, covariance sketches, and low-rank models.</div>
+    <p><strong>DSP context:</strong> Update a 3×4 weight matrix contribution from a residual vector u and a feature vector v.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement outer(u, m, v, n, M) writing M as m×n row-major.</li><li>Print the matrix.</li><li>Verify that every entry equals u_i * v_j for your chosen vectors.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex9')">Reveal solution</button>
+    <div id="solex9" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void outer(double const *u, int m, double const *v, int n, double *M)
+{
+    for (int i = 0; i &lt; m; ++i) {
+        for (int j = 0; j &lt; n; ++j) {
+            M[i * n + j] = u[i] * v[j];
+        }
+    }
+}
+
+int main()
+{
+    double u[3] = {1.0, 2.0, 3.0};
+    double v[4] = {0.5, 1.0, 1.5, 2.0};
+    double M[3 * 4];
+    outer(u, 3, v, 4, M);
+    for (int i = 0; i &lt; 3; ++i) {
+        for (int j = 0; j &lt; 4; ++j) std::printf("%6.2f", M[i * 4 + j]);
+        std::putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">Outer product fills a matrix without needing a third loop — every cell is independent.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex10">
+    <span class="diff advanced">Advanced</span>
+    <div class="ex-title">Exercise 10 — AXPY: y ← α x + y (BLAS Level-1 pattern)</div>
+    <div class="learn"><strong>What you are learning:</strong> AXPY (a·x plus y) updates y in place: y_i += alpha * x_i. It is a BLAS Level-1 building block. DSP uses it for residual updates, gradient steps, and mixing a scaled reference into a buffer without allocating a third array.</div>
+    <p><strong>DSP context:</strong> Apply a learning-rate scaled correction vector into a coefficient buffer already holding the current estimate.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement axpy(alpha, x, y, n) modifying y in place.</li><li>Demonstrate with n=6, alpha=0.1.</li><li>Print y before and after on two lines.</li><li>x must remain unchanged.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex10')">Reveal solution</button>
+    <div id="solex10" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void axpy(double alpha, double const *x, double *y, int n)
+{
+    for (int i = 0; i &lt; n; ++i) {
+        y[i] += alpha * x[i];
+    }
+}
+
+static void print_v(double const *v, int n)
+{
+    for (int i = 0; i &lt; n; ++i) std::printf("%.4f ", v[i]);
+    std::putchar('\n');
+}
+
+int main()
+{
+    double x[6] = {1, 1, 1, 1, 1, 1};
+    double y[6] = {0.5, 0.4, 0.3, 0.2, 0.1, 0.0};
+    print_v(y, 6);
+    axpy(0.1, x, y, 6);
+    print_v(y, 6);
+    return 0;
+}</code></pre>
+      <div class="why">In-place update saves memory bandwidth — critical on embedded DSP with tight RAM.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex11">
+    <span class="diff advanced">Advanced</span>
+    <div class="ex-title">Exercise 11 — Efficient GEMV with contiguous row access</div>
+    <div class="learn"><strong>What you are learning:</strong> GEMV is general matrix–vector multiply. Efficiency comes from streaming contiguous memory: for row-major A, keep the outer loop on rows and walk columns of that row sequentially. Accumulate into a register (local double) before writing y[i]. Avoid jumping around columns of different rows in the inner loop.</div>
+    <p><strong>DSP context:</strong> A tall 8×4 analysis matrix must run every hop on a Cortex-class core; layout and loop order matter for cache lines.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement gemv_rowmajor(A, m, n, x, y) with m=8, n=4.</li><li>Zero y first, then accumulate.</li><li>Print y.</li><li>In comments, state why the inner loop walks A[i*n + j] consecutively.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex11')">Reveal solution</button>
+    <div id="solex11" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void gemv_rowmajor(double const *A, int m, int n,
+                   double const *x, double *y)
+{
+    for (int i = 0; i &lt; m; ++i) {
+        /* Inner walk is contiguous in row-major storage. */
+        double acc = 0.0;
+        double const *row = A + i * n;
+        for (int j = 0; j &lt; n; ++j) {
+            acc += row[j] * x[j];
+        }
+        y[i] = acc;
+    }
+}
+
+int main()
+{
+    double A[8 * 4];
+    for (int i = 0; i &lt; 8 * 4; ++i) A[i] = (double)((i % 5) + 1) * 0.1;
+    double x[4] = {1, 0, 1, 0};
+    double y[8];
+    gemv_rowmajor(A, 8, 4, x, y);
+    for (int i = 0; i &lt; 8; ++i) std::printf("%.4f ", y[i]);
+    std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Pointer to the start of each row makes the contiguous walk obvious and helps the compiler.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex12">
+    <span class="diff advanced">Advanced</span>
+    <div class="ex-title">Exercise 12 — Blocked (tiled) matrix multiply for locality</div>
+    <div class="learn"><strong>What you are learning:</strong> Naive matmul streams B poorly. Blocking partitions the multiplication into tiles of size BS×BS so a tile of A, B, and C stays hot in cache. Choose a small BS (e.g. 2) for this exercise so the idea is visible without huge matrices.</div>
+    <p><strong>DSP context:</strong> Multiply two 4×4 matrices on a device with a tiny data cache; demonstrate a 2×2 tiling scheme.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement matmul_blocked(A, B, C, N, BS) for square N×N with tile size BS.</li><li>Use N=4, BS=2.</li><li>Initialize A and B with simple patterns; print C.</li><li>Compare mentally to naive ijk — output must match a correct multiply.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex12')">Reveal solution</button>
+    <div id="solex12" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+
+void matmul_blocked(double const *A, double const *B, double *C,
+                    int N, int BS)
+{
+    std::memset(C, 0, (size_t)(N * N) * sizeof(double));
+    for (int ii = 0; ii &lt; N; ii += BS) {
+        for (int jj = 0; jj &lt; N; jj += BS) {
+            for (int kk = 0; kk &lt; N; kk += BS) {
+                int i_max = ii + BS &lt; N ? ii + BS : N;
+                int j_max = jj + BS &lt; N ? jj + BS : N;
+                int k_max = kk + BS &lt; N ? kk + BS : N;
+                for (int i = ii; i &lt; i_max; ++i) {
+                    for (int j = jj; j &lt; j_max; ++j) {
+                        double s = C[i * N + j];
+                        for (int k = kk; k &lt; k_max; ++k) {
+                            s += A[i * N + k] * B[k * N + j];
+                        }
+                        C[i * N + j] = s;
+                    }
+                }
+            }
+        }
+    }
+}
+
+int main()
+{
+    int const N = 4;
+    double A[16], B[16], C[16];
+    for (int i = 0; i &lt; N; ++i)
+        for (int j = 0; j &lt; N; ++j) {
+            A[i * N + j] = (i == j) ? 1.0 : 0.0;
+            B[i * N + j] = (double)(i + j);
+        }
+    matmul_blocked(A, B, C, N, 2);
+    for (int i = 0; i &lt; N; ++i) {
+        for (int j = 0; j &lt; N; ++j) std::printf("%5.1f", C[i * N + j]);
+        std::putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      <div class="why">With A = I, C equals B — a fast correctness check for blocked multiply.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex13">
+    <span class="diff advanced">Advanced</span>
+    <div class="ex-title">Exercise 13 — FIR filtering as a structured matrix–vector product</div>
+    <div class="learn"><strong>What you are learning:</strong> A length-L FIR filter applied to a signal can be written as multiplying a Toeplitz (banded) matrix by a vector of samples. Direct convolution y[n] = sum_k h[k]*x[n-k] is usually faster in code, but understanding the matrix form connects filter banks to linear algebra.</div>
+    <p><strong>DSP context:</strong> Apply a 3-tap FIR h = {0.25, 0.50, 0.25} to an input of length 8, producing an output of length 8 with zero past samples (same as causal convolution with zeros before start).</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Implement fir_direct(h, L, x, N, y) with zero initial state.</li><li>Also implement fir_via_matvec that builds an N×N Toeplitz-style matrix (or N×N banded) and calls your matvec — or builds only the needed products without a full dense matrix if you document the equivalence.</li><li>Print both outputs; they must match within floating tolerance (print both).</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex13')">Reveal solution</button>
+    <div id="solex13" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+
+void fir_direct(double const *h, int L, double const *x, int N, double *y)
+{
+    for (int n = 0; n &lt; N; ++n) {
+        double s = 0.0;
+        for (int k = 0; k &lt; L; ++k) {
+            int t = n - k;
+            if (t &gt;= 0) s += h[k] * x[t];
+        }
+        y[n] = s;
+    }
+}
+
+void fir_via_matvec(double const *h, int L, double const *x, int N, double *y)
+{
+    double A[8 * 8];
+    std::memset(A, 0, sizeof A);
+    for (int n = 0; n &lt; N; ++n) {
+        for (int k = 0; k &lt; L; ++k) {
+            int t = n - k;
+            if (t &gt;= 0) A[n * N + t] = h[k];
+        }
+    }
+    for (int n = 0; n &lt; N; ++n) {
+        double s = 0.0;
+        for (int t = 0; t &lt; N; ++t) s += A[n * N + t] * x[t];
+        y[n] = s;
+    }
+}
+
+int main()
+{
+    double h[3] = {0.25, 0.50, 0.25};
+    double x[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    double y1[8], y2[8];
+    fir_direct(h, 3, x, 8, y1);
+    fir_via_matvec(h, 3, x, 8, y2);
+    for (int i = 0; i &lt; 8; ++i) std::printf("%.4f ", y1[i]); std::putchar('\n');
+    for (int i = 0; i &lt; 8; ++i) std::printf("%.4f ", y2[i]); std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Same math, two views: streaming FIR vs explicit linear operator. Production code usually keeps the direct form.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex14">
+    <span class="diff senior">Senior</span>
+    <div class="ex-title">Exercise 14 — Row-major vs column-major and strided channel access</div>
+    <div class="learn"><strong>What you are learning:</strong> Layout decides performance. Row-major packs rows contiguously. Column-major packs columns contiguously (common in Fortran/BLAS). Interleaved stereo [L0 R0 L1 R1…] is a stride-2 view of two channel vectors. Senior DSP work means picking a layout and writing kernels that walk memory sequentially whenever possible.</div>
+    <p><strong>DSP context:</strong> A stereo DMA buffer is interleaved. You must compute per-channel energy and a mono mix without first de-interleaving into two full buffers (optional scratch of size 1 is fine).</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Buffer layout: double interleaved[2*N] with N=6: L0,R0,L1,R1,…</li><li>Compute energy_L = sum L^2, energy_R = sum R^2 using stride-2 pointer walks.</li><li>Write mono[i] = 0.5*(L[i]+R[i]) into a separate mono[N] array.</li><li>Print energies and mono.</li><li>In comments, contrast this with a planar layout L[N], R[N].</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex14')">Reveal solution</button>
+    <div id="solex14" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    int const N = 6;
+    double interleaved[12] = {
+        0.5, -0.5, 0.4, -0.4, 0.3, -0.3,
+        0.2, -0.2, 0.1, -0.1, 0.0,  0.0
+    };
+    /* Planar would be L[N], R[N] contiguous — better for long single-channel FIR. */
+    double energy_L = 0.0, energy_R = 0.0;
+    double mono[6];
+    for (int i = 0; i &lt; N; ++i) {
+        double const L = interleaved[2 * i];
+        double const R = interleaved[2 * i + 1];
+        energy_L += L * L;
+        energy_R += R * R;
+        mono[i] = 0.5 * (L + R);
+    }
+    std::printf("energy_L=%.6f energy_R=%.6f\n", energy_L, energy_R);
+    for (int i = 0; i &lt; N; ++i) std::printf("%.4f ", mono[i]);
+    std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Stride-aware kernels avoid unnecessary copies. Choose planar vs interleaved based on which axis you process most often.</div>
+    </div>
+  </div>
+  <div class="exercise" id="ex15">
+    <span class="diff senior">Senior</span>
+    <div class="ex-title">Exercise 15 — Fused residual kernel and compensated energy (production style)</div>
+    <div class="learn"><strong>What you are learning:</strong> Senior DSP kernels fuse steps that would otherwise thrash memory: compute prediction, residual, and energy in one pass when possible. Long sums of squares can lose precision; a compensated (Kahan) sum is one classical remedy without external libraries. Structure APIs so buffers have clear ownership and no hidden temporaries of size N².</div>
+    <p><strong>DSP context:</strong> Given a reference template t and observation x (length 8), compute scalar gain g = (t·x)/(t·t), residual r = x - g*t, and residual energy ||r||² with a compensated accumulator. Print g, energy, and the residual vector.</p>
+    <p><strong>Requirements:</strong></p>
+    <ul class="req"><li>Single function process_residual(t, x, n, r, &amp;g, &amp;energy) writing residual into r.</li><li>Use Kahan (or equivalent compensated) summation for the energy of r.</li><li>Handle t·t == 0 by setting g=0 and r=x.</li><li>No STL, no BLAS library — only your own loops.</li><li>Print g, energy, then residual values.</li></ul>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solex15')">Reveal solution</button>
+    <div id="solex15" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void process_residual(double const *t, double const *x, int n,
+                      double *r, double *g_out, double *energy_out)
+{
+    double tt = 0.0, tx = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        tt += t[i] * t[i];
+        tx += t[i] * x[i];
+    }
+    double g = (tt == 0.0) ? 0.0 : (tx / tt);
+    double energy = 0.0;
+    double c = 0.0; /* Kahan compensation */
+    for (int i = 0; i &lt; n; ++i) {
+        r[i] = x[i] - g * t[i];
+        double const y = r[i] * r[i] - c;
+        double const sum = energy + y;
+        c = (sum - energy) - y;
+        energy = sum;
+    }
+    *g_out = g;
+    *energy_out = energy;
+}
+
+int main()
+{
+    double t[8] = {1,1,1,1,0,0,0,0};
+    double x[8] = {2,2,2,2,1,1,1,1};
+    double r[8];
+    double g, energy;
+    process_residual(t, x, 8, r, &amp;g, &amp;energy);
+    std::printf("g=%.6f energy=%.6f\n", g, energy);
+    for (int i = 0; i &lt; 8; ++i) std::printf("%.4f ", r[i]);
+    std::putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">Least-squares gain onto a template, residual, and careful energy — a miniature of beamforming / matched-filter cleanup without libraries.</div>
+    </div>
+  </div>
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">Batch 02 · DSP mat/vec · C++ (no STL) · 15 exercises</p>
+
+<script>
+  function toggleSol(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible');
+  }
+</script>
+
+</body>
+</html>
