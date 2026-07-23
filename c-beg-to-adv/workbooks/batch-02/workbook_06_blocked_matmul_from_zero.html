@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blocked Matrix Multiplication — From Zero</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #8250df; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; }
+    .scope { background: #f0e7ff; border-left: 4px solid #8250df; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 12px; font-size: 1.15rem; color: #8250df; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .section h3 { margin: 18px 0 8px; font-size: 1.02rem; color: #24292f; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; margin: 12px 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .math { background: #f6f8fa; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-family: Consolas, 'Courier New', monospace; font-size: 0.9rem; overflow-x: auto; white-space: pre; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; width: 100%; }
+    th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; }
+    th { background: #f6f8fa; }
+    blockquote { border-left: 4px solid #8250df; margin: 12px 0; padding: 8px 14px; background: #f6f8fa; color: #424a53; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; margin-right: 6px; color: #fff; background: #8250df; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; }
+    button.reveal-btn { margin-top: 14px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #8250df; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.92); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul, ol { font-size: 0.95rem; margin: 8px 0 0 1.2em; }
+    li { margin: 5px 0; }
+    .map-box { background: #f0e7ff; border-radius: 6px; padding: 12px 14px; margin-top: 12px; font-size: 0.93rem; }
+  </style>
+</head>
+<body>
+  <h1>Blocked Matrix Multiplication — From Zero</h1>
+  <p class="subtitle">Companion to Exercise 12 in <code>workbook_04_dsp_matrix_vector_c.html</code> · Batch 02</p>
+
+  <div class="scope">
+    <strong>What this workbook is:</strong> the exact theory-and-practice explanation for blocked (tiled) matrix multiplication, written for a complete beginner.
+    It matches Exercise 12 in the DSP matrix/vector C notebook: multiply two <strong>4×4</strong> matrices using <strong>tiles of size 2×2</strong>.
+    Handwriting drills are at the end; answers sit behind <strong>Reveal solution</strong>.
+  </div>
+
+  <!-- ========== THEORY ========== -->
+
+  <div class="section">
+    <h2>1. What is a matrix (tiny reminder)</h2>
+    <p>A matrix is a <strong>grid of numbers</strong>.</p>
+    <p>Example 2×2:</p>
+    <div class="math">A = | 1  2 |
+    | 3  4 |</div>
+    <ul>
+      <li><strong>Row</strong> = horizontal line</li>
+      <li><strong>Column</strong> = vertical line</li>
+      <li>A<sub>ij</sub> = entry in row <em>i</em>, column <em>j</em> (we count from <strong>0</strong> in C, from <strong>1</strong> in math books — same idea)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>2. What does “matrix multiply” mean?</h2>
+    <p>If <code>C = A × B</code>, each entry of <code>C</code> is a <strong>dot product</strong>:</p>
+    <div class="math">C_ij = sum over k of  ( A_ik * B_kj )</div>
+    <p>In words:</p>
+    <blockquote>
+      To get the number in <strong>row i, column j</strong> of C:<br>
+      take row <em>i</em> of A, take column <em>j</em> of B, multiply matching pairs, add them up.
+    </blockquote>
+
+    <h3>Tiny example (do this once by hand)</h3>
+    <div class="math">A = | 1  2 |      B = | 5  6 |
+    | 3  4 |          | 7  8 |</div>
+    <div class="math">C_00 = 1*5 + 2*7 = 5 + 14 = 19
+C_01 = 1*6 + 2*8 = 6 + 16 = 22
+C_10 = 3*5 + 4*7 = 15 + 28 = 43
+C_11 = 3*6 + 4*8 = 18 + 32 = 50</div>
+    <p>So</p>
+    <div class="math">C = | 19  22 |
+    | 43  50 |</div>
+    <p>That is <strong>all</strong> matrix multiply is. Blocking does <strong>not</strong> change this math. It only changes <strong>the order of the work</strong>.</p>
+  </div>
+
+  <div class="section">
+    <h2>3. The “naive” way (what you already know)</h2>
+    <p>In code people usually write three loops:</p>
+    <pre><code>for i = 0 .. N-1          // which row of C
+  for j = 0 .. N-1        // which column of C
+    for k = 0 .. N-1      // sum along the shared dimension
+      C[i][j] += A[i][k] * B[k][j]</code></pre>
+    <p>For each C<sub>ij</sub> you walk along a <strong>row of A</strong> and a <strong>column of B</strong>.</p>
+    <p>On paper this is fine. On a real CPU it can be slow for large N, because of <strong>cache</strong>.</p>
+  </div>
+
+  <div class="section">
+    <h2>4. Why computers care about order (the real reason for blocking)</h2>
+
+    <h3>Simple picture of memory</h3>
+    <ul>
+      <li>Numbers live in <strong>RAM</strong> (big, slow).</li>
+      <li>The CPU has a tiny <strong>cache</strong> (small, fast).</li>
+    </ul>
+    <p>When the CPU needs a number:</p>
+    <ol>
+      <li>If it’s already in cache → <strong>fast</strong> (cache hit).</li>
+      <li>If not → fetch from RAM → <strong>slow</strong> (cache miss), and usually a whole <strong>chunk</strong> comes in, not one number.</li>
+    </ol>
+
+    <h3>What goes wrong in naive matmul</h3>
+    <p>While computing one row of C, you keep reading <strong>columns of B</strong>.</p>
+    <p>In <strong>row-major</strong> storage (C arrays), a row sits together in memory, but a <strong>column</strong> is scattered:</p>
+    <pre><code>Row 0:  B00 B01 B02 B03     ← consecutive in memory
+Row 1:  B10 B11 B12 B13
+...
+Column 0 is: B00, B10, B20, B30  ← far apart</code></pre>
+    <p>So the naive inner loop often jumps around in B. For big matrices, you keep kicking useful data out of the tiny cache and reloading it. Same math, worse performance.</p>
+    <p><strong>Blocking / tiling</strong> = do the multiply in <strong>small squares</strong> so the pieces of A, B, and C you need <strong>fit in cache and get reused</strong> before you move on.</p>
+  </div>
+
+  <div class="section">
+    <h2>5. The big idea of blocking (tiles)</h2>
+    <p>Imagine a 4×4 matrix cut into <strong>2×2 tiles</strong> (this is exactly Exercise 12: <code>N=4</code>, <code>BS=2</code>):</p>
+    <pre><code>A =  [ A00 | A01 ]      B =  [ B00 | B01 ]
+     [ ----+---- ]           [ ----+---- ]
+     [ A10 | A11 ]           [ B10 | B11 ]
+
+C =  [ C00 | C01 ]
+     [ ----+---- ]
+     [ C10 | C11 ]</code></pre>
+    <p>Each <code>A00</code>, <code>B00</code>, <code>C00</code>, … is a <strong>2×2 block</strong>, not a single number.</p>
+
+    <h3>Important formula (block version of the same multiply)</h3>
+    <p>For the top-left block of C:</p>
+    <div class="math">C00 = A00 * B00  +  A01 * B10</div>
+    <p>Same pattern as numbers, but each “multiplication” is a <strong>small matrix multiply</strong>, and “+” adds matrices entrywise.</p>
+    <p>So:</p>
+    <ol>
+      <li>Multiply two small 2×2 pieces.</li>
+      <li>Add into the matching 2×2 piece of C.</li>
+      <li>Move to the next tile pair.</li>
+    </ol>
+    <p>You still get the <strong>same final C</strong> as the naive method. You only changed <strong>when</strong> each A<sub>ik</sub> B<sub>kj</sub> product is done.</p>
+  </div>
+
+  <div class="section">
+    <h2>6. Walkthrough with the notebook’s test case</h2>
+    <p>In the solution, A is the <strong>identity</strong> (1s on the diagonal, 0 elsewhere), and B<sub>ij</sub> = i + j.</p>
+    <p>For N=4:</p>
+    <div class="math">A = I = | 1 0 0 0 |     B = | 0 1 2 3 |
+          | 0 1 0 0 |         | 1 2 3 4 |
+          | 0 0 1 0 |         | 2 3 4 5 |
+          | 0 0 0 1 |         | 3 4 5 6 |</div>
+    <p><strong>Fact:</strong> I × B = B. So if your blocked multiply is correct, <strong>C must equal B</strong>. That is the exercise’s built-in check.</p>
+
+    <h3>How tiles cover this</h3>
+    <p>Tiles of size 2:</p>
+    <table>
+      <thead>
+        <tr><th>Block</th><th>Rows</th><th>Cols</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>00</code></td><td>0–1</td><td>0–1</td></tr>
+        <tr><td><code>01</code></td><td>0–1</td><td>2–3</td></tr>
+        <tr><td><code>10</code></td><td>2–3</td><td>0–1</td></tr>
+        <tr><td><code>11</code></td><td>2–3</td><td>2–3</td></tr>
+      </tbody>
+    </table>
+    <p>For top-left C<sub>00</sub> (rows 0–1, cols 0–1):</p>
+    <div class="math">C00 += A00 * B00
+C00 += A01 * B10</div>
+    <p>Because A = I:</p>
+    <ul>
+      <li>A<sub>00</sub> = I<sub>2</sub> (2×2 identity)</li>
+      <li>A<sub>01</sub> = 0</li>
+    </ul>
+    <p>So only the first term matters: C<sub>00</sub> = B<sub>00</sub>. Same for other blocks → whole C = B.</p>
+  </div>
+
+  <div class="section">
+    <h2>7. What the six loops mean (mapping to the code)</h2>
+    <p>Exercise code has <strong>outer</strong> block loops and <strong>inner</strong> element loops:</p>
+    <pre><code>for ii = 0, 2, ...     // start row of C-tile
+  for jj = 0, 2, ...   // start col of C-tile
+    for kk = 0, 2, ... // which "k-tile" contributes to this C-tile
+      // now multiply the small pieces:
+      for i = ii .. ii+BS-1
+        for j = jj .. jj+BS-1
+          for k = kk .. kk+BS-1
+            C[i][j] += A[i][k] * B[k][j]</code></pre>
+    <table>
+      <thead>
+        <tr><th>Loop</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ii</code>, <code>jj</code></td><td>Which <strong>output tile</strong> of C you are filling</td></tr>
+        <tr><td><code>kk</code></td><td>Which pair of tiles from A and B you add into that output tile</td></tr>
+        <tr><td><code>i</code>, <code>j</code>, <code>k</code></td><td>Ordinary multiply <strong>inside</strong> those small tiles</td></tr>
+      </tbody>
+    </table>
+    <p><code>i_max</code>, <code>j_max</code>, <code>k_max</code> only handle the case when N is not divisible by <code>BS</code> (last partial tile). For N=4, BS=2 they never cut short.</p>
+    <p><strong>Start with zeros:</strong> C must begin at 0 because each C<sub>ij</sub> is built by <strong>adding</strong> several block contributions (<code>kk</code> loop).</p>
+  </div>
+
+  <div class="section">
+    <h2>8. One full numeric micro-example</h2>
+    <p>If N=2, BS=2, there is <strong>one</strong> tile. Blocking = normal multiply. Not interesting.</p>
+    <p>Better: think of N=4 but compute <strong>one entry</strong> two ways.</p>
+
+    <h3>Entry C<sub>0,0</sub> naive</h3>
+    <div class="math">C_00 = A_00*B_00 + A_01*B_10 + A_02*B_20 + A_03*B_30</div>
+    <p>With A = I: only A<sub>00</sub> = 1, so C<sub>00</sub> = B<sub>00</sub> = 0.</p>
+
+    <h3>Same entry blocked (BS=2)</h3>
+    <ul>
+      <li>From <code>kk=0</code>: sum k=0,1 → A<sub>00</sub>B<sub>00</sub> + A<sub>01</sub>B<sub>10</sub> = 1·0 + 0·1 = 0</li>
+      <li>From <code>kk=2</code>: sum k=2,3 → A<sub>02</sub>B<sub>20</sub> + A<sub>03</sub>B<sub>30</sub> = 0</li>
+    </ul>
+    <p>Total still 0. <strong>Same answer, different grouping.</strong></p>
+    <p>That is the whole theory: <strong>associativity of addition</strong> — you can add the products in tile-sized chunks.</p>
+  </div>
+
+  <div class="section">
+    <h2>9. Why DSP people care</h2>
+    <p>On headphones / AFE / MCU:</p>
+    <ul>
+      <li>Matrices for mixing, beamforming, filter banks can be dozens–hundreds on a side.</li>
+      <li>Cache is tiny.</li>
+      <li>Blocked multiply (and related ideas: GEMM, tiling) is how libraries get speed <strong>without changing the math</strong>.</li>
+    </ul>
+    <p>Exercise 12 is the <strong>idea in miniature</strong> (4×4 with 2×2 tiles), not a production BLAS.</p>
+  </div>
+
+  <!-- ========== HANDWRITING ========== -->
+
+  <div class="section">
+    <h2>Handwriting exercises</h2>
+    <p>Do these on paper. No computer. Check answers with the reveal buttons after you try.</p>
+  </div>
+
+  <div class="exercise" id="h1">
+    <span class="diff">Handwriting H1</span>
+    <div class="ex-title">One entry by hand</div>
+    <div class="math">A = | 2  1 |      B = | 4  0 |
+    | 0  3 |          | 5  6 |</div>
+    <p>Compute C = AB. Write all four entries with the sum shown.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh1')">Reveal solution</button>
+    <div id="solh1" class="solution">
+      <div class="why">
+        C = | 13  6 |<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;| 15 18 |<br><br>
+        (2·4+1·5=13, &nbsp; 2·0+1·6=6, &nbsp; 0·4+3·5=15, &nbsp; 0·0+3·6=18)
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h2">
+    <span class="diff">Handwriting H2</span>
+    <div class="ex-title">Same multiply, show the “k” sum</div>
+    <p>For C<sub>10</sub> from H1, write explicitly:</p>
+    <div class="math">C_10 = A_10 * B_00 + A_11 * B_10</div>
+    <p>Plug numbers.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh2')">Reveal solution</button>
+    <div id="solh2" class="solution">
+      <div class="why">0·4 + 3·5 = 15</div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h3">
+    <span class="diff">Handwriting H3</span>
+    <div class="ex-title">Draw the tiles</div>
+    <p>For a <strong>4×4</strong>, BS=2, draw the matrix as four 2×2 blocks and label them A00, A01, A10, A11.</p>
+    <p>Then write the formula for block C<sub>10</sub> (bottom-left) as a sum of two block products.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh3')">Reveal solution</button>
+    <div id="solh3" class="solution">
+      <div class="why">C<sub>10</sub> = A<sub>10</sub>·B<sub>00</sub> + A<sub>11</sub>·B<sub>10</sub></div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h4">
+    <span class="diff">Handwriting H4</span>
+    <div class="ex-title">Block arithmetic (tiny)</div>
+    <div class="math">A00 = | 1 0 |     A01 = | 0 0 |
+      | 0 1 |           | 0 0 |
+
+B00 = | 0 1 |     B10 = | 2 3 |
+      | 1 2 |           | 3 4 |</div>
+    <p>Compute C<sub>00</sub> = A<sub>00</sub>·B<sub>00</sub> + A<sub>01</sub>·B<sub>10</sub> by hand.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh4')">Reveal solution</button>
+    <div id="solh4" class="solution">
+      <div class="why">
+        C<sub>00</sub> = | 0 1 |<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 1 2 |<br><br>
+        (because A<sub>00</sub>·B<sub>00</sub> = B<sub>00</sub> and A<sub>01</sub> = 0)
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h5">
+    <span class="diff">Handwriting H5</span>
+    <div class="ex-title">Identity check (matches the notebook)</div>
+    <p>Using A = I<sub>4</sub> and</p>
+    <div class="math">B = | 0 1 2 3 |
+    | 1 2 3 4 |
+    | 2 3 4 5 |
+    | 3 4 5 6 |</div>
+    <p>Without multiplying everything: argue in one sentence why C = B. Then write only the <strong>top-left 2×2</strong> of C (should equal top-left 2×2 of B).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh5')">Reveal solution</button>
+    <div id="solh5" class="solution">
+      <div class="why">
+        Multiplying by I leaves every column of B unchanged, so C = B.<br>
+        Top-left 2×2: | 0 1 |<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 1 2 |
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h6">
+    <span class="diff">Handwriting H6</span>
+    <div class="ex-title">Trace the loops (simulation)</div>
+    <p>N=4, BS=2. List the order of <code>(ii, jj, kk)</code> triples the outer loops visit (there are 2×2×2 = 8 of them).</p>
+    <p>For the first triple <code>(0,0,0)</code>, list which <code>(i,j,k)</code> element triples run in the inner loops (there are 2×2×2 = 8).</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh6')">Reveal solution</button>
+    <div id="solh6" class="solution">
+      <div class="why">
+        <code>(ii,jj,kk)</code>:<br>
+        (0,0,0), (0,0,2), (0,2,0), (0,2,2), (2,0,0), (2,0,2), (2,2,0), (2,2,2)<br><br>
+        For (0,0,0), all pairs i,j,k ∈ {0,1}.
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h7">
+    <span class="diff">Handwriting H7</span>
+    <div class="ex-title">Why cache? (words only)</div>
+    <p>In 3–5 sentences: why jumping down a <strong>column</strong> of a row-major matrix is often slower than walking along a <strong>row</strong>. No jargon required beyond “nearby in memory.”</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh7')">Reveal solution</button>
+    <div id="solh7" class="solution">
+      <div class="why">
+        Row entries sit next to each other; column entries are separated by a full row width, so the CPU keeps fetching distant addresses instead of reusing a loaded chunk.
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h8">
+    <span class="diff">Handwriting H8</span>
+    <div class="ex-title">Partial contribution</div>
+    <p>N=4, BS=2, A = I, B as in H5.</p>
+    <p>After <strong>only</strong> the contribution <code>kk=0</code> into tile C00 (i.e. only A<sub>00</sub>·B<sub>00</sub>), what is the top-left 2×2 of C?</p>
+    <p>After also adding <code>kk=2</code> (A<sub>01</sub>·B<sub>10</sub>), does it change? Why?</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh8')">Reveal solution</button>
+    <div id="solh8" class="solution">
+      <div class="why">
+        After kk=0, top-left is B<sub>00</sub> = | 0 1 |<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 1 2 |<br>
+        Adding kk=2 multiplies by A<sub>01</sub> = 0, so it does <strong>not</strong> change.
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h9">
+    <span class="diff">Handwriting H9</span>
+    <div class="ex-title">Compare two orders</div>
+    <p>For vectors, 1·2 + 3·4 vs 3·4 + 1·2. Same sum.</p>
+    <p>Write one sentence connecting this to blocking.</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh9')">Reveal solution</button>
+    <div id="solh9" class="solution">
+      <div class="why">
+        Addition is commutative/associative; blocking only regroups the same products.
+      </div>
+    </div>
+  </div>
+
+  <div class="exercise" id="h10">
+    <span class="diff">Handwriting H10</span>
+    <div class="ex-title">Design your own check</div>
+    <p>Invent a <strong>non-identity</strong> 2×2 A and 2×2 B. Compute C naive.</p>
+    <p>Then pretend BS=1 (tiles are 1×1). Does blocking with BS=1 change anything? What does BS=1 mean?</p>
+    <button type="button" class="reveal-btn" onclick="toggleSol('solh10')">Reveal solution</button>
+    <div id="solh10" class="solution">
+      <div class="why">
+        BS=1 means each “tile” is a single entry — blocking degenerates to (a possible reordering of) the naive triple loop; math unchanged.
+        Your numeric C depends on the A and B you chose; the point is that BS=1 still produces that same C.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAP BACK ========== -->
+
+  <div class="section">
+    <h2>How this maps back to Exercise 12</h2>
+    <table>
+      <thead>
+        <tr><th>Notebook ask</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>matmul_blocked(A,B,C,N,BS)</code></td><td>Same multiply as naive, tile size BS</td></tr>
+        <tr><td><code>N=4</code>, <code>BS=2</code></td><td>Four 2×2 tiles per matrix</td></tr>
+        <tr><td>Print C</td><td>Should equal B when A = I</td></tr>
+        <tr><td>“Match naive ijk”</td><td>Blocking is an optimization of <strong>order</strong>, not a different formula</td></tr>
+      </tbody>
+    </table>
+    <div class="map-box">
+      After the handwriting drills, return to <code>workbook_04_dsp_matrix_vector_c.html</code> Exercise 12 and implement <code>matmul_blocked</code>. Use A = I as your first correctness check.
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">
+    Batch 02 · Blocked matmul companion · theory + 10 handwriting exercises
+  </p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
