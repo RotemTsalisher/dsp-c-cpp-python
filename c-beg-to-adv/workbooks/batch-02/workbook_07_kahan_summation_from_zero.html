@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahan Compensated Summation — From Zero to Hero</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #bf4b00; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; }
+    .scope { background: #fff1e5; border-left: 4px solid #bf4b00; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 12px; font-size: 1.15rem; color: #bf4b00; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .section h3 { margin: 18px 0 8px; font-size: 1.02rem; color: #24292f; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.78rem; line-height: 1.45; margin: 12px 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .math { background: #f6f8fa; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-family: Consolas, 'Courier New', monospace; font-size: 0.9rem; overflow-x: auto; white-space: pre; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; width: 100%; }
+    th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f6f8fa; }
+    blockquote { border-left: 4px solid #bf4b00; margin: 12px 0; padding: 8px 14px; background: #f6f8fa; color: #424a53; }
+    .he { direction: rtl; text-align: right; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-size: 0.93rem; }
+    .he h4 { margin: 0 0 8px; color: #bf4b00; font-size: 0.95rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; margin-right: 6px; color: #fff; }
+    .foundation { background: #0969da; }
+    .building { background: #1a7f37; }
+    .intermediate { background: #bf8700; }
+    .advanced { background: #bc4c00; }
+    .senior { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; }
+    .part { font-weight: 700; margin-top: 14px; color: #57606a; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #bf4b00; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.92); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul, ol { font-size: 0.95rem; margin: 8px 0 0 1.2em; }
+    li { margin: 5px 0; }
+    .path { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .path span { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Kahan Compensated Summation — From Zero to Hero</h1>
+  <p class="subtitle">Companion to Exercise 15 in <code>workbook_04_dsp_matrix_vector_c.html</code> · Batch 02 · ANSI C11</p>
+
+  <div class="scope">
+    <strong>What this workbook is:</strong> a complete path from “I have never heard of rounding error”
+    to confident use of <strong>Kahan compensated summation</strong> in DSP-style energy / residual kernels.
+    Every major section has an English explanation and a <strong>Hebrew</strong> section written to sound natural, not word-for-word.
+    Exercises mix theory, handwriting, and C coding. Solutions stay behind <strong>Reveal</strong> buttons.
+  </div>
+
+  <!-- ===================== THEORY ===================== -->
+
+  <div class="section">
+    <h2>0. Roadmap</h2>
+    <div class="path">
+      <span class="foundation">Theory A–E</span>
+      <span class="foundation">Ex 1–2 Foundation</span>
+      <span class="building">Ex 3–4 Building</span>
+      <span class="intermediate">Ex 5–6 Intermediate</span>
+      <span class="advanced">Ex 7 Advanced</span>
+      <span class="senior">Ex 8 Senior / DSP</span>
+    </div>
+    <p>Goal: understand <em>why</em> naive sums lose tiny contributions, then implement and use Kahan like a senior DSP engineer.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>המטרה: להבין למה סכימה “רגילה” במחשב מאבדת תרומות קטנות, ואז לממש ולהשתמש בשיטת קאהן כמו מהנדס DSP מנוסה.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>A. Computers do not store every real number</h2>
+    <p>In pure math, numbers like <code>0.1</code> and <code>1/3</code> are exact ideas.</p>
+    <p>In a computer, a <code>float</code> / <code>double</code> can only store a <strong>finite number of bits</strong>.
+    So most real values are stored as the <strong>nearest representable</strong> number — a tiny lie, called <strong>rounding</strong>.</p>
+    <p>Think of a ruler that only has marks every millimeter: a length of 2.37 mm might be recorded as 2 mm or 2 mm “plus a note you forgot.”</p>
+    <blockquote>Floating-point arithmetic ≈ exact math, then round to nearest allowed value.</blockquote>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>במתמטיקה מספרים יכולים להיות מדויקים לחלוטין. במחשב ל־<code>float</code>/<code>double</code> יש מספר סופי של ביטים,
+      ולכן רוב הערכים נשמרים בתור <strong>הקירוב הקרוב ביותר שמותר לייצג</strong>. זה נקרא עיגול (rounding).
+      אפשר לדמיין סרגל שמסומן רק כל מילימטר — אורך של 2.37 מ״מ ייכתב כ־2 או 3, ולא “באמת” 2.37.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>B. Adding two floats can lose information</h2>
+    <p>When you compute <code>big + tiny</code>, the result must fit in the same limited format.</p>
+    <p>If <code>big</code> is huge compared to <code>tiny</code>, the sum may round back to <code>big</code>.
+    The tiny contribution is <strong>swallowed</strong>.</p>
+    <div class="math">Example idea (toy decimals with only 4 significant digits):
+  1000 + 0.4  →  stored as 1000
+  (the 0.4 vanished)</div>
+    <p>Real <code>double</code> has about 15–16 decimal digits of precision — same idea, just with more digits.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>כשמוסיפים מספר גדול ומספר קטן מאוד, התוצאה חייבת להישאר באותו פורמט מוגבל.
+      אם הפער גדול מדי, העיגול מחזיר את המספר הגדול — והתרומה הקטנה <strong>נעלמת</strong>.
+      ב־<code>double</code> יש בערך 15–16 ספרות משמעותיות; העיקרון זהה.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>C. Why long sums are dangerous in DSP</h2>
+    <p>DSP kernels often compute things like:</p>
+    <ul>
+      <li>signal energy: <code>sum x[i]*x[i]</code></li>
+      <li>dot products / correlations</li>
+      <li>residual energy after subtracting a template</li>
+    </ul>
+    <p>You add <strong>many</strong> terms into one running total. Early on the total is small; later it is large.
+    Late tiny terms (or even moderate ones) can be rounded away. Your energy looks “almost right” but is systematically biased.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>ב־DSP מחשבים הרבה פעמים אנרגיה, מכפלה פנימית, או אנרגיית שארית — כלומר סכום ארוך של איברים.
+      בהתחלה הסכום קטן; בהמשך הוא גדול. איברים מאוחרים קטנים עלולים להיעלם בעיגול,
+      והתוצאה נראית “בערך נכונה” אבל עם שגיאה שיטתית.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>D. The idea of compensation (before the formula)</h2>
+    <p><strong>Naive sum:</strong> keep one variable <code>s</code>, do <code>s = s + x[i]</code> forever.</p>
+    <p><strong>Compensated idea:</strong> also keep a second variable that remembers “how much we lost last time,”
+    and feed that lost piece back into the next addition.</p>
+    <blockquote>Like a cashier who notices the register rounded down 0.4 last sale, and adds that 0.4 into the next sale’s correction.</blockquote>
+    <p>William Kahan published a simple, famous algorithm for this (1960s). It is cheap (a few extra flops per term) and widely used.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p><strong>סכימה נאיבית:</strong> משתנה אחד <code>s</code>, ובכל פעם <code>s = s + x[i]</code>.</p>
+      <p><strong>רעיון פיצוי:</strong> שומרים גם משתנה שני שזוכר “כמה איבדנו בפעם הקודמת”, ומחזירים את האובדן לתוך החיבור הבא.
+      כמו קופאי שמבחין שהמערכת עיגלה כלפי מטה ב־0.4 ברכישה הקודמת, ומתקן בזה בפעם הבאה.
+      אלגוריתם קאהן הוא המימוש הקלאסי והזול של הרעיון הזה.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>E. The Kahan algorithm (core)</h2>
+    <p>Inputs: array <code>x[0..n-1]</code>. Outputs: compensated sum.</p>
+    <div class="math">sum = 0
+c   = 0          // running compensation (lost low-order bits)
+
+for each x_i:
+    y    = x_i - c          // apply previous compensation
+    t    = sum + y          // tentative new sum (may round)
+    c    = (t - sum) - y    // what got lost in (sum + y)
+    sum  = t
+
+return sum</div>
+    <p><strong>Meaning of <code>c</code>:</strong> after adding <code>y</code> into <code>sum</code>, floating-point may not have kept all of <code>y</code>.
+    The expression <code>(t - sum) - y</code> estimates the rounding leftover (with a sign convention so the <em>next</em> step subtracts it correctly via <code>y = x_i - c</code>).</p>
+    <p><strong>Important:</strong> compilers that re-associate floating expressions aggressively can break Kahan.
+    In practice, write the steps as separate statements; avoid flags that enable unsafe FP reassociation when validating.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>אלגוריתם קאהן שומר שני משתנים: <code>sum</code> (הסכום) ו־<code>c</code> (פיצוי רץ).</p>
+      <p>בכל איבר: מתקנים את האיבר בעזרת <code>c</code>, מחברים ל־<code>sum</code>, ואז מחשבים מחדש כמה “נשפך” בעיגול —
+      זה הופך ל־<code>c</code> של הצעד הבא. כך האובדן הקטן לא נזרק לנצח, אלא מנסים להחזירו בהמשך.</p>
+      <p>חשוב לכתוב את השלבים בנפרד; אופטימיזציות שמסדרות מחדש ביטויי נקודה צפה עלולות להרוס את הפיצוי.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>F. What Kahan is (and is not)</h2>
+    <table>
+      <tr><th>Kahan is</th><th>Kahan is not</th></tr>
+      <tr>
+        <td>A way to reduce <em>accumulation</em> error in long sums</td>
+        <td>A magic fix for every floating-point bug</td>
+      </tr>
+      <tr>
+        <td>Useful for energy, dots, residual norms in DSP</td>
+        <td>A replacement for higher precision when you truly need it (<code>long double</code>, big-float)</td>
+      </tr>
+      <tr>
+        <td>O(n) time, small constant overhead</td>
+        <td>Exact arithmetic on decimal values like 0.1</td>
+      </tr>
+    </table>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>קאהן משפר סכימה ארוכה; הוא לא פותר כל בעיה בנקודה צפה, ולא הופך את החישוב למתמטיקה מדויקת לחלוטין.
+      לצרכים קיצוניים לפעמים צריך דיוק גבוה יותר. לרוב אנרגיות/מכפלות ב־DSP — קאהן הוא כלי מצוין וזול.</p>
+    </div>
+  </div>
+
+  <!-- ===================== EXERCISES ===================== -->
+
+  <div class="section">
+    <h2>Exercises — Zero to Hero</h2>
+    <p>Each exercise has: short theory reminder · handwriting · C coding · revealable solutions.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בכל תרגיל: תזכורת תיאורטית קצרה · תרגיל בכתב יד · מימוש ב־C · פתרונות מאחורי כפתור.</p>
+    </div>
+  </div>
+
+  <!-- EX 1 -->
+  <div class="exercise" id="ex1">
+    <span class="diff foundation">Foundation · Ex 1</span>
+    <div class="ex-title">Significant digits and swallowed additions</div>
+
+    <p class="part">Theory</p>
+    <p>With a toy format that keeps only <strong>3 significant decimal digits</strong>, any result is rounded to 3 digits.
+    Adding a number smaller than the unit in the last place of a large sum can leave the sum unchanged.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בפורמט צעצוע עם 3 ספרות משמעותיות בלבד, כל תוצאה מעוגלת ל־3 ספרות.
+      חיבור מספר קטן מדי ביחס לסכום הגדול עלול לא לשנות את הסכום בכלל.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol>
+      <li>Using 3 significant digits, compute step by step: start at 0, add 100, then add 0.4, then add 0.4 again. What is the stored sum after each step?</li>
+      <li>In exact math, what should the final total be?</li>
+    </ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <ol>
+        <li>עם 3 ספרות משמעותיות: התחל מ־0, הוסף 100, אחר כך 0.4, ואז שוב 0.4. מה נשמר אחרי כל שלב?</li>
+        <li>במתמטיקה מדויקת — מה אמור להיות הסכום הסופי?</li>
+      </ol>
+    </div>
+
+    <p class="part">Coding (C)</p>
+    <ul>
+      <li>Print with many decimals: <code>(1.0 + 1e-16) - 1.0</code> using <code>double</code>.</li>
+      <li>Also print <code>1e-16</code> alone.</li>
+      <li>Observe whether the tiny value survived the add/subtract round trip.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1c')">Reveal code</button>
+    <div id="sol1h" class="solution">
+      <div class="why">
+        After +100 → 100. After +0.4 → still 100 (0.4 lost). After another +0.4 → still 100.<br>
+        Exact total = 100.8.<br>
+        <span dir="rtl">אחרי 100 נשאר 100; שתי תוספות של 0.4 נבלעות. המדויק: 100.8.</span>
+      </div>
+    </div>
+    <div id="sol1c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double x = (1.0 + 1e-16) - 1.0;
+    printf("roundtrip=%.17g\n", x);
+    printf("tiny=%.17g\n", 1e-16);
+    return 0;
+}</code></pre>
+      <div class="why">Often roundtrip prints 0 — the 1e-16 never made it into (1.0 + 1e-16).</div>
+    </div>
+  </div>
+
+  <!-- EX 2 -->
+  <div class="exercise" id="ex2">
+    <span class="diff foundation">Foundation · Ex 2</span>
+    <div class="ex-title">Naive running sum</div>
+
+    <p class="part">Theory</p>
+    <p>A naive sum is one accumulator updated in order. Order matters in floating point: summing tiny values first, then a large one, often preserves more than summing large first.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>סכום נאיבי = מצבר אחד שמתעדכן לפי הסדר. בנקודה צפה הסדר חשוב: קטנים קודם ואז גדול לעיתים שומר יותר מידע מאשר גדול קודם.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>With 4 significant digits, compare:</p>
+    <ul>
+      <li>Path A: ((0.001 + 0.001) + 0.001) + 1000</li>
+      <li>Path B: (((1000 + 0.001) + 0.001) + 0.001)</li>
+    </ul>
+    <p>Which path keeps more of the small terms? (Approximate by rounding to 4 sig digits after every +.)</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>עם 4 ספרות משמעותיות, השווה מסלול שמתחיל בקטנים מול מסלול שמתחיל ב־1000. מי שומר יותר מהאיברים הקטנים?</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Implement <code>double sum_naive(const double *x, int n)</code>.</li>
+      <li>Test on <code>{1e-8, 1e-8, ..., 1e-8}</code> (one million times if practical, or 10000) plus nothing else — print sum and compare to <code>n * 1e-8</code>.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2c')">Reveal code</button>
+    <div id="sol2h" class="solution">
+      <div class="why">
+        Path A builds ~0.003 then +1000 → about 1000 (small terms may still be lost at the last step depending on digit model).<br>
+        Path B: each +0.001 into 1000 is often lost immediately with 4 digits → stays 1000.<br>
+        Idea: large-first destroys tiny contributions sooner.<br>
+        <span dir="rtl">בדרך כלל התחלה עם המספר הגדול בולעת את הקטנים מוקדם יותר.</span>
+      </div>
+    </div>
+    <div id="sol2c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+double sum_naive(const double *x, int n)
+{
+    double s = 0.0;
+    for (int i = 0; i &lt; n; ++i) s += x[i];
+    return s;
+}
+
+int main(void)
+{
+    enum { N = 10000 };
+    double x[N];
+    for (int i = 0; i &lt; N; ++i) x[i] = 1e-8;
+    double s = sum_naive(x, N);
+    printf("sum=%.17g expected=%.17g\n", s, N * 1e-8);
+    return 0;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- EX 3 -->
+  <div class="exercise" id="ex3">
+    <span class="diff building">Building · Ex 3</span>
+    <div class="ex-title">Track the lost piece by hand (toy)</div>
+
+    <p class="part">Theory</p>
+    <p>After a rounded add <code>t = fl(sum + y)</code>, the true mathematical sum was <code>sum + y</code>.
+    The difference between what you wanted and what you got is the rounding error of that step.
+    Kahan estimates that error with <code>(t - sum) - y</code> (careful order).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>אחרי חיבור מעוגל, ההפרש בין מה שרצינו למה שנשמר הוא שגיאת העיגול של אותו צעד.
+      קאהן מעריך אותה בביטוי <code>(t - sum) - y</code> (הסדר חשוב).</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Toy 4-digit arithmetic. Suppose <code>sum = 1000</code>, <code>y = 1.234</code>, and <code>t = fl(sum+y) = 1001</code>
+    (imagine low digits dropped).</p>
+    <ol>
+      <li>What is the exact <code>sum + y</code>?</li>
+      <li>Compute <code>(t - sum) - y</code> with the toy numbers as if those operations were exact on the written values.</li>
+      <li>Interpret the sign: does <code>c</code> say we overshot or undershot?</li>
+    </ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>עם sum=1000, y=1.234, t=1001: חשב sum+y המדויק, את (t-sum)-y, ופרש אם פישלנו כלפי מעלה או מטה.</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Write a function that, given <code>sum</code> and <code>y</code>, computes <code>t</code>, then <code>c = (t - sum) - y</code>, prints all three.</li>
+      <li>Try <code>sum=1.0</code>, <code>y=1e-16</code>.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3c')">Reveal code</button>
+    <div id="sol3h" class="solution">
+      <div class="why">
+        Exact sum+y = 1001.234. t-sum = 1. Then (t-sum)-y = 1 - 1.234 = -0.234.<br>
+        Negative c means the next step will add a bit back via y = x - c.<br>
+        <span dir="rtl">הסכום המדויק 1001.234; c≈-0.234 אומר שאיבדנו חלק חיובי מהתוספת.</span>
+      </div>
+    </div>
+    <div id="sol3c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    double sum = 1.0;
+    double y = 1e-16;
+    double t = sum + y;
+    double c = (t - sum) - y;
+    printf("t=%.17g c=%.17g\n", t, c);
+    return 0;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- EX 4 -->
+  <div class="exercise" id="ex4">
+    <span class="diff building">Building · Ex 4</span>
+    <div class="ex-title">Implement classic Kahan sum</div>
+
+    <p class="part">Theory</p>
+    <p>Translate section E into a loop. Keep <code>sum</code> and <code>c</code> as separate locals. Do not combine the update into one “clever” expression.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>תרגם את האלגוריתם מלולאה עם שני משתנים נפרדים. אל תדחוס הכול לביטוי אחד “חכם”.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Fill a table for data <code>x = {1.0, 1e-16, 1e-16}</code> with columns: i, x_i, y, t, c, sum (symbolic is OK if numbers vanish).</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>מלא טבלה ל־x={1, 1e-16, 1e-16}: בכל שורה y, t, c, sum.</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Implement <code>double sum_kahan(const double *x, int n)</code>.</li>
+      <li>Compare <code>sum_naive</code> vs <code>sum_kahan</code> on one large value followed by many tiny ones, e.g. <code>x[0]=1.0</code> and <code>x[i]=1e-16</code> for i=1..N.</li>
+      <li>Print both sums and the “mathematical intention” <code>1.0 + N*1e-16</code> (knowing double may not represent that exactly either).</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4c')">Reveal code</button>
+    <div id="sol4h" class="solution">
+      <div class="why">
+        i=0: y=1, t=1, c=0, sum=1.<br>
+        i=1: y=1e-16 - 0, t may stay 1, c becomes ≈ -1e-16 (lost positive contribution), sum=1.<br>
+        i=2: y = 1e-16 - c ≈ 2e-16, giving the algorithm a second chance to absorb the backlog.<br>
+        <span dir="rtl">אחרי שה־1e-16 הראשון נבלע, c זוכר את האובדן והאיבר הבא מקבל y מוגדל.</span>
+      </div>
+    </div>
+    <div id="sol4c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+double sum_kahan(const double *x, int n)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double y = x[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return sum;
+}
+
+double sum_naive(const double *x, int n)
+{
+    double s = 0.0;
+    for (int i = 0; i &lt; n; ++i) s += x[i];
+    return s;
+}
+
+int main(void)
+{
+    enum { N = 100 };
+    double x[N];
+    x[0] = 1.0;
+    for (int i = 1; i &lt; N; ++i) x[i] = 1e-16;
+    printf("naive=%.17g\n", sum_naive(x, N));
+    printf("kahan=%.17g\n", sum_kahan(x, N));
+    printf("wish =%.17g\n", 1.0 + (N - 1) * 1e-16);
+    return 0;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- EX 5 -->
+  <div class="exercise" id="ex5">
+    <span class="diff intermediate">Intermediate · Ex 5</span>
+    <div class="ex-title">Kahan for sum of squares (energy)</div>
+
+    <p class="part">Theory</p>
+    <p>Energy <code>E = Σ x[i]²</code> is a sum — so Kahan applies to the <em>squared terms</em>, not by “Kahan inside the multiply.”
+    You still compute <code>term = x[i]*x[i]</code> normally, then compensate-add <code>term</code> into the accumulator.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>אנרגיה היא סכום של ריבועים. קאהן פועל על <em>איברי הסכום</em> (הריבועים), לא על הכפל עצמו:
+      מחשבים <code>term = x[i]*x[i]</code> ואז מחברים את <code>term</code> בשיטת קאהן.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Write the Kahan loop where the input to each step is <code>x[i]*x[i]</code> instead of <code>x[i]</code>. Box the line that changes.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב את לולאת קאהן כשהקלט בכל צעד הוא x[i]*x[i]. סמן איזו שורה השתנתה.</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Implement <code>double energy_kahan(const double *x, int n)</code>.</li>
+      <li>Also implement naive energy.</li>
+      <li>Test on a vector with one large sample and many small ones.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5c')">Reveal code</button>
+    <div id="sol5h" class="solution">
+      <div class="why">
+        Only the formation of the addend changes: <code>y = (x[i]*x[i]) - c;</code> then same t/c/sum updates.<br>
+        <span dir="rtl">רק יצירת האיבר המחובר משתנה לריבוע; שאר עדכוני קאהן זהים.</span>
+      </div>
+    </div>
+    <div id="sol5c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+double energy_kahan(const double *x, int n)
+{
+    double sum = 0.0, c = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double term = x[i] * x[i];
+        double y = term - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return sum;
+}
+
+int main(void)
+{
+    double x[5] = {10.0, 1e-8, 1e-8, 1e-8, 1e-8};
+    printf("E=%.17g\n", energy_kahan(x, 5));
+    return 0;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- EX 6 -->
+  <div class="exercise" id="ex6">
+    <span class="diff intermediate">Intermediate · Ex 6</span>
+    <div class="ex-title">When naive and Kahan agree (and when not)</div>
+
+    <p class="part">Theory</p>
+    <p>If all terms have similar magnitude, naive summation is often excellent.
+    Kahan shines when magnitudes vary a lot or n is huge. Knowing when <em>not</em> to fuss is part of senior judgment.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>כשכל האיברים באותו סדר גודל, סכימה נאיבית לרוב מספיקה.
+      קאהן בולט כשיש פער גדלים או n ענק. לדעת מתי <em>לא</em> לסבך — גם זו מקצועיות.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol>
+      <li>List two DSP situations where you would insist on Kahan.</li>
+      <li>List two where naive is probably fine.</li>
+    </ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>רשום שני מצבי DSP שבהם תתעקש על קאהן, ושניים שבהם נאיבי מספיק.</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Build two test vectors of length 1000: (A) all ones; (B) <code>x[0]=1e6</code>, rest <code>1e-6</code>.</li>
+      <li>Print absolute difference <code>|naive - kahan|</code> for both.</li>
+      <li>Write a one-line comment interpreting the results.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6c')">Reveal code</button>
+    <div id="sol6h" class="solution">
+      <div class="why">
+        Insist: long residual energy; accumulating PSD bins with a huge DC bin present.<br>
+        Fine: short FIR of similar tap sizes; summing 8 similar PCM samples.<br>
+        <span dir="rtl">להתעקש: אנרגיית שארית ארוכה / סכימת בינים עם רכיב ענק. מספיק: FIR קצר עם מקדמים דומים.</span>
+      </div>
+    </div>
+    <div id="sol6c" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+/* reuse sum_naive / sum_kahan from Ex 4 */
+
+int main(void)
+{
+    enum { N = 1000 };
+    double a[N], b[N];
+    for (int i = 0; i &lt; N; ++i) { a[i] = 1.0; b[i] = 1e-6; }
+    b[0] = 1e6;
+    /* |naive-kahan| usually ~0 on a, larger on b */
+    return 0;
+}</code></pre>
+      <div class="why">Comment idea: similar magnitudes → tiny gap; mixed magnitudes → Kahan pulls ahead.</div>
+    </div>
+  </div>
+
+  <!-- EX 7 -->
+  <div class="exercise" id="ex7">
+    <span class="diff advanced">Advanced · Ex 7</span>
+    <div class="ex-title">Neumaier’s improvement (optional hero tier)</div>
+
+    <p class="part">Theory</p>
+    <p>Classic Kahan can stumble if a single <code>|x_i|</code> is larger than the current <code>|sum|</code> (the roles of “big” and “small” flip).
+    <strong>Neumaier summation</strong> is a common variant: it chooses which value is larger before forming the compensation, so large new terms are handled more safely.
+    You do not need Neumaier for the DSP workbook exercise, but heroes know it exists.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>קאהן הקלאסי עלול להיחלש אם איבר חדש גדול מהסכום הנוכחי (מי “גדול” ומי “קטן” מתהפך).
+      סכימת נוימאייר היא וריאציה שבוחרת לפי הגודל לפני חישוב הפיצוי. לא חובה לתרגיל ה־DSP, אבל כדאי להכיר.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>In one sentence: when would you prefer Neumaier over classic Kahan?</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>במשפט אחד: מתי תעדיף נוימאייר על פני קאהן הקלאסי?</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Implement <code>double sum_neumaier(const double *x, int n)</code> from a reference description you trust (or the sketch below in the reveal).</li>
+      <li>Compare naive / Kahan / Neumaier on a sequence that starts tiny and ends with a huge spike.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7c')">Reveal code</button>
+    <div id="sol7h" class="solution">
+      <div class="why">
+        Prefer Neumaier when individual terms can exceed the running sum in magnitude (unsorted / spiky data).<br>
+        <span dir="rtl">כשיש איברים בודדים שיכולים לגדול מהסכום הרץ (נתונים עם קפיצות).</span>
+      </div>
+    </div>
+    <div id="sol7c" class="solution">
+      <pre><code>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
+
+double sum_neumaier(const double *x, int n)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double t = sum + x[i];
+        if (fabs(sum) &gt;= fabs(x[i]))
+            c += (sum - t) + x[i];
+        else
+            c += (x[i] - t) + sum;
+        sum = t;
+    }
+    return sum + c;
+}
+
+int main(void)
+{
+    double x[4] = {1e-16, 1e-16, 1e-16, 1.0};
+    printf("%.17g\n", sum_neumaier(x, 4));
+    return 0;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- EX 8 -->
+  <div class="exercise" id="ex8">
+    <span class="diff senior">Senior · Ex 8</span>
+    <div class="ex-title">DSP residual energy with Kahan (workbook 4 style)</div>
+
+    <p class="part">Theory</p>
+    <p>Recall Exercise 15 of the matrix workbook: choose gain
+    <code>g = (t·x) / (t·t)</code>, residual <code>r = x - g*t</code>, energy <code>||r||²</code>.
+    Senior practice: form residual samples normally; accumulate energy with Kahan so long frames stay trustworthy.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>כמו בתרגיל 15 במחברת המטריצות: מחשבים הגבר g לפי הטלה על תבנית, בונים שארית, וסוכמים אנרגיה.
+      ברמת סניור: את האנרגיה סוכמים בקאהן כדי שפריימים ארוכים יישארו אמינים.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol>
+      <li>Write formulas for g, r[i], energy.</li>
+      <li>Mark which of those three is the best place to apply Kahan and why (one sentence).</li>
+    </ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב נוסחאות ל־g, r[i], אנרגיה. סמן היכן הכי נכון להפעיל קאהן ולמה.</p>
+    </div>
+
+    <p class="part">Coding</p>
+    <ul>
+      <li>Implement <code>process_residual(...)</code> as in workbook 4 Ex 15, with Kahan on residual energy.</li>
+      <li>Optionally also Kahan-sum the dots <code>t·t</code> and <code>t·x</code> for long n.</li>
+      <li>Print g, energy, and a few residual samples.</li>
+      <li>No STL; fixed buffers; ANSI C11.</li>
+    </ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8c')">Reveal code</button>
+    <div id="sol8h" class="solution">
+      <div class="why">
+        g = (Σ t_i x_i) / (Σ t_i²); r_i = x_i - g t_i; E = Σ r_i².<br>
+        Best Kahan target: E (longest sensitive accumulation of many small squares). Dots also benefit for huge n.<br>
+        <span dir="rtl">המקום החשוב ביותר לקאהן הוא סכום הריבועים של השארית; גם המכפלות הפנימיות עוזרות כש־n גדול.</span>
+      </div>
+    </div>
+    <div id="sol8c" class="solution">
+      <pre><code>#include &lt;stdio.h&gt;
+
+static double sum_kahan(const double *x, int n)
+{
+    double sum = 0.0, c = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double y = x[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return sum;
+}
+
+void process_residual(const double *t, const double *x, int n,
+                      double *r, double *g_out, double *energy_out)
+{
+    double tt = 0.0, tx = 0.0, c1 = 0.0, c2 = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double y1 = t[i] * t[i] - c1;
+        double s1 = tt + y1;
+        c1 = (s1 - tt) - y1;
+        tt = s1;
+
+        double y2 = t[i] * x[i] - c2;
+        double s2 = tx + y2;
+        c2 = (s2 - tx) - y2;
+        tx = s2;
+    }
+    double g = (tt == 0.0) ? 0.0 : (tx / tt);
+    for (int i = 0; i &lt; n; ++i) r[i] = x[i] - g * t[i];
+
+    double energy = 0.0, c = 0.0;
+    for (int i = 0; i &lt; n; ++i) {
+        double term = r[i] * r[i];
+        double y = term - c;
+        double s = energy + y;
+        c = (s - energy) - y;
+        energy = s;
+    }
+    *g_out = g;
+    *energy_out = energy;
+    (void)sum_kahan; /* available if you prefer a helper on a temp buffer */
+}
+
+int main(void)
+{
+    double t[8] = {1,1,1,1,0,0,0,0};
+    double x[8] = {2,2,2,2,1,1,1,1};
+    double r[8], g, E;
+    process_residual(t, x, 8, r, &amp;g, &amp;E);
+    printf("g=%.6f E=%.6f\n", g, E);
+    for (int i = 0; i &lt; 8; ++i) printf("%.4f ", r[i]);
+    putchar('\n');
+    return 0;
+}</code></pre>
+      <div class="why">This is the senior pattern from workbook 4 Ex 15: fused residual path with compensated energy (and compensated dots).</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Closing checklist — you are a hero when…</h2>
+    <ul>
+      <li>You can explain swallowed <code>big + tiny</code> without jargon panic.</li>
+      <li>You can write classic Kahan from memory as four lines in a loop.</li>
+      <li>You know to apply it to <em>summands</em> (including squares).</li>
+      <li>You know Neumaier exists for spiky updates.</li>
+      <li>You can drop Kahan into a DSP residual-energy kernel on purpose, not by cargo cult.</li>
+    </ul>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>סיימת ברמה גבוהה כשאתה יודע להסביר למה חיבור גדול+קטן נבלע, לכתוב קאהן מהזיכרון,
+      להפעיל אותו על איברי סכום (כולל ריבועים), להכיר את נוימאייר, ולשלב את זה במודע בגרעין אנרגיית שארית ב־DSP.</p>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">
+    Batch 02 · Kahan from zero to hero · 8 exercises · EN + HE
+  </p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
