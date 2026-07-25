@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-class Matrix;
+//class Matrix;
 
 static constexpr size_t MAX_LENGTH = 100;
 
