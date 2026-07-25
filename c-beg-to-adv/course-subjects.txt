@@ -31,3 +31,5 @@
 - reading files: reading in loops
 - command line arguments 
 - command line arguments and passing them on to other functions
+- MACROS: "#"   -> Stringification Operator
+- MACROS: "##"  -> Token Pasting Operator
