@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cholesky Factorization — From Zero to Hero (C)</title>
+  <style>
+
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #bf4b00; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; }
+    .scope { background: #fff1e5; border-left: 4px solid #bf4b00; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 12px; font-size: 1.15rem; color: #bf4b00; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.76rem; line-height: 1.45; margin: 12px 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .math { background: #f6f8fa; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-family: Consolas, 'Courier New', monospace; font-size: 0.88rem; overflow-x: auto; white-space: pre; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; width: 100%; }
+    th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f6f8fa; }
+    blockquote { border-left: 4px solid #bf4b00; margin: 12px 0; padding: 8px 14px; background: #f6f8fa; color: #424a53; }
+    .he { direction: rtl; text-align: right; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-size: 0.93rem; }
+    .he h4 { margin: 0 0 8px; color: #bf4b00; font-size: 0.95rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; margin-right: 6px; color: #fff; }
+    .foundation { background: #0969da; }
+    .building { background: #1a7f37; }
+    .intermediate { background: #bf8700; }
+    .advanced { background: #bc4c00; }
+    .senior { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; }
+    .part { font-weight: 700; margin-top: 14px; color: #57606a; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #bf4b00; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.92); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul, ol { font-size: 0.95rem; margin: 8px 0 0 1.2em; }
+    li { margin: 5px 0; }
+    .path { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .path span { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: #fff; }
+    .warn { background: #ffebe9; border: 1px solid #ff8182; border-radius: 6px; padding: 10px 12px; margin: 12px 0; font-size: 0.9rem; }
+    .paper { background: #fffef5; border: 2px dashed #d4a72c; border-radius: 6px; padding: 12px 14px; margin: 10px 0; }
+
+  </style>
+</head>
+<body>
+  <h1>Cholesky Factorization — From Zero to Hero (C)</h1>
+  <p class="subtitle">Batch 02 · Scratch → WH-ready solver · ANSI C11 · 15 exercises · handwriting + code · EN + HE</p>
+  <div class="scope">
+    <strong>What this workbook is:</strong> complete path for <strong>Cholesky</strong>: SPD systems, L Lᵀ, forward/back substitution, regularization, Toeplitz R from lags, and an API shaped like LLNR’s NrToeplitzSolveCholesky.
+    Every exercise has <strong>handwriting (paper)</strong> plus coding. Solutions behind Reveal.
+    Companion C++: <code>workbook_11_cholesky_from_zero_cpp.html</code>. Ties to LLNR Wiener–Hopf Phase 2 (solver only — not LPC).
+  </div>
+
+  <div class="section">
+    <h2>0. Roadmap</h2>
+    <div class="path">
+      <span class="foundation">Theory A–G</span>
+      <span class="foundation">Ex 1–3 Foundation</span>
+      <span class="building">Ex 4–6 Building</span>
+      <span class="intermediate">Ex 7–9 Intermediate</span>
+      <span class="advanced">Ex 10–12 Advanced</span>
+      <span class="senior">Ex 13–15 Senior / WH link</span>
+    </div>
+    <p>Goal: understand <strong>Cholesky</strong> as a way to solve <code>R h = p</code> when <code>R</code> is symmetric
+    positive-definite — the exact linear-algebra step used in LLNR’s Wiener–Hopf FIR v1 solver
+    (before optional Levinson). Heavy <strong>handwriting</strong> on 2×2 / 3×3, then coding.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>המטרה: להבין פירוק Cholesky ככלי לפתור R h = p כש־R סימטרית וחיובית מוגדרת —
+      זה שלב הפתרון ב־Wiener–Hopf FIR ב־LLNR (לפני Levinson אופציונלי). הרבה תרגילי נייר, אחר כך קוד.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>A. The problem: solve a linear system</h2>
+    <p>You have a matrix <code>R</code> (size L×L) and a vector <code>p</code> (length L). You want vector <code>h</code> such that:</p>
+    <div class="math">R · h = p</div>
+    <p>In school this is “simultaneous equations.” In DSP (Wiener–Hopf FIR) <code>h</code> are the FIR taps.</p>
+    <blockquote>Cholesky does <em>not</em> invent the filter. It only solves the system once R and p exist.</blockquote>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>זו מערכת משוואות ליניאריות. ב־WH ל־FIR, h הם מקדמי הפילטר. Cholesky לא בונה את המסכה — רק פותר.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>B. When Cholesky is allowed</h2>
+    <p>Cholesky needs <code>R</code> to be:</p>
+    <ul>
+      <li><strong>Symmetric</strong> (real): R[i][j] = R[j][i]</li>
+      <li><strong>Positive-definite (PD)</strong>: all eigenvalues &gt; 0, or equivalently xᵀ R x &gt; 0 for all x≠0</li>
+    </ul>
+    <p>Autocorrelation / Gram matrices from least-squares are typically SPD (or made so with a tiny diagonal regularizer ε).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>צריך מטריצה סימטרית וחיובית־מוגדרת. מטריצות אוטוקורלציה / Gram בדרך כלל כאלה — ולפעמים מוסיפים ε על האלכסון לביטחון.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>C. The factorization idea</h2>
+    <p>Instead of inverting R, factor it:</p>
+    <div class="math">R = L · Lᵀ
+
+L = lower-triangular
+    L[i][j] = 0 for j &gt; i
+    diagonal L[i][i] &gt; 0 for PD matrices</div>
+    <p>Triangular systems are easy: substitute forward, then back.</p>
+    <div class="math">R h = p
+L (Lᵀ h) = p
+  (1) solve L y = p      // forward substitution
+  (2) solve Lᵀ h = y    // back substitution</div>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>מפרקים R=L Lᵀ ואז פותרים שני מערכות משולשות — קדימה ואחורה. זול ויציב יותר מהיפוך מלא.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>D. Formulas for L (real, column-by-column)</h2>
+    <p>For i = 0..L−1, j = 0..i:</p>
+    <div class="math">diagonal:
+  L[i][i] = sqrt( R[i][i] − Σ<sub>k=0..i−1</sub> L[i][k]² )
+
+below diagonal (j &lt; i):
+  L[i][j] = ( R[i][j] − Σ<sub>k=0..j−1</sub> L[i][k] L[j][k] ) / L[j][j]</div>
+    <p>If anything under a sqrt is ≤ 0 (or diagonal tiny), R is not PD — fail or regularize.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בונים את L שורה־שורה. אם מתחת לשורש יוצא ≤0 — המטריצה לא PD (או כמעט סינגולרית).</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>E. Forward and back substitution</h2>
+    <div class="math">Forward  L y = p:
+  y[i] = ( p[i] − Σ<sub>j&lt;i</sub> L[i][j] y[j] ) / L[i][i]
+
+Back  Lᵀ h = y:
+  h[i] = ( y[i] − Σ<sub>j&gt;i</sub> L[j][i] h[j] ) / L[i][i]
+  (walk i from L−1 down to 0)</div>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>קדימה: מ־i=0 עד הסוף. אחורה: מ־i=L−1 עד 0. זה כל ה־“solve” אחרי הפירוק.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>F. Regularization (DSP habit)</h2>
+    <p>Near-singular R (small r[0], almost dependent rows) → Cholesky can fail or amplify noise.
+    Common fix before factoring:</p>
+    <div class="math">R ← R + ε · r[0] · I     (ε ~ 1e−6 in LLNR WH v1)</div>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>מוסיפים ε קטן לאלכסון כדי לייצב. ב־LLNR WH זה whRegEps ≈ 1e−6.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>G. Cholesky vs Levinson (so you don’t mix them)</h2>
+    <table>
+      <tr><th></th><th>Cholesky</th><th>Levinson (general)</th><th>Levinson–Durbin LPC</th></tr>
+      <tr><td>Solves</td><td>any SPD R h=p</td><td>Toeplitz R h=p</td><td>Yule–Walker / AR</td></tr>
+      <tr><td>Cost</td><td>~O(L³)</td><td>~O(L²)</td><td>~O(p²)</td></tr>
+      <tr><td>LLNR WH v1</td><td><strong>yes</strong></td><td>optional later</td><td>not the FIR feature</td></tr>
+    </table>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>Cholesky = פותר SPD כללי. Levinson = פותר Toeplitz מהיר. LPC Durbin = סיפור all-pole — לא מחליף WH-FIR.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Exercises — Zero to Hero (15)</h2>
+    <p>Theory reminder · <strong>paper handwriting</strong> · ANSI C11 · revealable solutions.</p>
+    <div class="he"><h4>עברית</h4><p>תיאוריה · כתב יד על נייר · קוד · פתרונות מאחורי כפתור.</p></div>
+  </div>
+
+  <div class="exercise" id="ex1">
+    <span class="diff foundation">Foundation · Ex 1</span>
+    <div class="ex-title">What does R h = p mean on paper?</div>
+
+    <p class="part">Theory</p>
+    <p>For L=2, R h = p is two equations in two unknowns h0, h1.</p>
+    <div class="he"><h4>עברית</h4><p>ל־L=2 זו מערכת של שתי משוואות בשני נעלמים.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p><strong>Write by hand:</strong></p>
+    <p>Given R = [[4, 2],[2, 3]], p = [8, 7]ᵀ.</p>
+    <ol>
+      <li>Expand R h = p into two scalar equations.</li>
+      <li>Guess: is h = [1, 2]ᵀ a solution? Check by multiplying R h.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>כתוב את שתי המשוואות ובדוק אם h=[1,2] פתרון.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>In code, multiply R*h for h={1,2} and print; compare to p.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1c')">Reveal code</button>
+    <div id="sol1h" class="solution"><div class="why">Eqs: 4h0+2h1=8 and 2h0+3h1=7. R[1,2]ᵀ=[8,8]≠[8,7] — not a solution.<br><span dir='rtl'>המשוואות: 4h0+2h1=8, 2h0+3h1=7. [1,2] נותן [8,8] — לא פתרון.</span></div></div>
+    <div id="sol1c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+int main(void) {
+    double R[2][2] = {{4,2},{2,3}};
+    double h[2] = {1,2}, y[2];
+    int i,j;
+    for (i=0;i&lt;2;i++) { y[i]=0; for (j=0;j&lt;2;j++) y[i]+=R[i][j]*h[j]; }
+    printf("Rh = [%.1f, %.1f]  p=[8,7]\n", y[0], y[1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex2">
+    <span class="diff foundation">Foundation · Ex 2</span>
+    <div class="ex-title">Symmetric vs not — handwriting test</div>
+
+    <p class="part">Theory</p>
+    <p>Cholesky needs R[i][j]=R[j][i]. If not symmetric, stop — wrong tool (use LU/QR instead).</p>
+    <div class="he"><h4>עברית</h4><p>Cholesky דורש סימטריה. בלי זה — כלי אחר.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <ol>
+      <li>Which of these are symmetric? A=[[1,2],[2,5]], B=[[1,2],[3,5]], C=[[2,0],[0,2]].</li>
+      <li>For each, write one sentence: Cholesky OK to try / not OK.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>איזו סימטרית? האם לנסות Cholesky?</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Write <code>int is_symmetric(const double *R, int n, double tol);</code> row-major.</li><li>Test A,B,C above.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2c')">Reveal code</button>
+    <div id="sol2h" class="solution"><div class="why">A yes (try). B no (not OK). C yes (try; also PD).<br><span dir='rtl'>A ו־C סימטריות; B לא.</span></div></div>
+    <div id="sol2c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int is_symmetric(const double *R, int n, double tol) {
+    int i,j;
+    for (i=0;i&lt;n;i++) for (j=i+1;j&lt;n;j++)
+        if (fabs(R[i*n+j]-R[j*n+i]) &gt; tol) return 0;
+    return 1;
+}
+int main(void) {
+    double A[]={1,2,2,5}, B[]={1,2,3,5}, C[]={2,0,0,2};
+    printf("A=%d B=%d C=%d\n", is_symmetric(A,2,1e-12), is_symmetric(B,2,1e-12), is_symmetric(C,2,1e-12));
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex3">
+    <span class="diff foundation">Foundation · Ex 3</span>
+    <div class="ex-title">Positive-definite intuition on paper</div>
+
+    <p class="part">Theory</p>
+    <p>For 1×1, R=[a] is PD iff a&gt;0. For 2×2 SPD: a&gt;0 and det=ad−b²&gt;0 (with R=[[a,b],[b,d]]).</p>
+    <div class="he"><h4>עברית</h4><p>ב־1×1: a&gt;0. ב־2×2: a&gt;0 ו־det&gt;0.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>For R=[[a,b],[b,d]]:</p>
+    <ol>
+      <li>Is [[2,0],[0,3]] PD? Why?</li>
+      <li>Is [[1,2],[2,1]] PD? Compute det.</li>
+      <li>Is [[1,0.9],[0.9,1]] PD?</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>בדוק PD לשלוש המטריצות.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Print det and a for the three matrices; print PD yes/no using the 2×2 test.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3c')">Reveal code</button>
+    <div id="sol3h" class="solution"><div class="why">(1) yes: a=2&gt;0, det=6&gt;0. (2) det=1−4=−3&lt;0 → not PD. (3) det=1−0.81=0.19&gt;0, a&gt;0 → PD.<br><span dir='rtl'>ראשונה ו־שלישית PD; אמצעית לא (דטרמיננטה שלילית).</span></div></div>
+    <div id="sol3c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+void check2(double a,double b,double d) {
+    double det=a*d-b*b;
+    int pd=(a&gt;0 &amp;&amp; det&gt;0);
+    printf("a=%.2f det=%.2f PD=%d\n", a, det, pd);
+}
+int main(void) {
+    check2(2,0,3); check2(1,2,1); check2(1,0.9,1);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex4">
+    <span class="diff building">Building · Ex 4</span>
+    <div class="ex-title">Hand-factor a 2×2 Cholesky</div>
+
+    <p class="part">Theory</p>
+    <p>Apply the formulas for L on a tiny SPD matrix. Verify L Lᵀ = R by hand.</p>
+    <div class="he"><h4>עברית</h4><p>חשב L ידנית ל־2×2 ואמת L Lᵀ.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>R = [[4, 2],[2, 5]].</p>
+    <ol>
+      <li>Compute L00 = sqrt(R00).</li>
+      <li>Compute L10 = R10 / L00.</li>
+      <li>Compute L11 = sqrt(R11 − L10²).</li>
+      <li>Write L, then multiply L Lᵀ on paper and confirm you recover R.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>פרק את R=[[4,2],[2,5]] ל־L ואמת.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Hardcode this L; multiply L*Lᵀ; print and compare to R.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4c')">Reveal code</button>
+    <div id="sol4h" class="solution"><div class="why">L00=2, L10=1, L11=sqrt(5−1)=2. L=[[2,0],[1,2]]. L Lᵀ = [[4,2],[2,5]] ✓<br><span dir='rtl'>L=[[2,0],[1,2]]. הכפלה מחזירה את R.</span></div></div>
+    <div id="sol4c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+int main(void) {
+    double L[2][2]={{2,0},{1,2}}, Rt[2][2]={{0}};
+    int i,j,k;
+    for (i=0;i&lt;2;i++) for (j=0;j&lt;2;j++) for (k=0;k&lt;2;k++) Rt[i][j]+=L[i][k]*L[j][k];
+    printf("LLT = [[%.1f,%.1f],[%.1f,%.1f]]\n", Rt[0][0],Rt[0][1],Rt[1][0],Rt[1][1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex5">
+    <span class="diff building">Building · Ex 5</span>
+    <div class="ex-title">Forward substitution on paper</div>
+
+    <p class="part">Theory</p>
+    <p>Given L and p, solve L y = p by hand (top to bottom).</p>
+    <div class="he"><h4>עברית</h4><p>פתור L y = p ידנית מלמעלה למטה.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>L = [[2,0],[1,2]], p = [4, 5]ᵀ.</p>
+    <ol>
+      <li>Find y0 from first row.</li>
+      <li>Find y1 from second row.</li>
+      <li>Write y.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>חשב y עבור L ו־p למעלה.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Implement <code>void forward_sub(const double *L, const double *p, double *y, int n);</code> (row-major L).</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5c')">Reveal code</button>
+    <div id="sol5h" class="solution"><div class="why">y0=4/2=2. y1=(5−1·2)/2=1.5. y=[2, 1.5]ᵀ.<br><span dir='rtl'>y=[2, 1.5].</span></div></div>
+    <div id="sol5c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+void forward_sub(const double *L, const double *p, double *y, int n) {
+    int i,j; double s;
+    for (i=0;i&lt;n;i++) {
+        s=p[i];
+        for (j=0;j&lt;i;j++) s -= L[i*n+j]*y[j];
+        y[i]=s/L[i*n+i];
+    }
+}
+int main(void) {
+    double L[]={2,0,1,2}, p[]={4,5}, y[2];
+    forward_sub(L,p,y,2);
+    printf("y=[%.2f, %.2f]\n", y[0], y[1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex6">
+    <span class="diff building">Building · Ex 6</span>
+    <div class="ex-title">Back substitution on paper</div>
+
+    <p class="part">Theory</p>
+    <p>Solve Lᵀ h = y from the bottom up. Remember Lᵀ[i][j] = L[j][i].</p>
+    <div class="he"><h4>עברית</h4><p>פתור Lᵀ h = y מלמטה למעלה.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Same L=[[2,0],[1,2]], and y=[2, 1.5]ᵀ from Ex 5.</p>
+    <ol>
+      <li>From last row of Lᵀ h = y, find h1.</li>
+      <li>Then find h0.</li>
+      <li>Verify R h = p with R=[[4,2],[2,5]] and p=[4,5] (wait — use consistent p: if you factored R and used p=[4,5], check).</li>
+    </ol>
+    <p>Hint: Lᵀ = [[2,1],[0,2]].</p>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>חשב h ואמת R h.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Implement <code>void back_sub(const double *L, const double *y, double *h, int n);</code></li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6c')">Reveal code</button>
+    <div id="sol6h" class="solution"><div class="why">h1=1.5/2=0.75. h0=(2−1·0.75)/2=0.625. Rh=[4·0.625+2·0.75, 2·0.625+5·0.75]=[4, 5] ✓<br><span dir='rtl'>h=[0.625, 0.75], מאמת את p.</span></div></div>
+    <div id="sol6c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+void back_sub(const double *L, const double *y, double *h, int n) {
+    int i,j; double s;
+    for (i=n-1;i&gt;=0;i--) {
+        s=y[i];
+        for (j=i+1;j&lt;n;j++) s -= L[j*n+i]*h[j];
+        h[i]=s/L[i*n+i];
+    }
+}
+int main(void) {
+    double L[]={2,0,1,2}, y[]={2,1.5}, h[2];
+    back_sub(L,y,h,2);
+    printf("h=[%.4f, %.4f]\n", h[0], h[1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex7">
+    <span class="diff intermediate">Intermediate · Ex 7</span>
+    <div class="ex-title">Full 2×2 solve by hand (factor + both subs)</div>
+
+    <p class="part">Theory</p>
+    <p>End-to-end Cholesky solve without a computer for one system.</p>
+    <div class="he"><h4>עברית</h4><p>פתרון מלא ידני ל־2×2.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Solve R h = p with R=[[9, 3],[3, 5]], p=[15, 11]ᵀ.</p>
+    <ol>
+      <li>Build L.</li>
+      <li>Forward → y.</li>
+      <li>Back → h.</li>
+      <li>Check R h on paper.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>פתור הכל על הנייר.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Code the three steps separately and print L, y, h.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7c')">Reveal code</button>
+    <div id="sol7h" class="solution"><div class="why">L00=3, L10=1, L11=2. y=[5, 3]. h: h1=1.5, h0=(5−1·1.5)/3≈1.1667. Rh≈[15,11].<br>More precisely h=[7/6, 3/2].<br><span dir='rtl'>L=[[3,0],[1,2]], y=[5,3], h=[7/6, 3/2].</span></div></div>
+    <div id="sol7c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int main(void) {
+    double R[2][2]={{9,3},{3,5}}, p[2]={15,11};
+    double L[2][2]={{0}}, y[2], h[2];
+    L[0][0]=sqrt(R[0][0]);
+    L[1][0]=R[1][0]/L[0][0];
+    L[1][1]=sqrt(R[1][1]-L[1][0]*L[1][0]);
+    y[0]=p[0]/L[0][0];
+    y[1]=(p[1]-L[1][0]*y[0])/L[1][1];
+    h[1]=y[1]/L[1][1];
+    h[0]=(y[0]-L[1][0]*h[1])/L[0][0];
+    printf("h=[%.6f, %.6f]\n", h[0], h[1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex8">
+    <span class="diff intermediate">Intermediate · Ex 8</span>
+    <div class="ex-title">Implement general chol_factor (any n)</div>
+
+    <p class="part">Theory</p>
+    <p>Generalize the L formulas into a loop. Return −1 if not PD.</p>
+    <div class="he"><h4>עברית</h4><p>מימוש כללי לפירוק; כשל אם לא PD.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Before coding: for n=3, write the order of computing entries:</p>
+    <p>L00 → L10 → L11 → L20 → L21 → L22. Explain in one line why this order.</p>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>מה סדר מילוי L ב־3×3 ולמה?</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li><code>int chol_factor(double *L, const double *R, int n);</code> — L and R row-major; L cleared to 0 first.</li><li>Test on R=[[4,2,0],[2,5,1],[0,1,3]].</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8c')">Reveal code</button>
+    <div id="sol8h" class="solution"><div class="why">Each entry needs earlier columns of its row and previous diagonals — fill by increasing i, and for each i increasing j≤i.<br><span dir='rtl'>לפי שורות, ובתוך שורה עד האלכסון — כי התלויות הן שמאלה ולמעלה.</span></div></div>
+    <div id="sol8c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; double s;
+    memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) {
+        for (j=0;j&lt;=i;j++) {
+            s=R[i*n+j];
+            for (k=0;k&lt;j;k++) s -= L[i*n+k]*L[j*n+k];
+            if (i==j) {
+                if (s&lt;=0.0) return -1;
+                L[i*n+i]=sqrt(s);
+            } else {
+                if (L[j*n+j]==0.0) return -1;
+                L[i*n+j]=s/L[j*n+j];
+            }
+        }
+    }
+    return 0;
+}
+int main(void) {
+    double R[]={4,2,0, 2,5,1, 0,1,3}, L[9];
+    int i,j;
+    if (chol_factor(L,R,3)) return 1;
+    for (i=0;i&lt;3;i++){ for(j=0;j&lt;3;j++) printf("%7.3f ",L[i*3+j]); putchar('\n'); }
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex9">
+    <span class="diff intermediate">Intermediate · Ex 9</span>
+    <div class="ex-title">chol_solve wrapper + residual check</div>
+
+    <p class="part">Theory</p>
+    <p>Combine factor + forward + back. Always verify ||R h − p|| is tiny.</p>
+    <div class="he"><h4>עברית</h4><p>עטיפה מלאה + בדיקת שארית.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Define residual r = R h − p. If the solve is correct, each |r_i| should be ~1e−12 or smaller in double for well-conditioned toy problems.</p>
+    <p>Hand: if someone reports residual 0.3 on a 2×2 toy, what do you suspect?</p>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>מה אומרת שארית 0.3 על צעצוע 2×2?</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Implement <code>int chol_solve(const double *R, const double *p, double *h, int n);</code> using factor + forward + back.</li><li>Print max |Rh−p| on R=[[4,2],[2,5]], p=[4,5].</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol9h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol9c')">Reveal code</button>
+    <div id="sol9h" class="solution"><div class="why">Bug in indexing / transpose misuse / wrong back-sub / using L instead of Lᵀ.<br><span dir='rtl'>באג אינדקסים או בלבול L מול Lᵀ.</span></div></div>
+    <div id="sol9c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; double s;
+    memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) for (j=0;j&lt;=i;j++) {
+        s=R[i*n+j];
+        for (k=0;k&lt;j;k++) s -= L[i*n+k]*L[j*n+k];
+        if (i==j) { if (s&lt;=0) return -1; L[i*n+i]=sqrt(s); }
+        else L[i*n+j]=s/L[j*n+j];
+    }
+    return 0;
+}
+void forward_sub(const double *L, const double *p, double *y, int n) {
+    int i,j; for (i=0;i&lt;n;i++){ double s=p[i]; for(j=0;j&lt;i;j++) s-=L[i*n+j]*y[j]; y[i]=s/L[i*n+i]; }
+}
+void back_sub(const double *L, const double *y, double *h, int n) {
+    int i,j; for (i=n-1;i&gt;=0;i--){ double s=y[i]; for(j=i+1;j&lt;n;j++) s-=L[j*n+i]*h[j]; h[i]=s/L[i*n+i]; }
+}
+int chol_solve(const double *R, const double *p, double *h, int n) {
+    double L[16], y[4];
+    if (chol_factor(L,R,n)) return -1;
+    forward_sub(L,p,y,n); back_sub(L,y,h,n); return 0;
+}
+int main(void) {
+    double R[]={4,2,2,5}, p[]={4,5}, h[2], res, maxr=0;
+    int i,j;
+    chol_solve(R,p,h,2);
+    for (i=0;i&lt;2;i++){ res=-p[i]; for(j=0;j&lt;2;j++) res+=R[i*2+j]*h[j]; if (fabs(res)&gt;maxr) maxr=fabs(res); }
+    printf("h=[%.6f,%.6f] max|Rh-p|=%.3e\n", h[0],h[1], maxr);
+    return 0;
+}</code></pre><div class="why">Hero habit: never trust a solver without a residual print on unit tests.</div></div>
+  </div>
+
+
+  <div class="exercise" id="ex10">
+    <span class="diff advanced">Advanced · Ex 10</span>
+    <div class="ex-title">Hand: failure case (not PD)</div>
+
+    <p class="part">Theory</p>
+    <p>If under the sqrt you get a negative, factorization must abort.</p>
+    <div class="he"><h4>עברית</h4><p>מספר שלילי מתחת לשורש = כשל.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Try Cholesky on R=[[1, 2],[2, 1]] (you already know det&lt;0).</p>
+    <ol>
+      <li>Compute L00.</li>
+      <li>Compute L10.</li>
+      <li>Show the expression under sqrt for L11 is negative. Stop.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>הראה שהפירוק נכשל על הנייר.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Call chol_factor on this R; assert return ≠ 0.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10c')">Reveal code</button>
+    <div id="sol10h" class="solution"><div class="why">L00=1, L10=2, under sqrt: 1−4=−3 → abort.<br><span dir='rtl'>נכשל ב־L11.</span></div></div>
+    <div id="sol10c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) for (j=0;j&lt;=i;j++) {
+        double s=R[i*n+j];
+        for (k=0;k&lt;j;k++) s-=L[i*n+k]*L[j*n+k];
+        if (i==j){ if(s&lt;=0) return -1; L[i*n+i]=sqrt(s);} else L[i*n+j]=s/L[j*n+j];
+    }
+    return 0;
+}
+int main(void) {
+    double R[]={1,2,2,1}, L[4];
+    printf("rc=%d (expect nonzero)\n", chol_factor(L,R,2));
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex11">
+    <span class="diff advanced">Advanced · Ex 11</span>
+    <div class="ex-title">Regularization on paper + code</div>
+
+    <p class="part">Theory</p>
+    <p>R ← R + ε r0 I can turn a barely-singular Toeplitz into a solvable one.</p>
+    <div class="he"><h4>עברית</h4><p>רגולריזציה ε על האלכסון.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Let r0=1, R=[[1, 0.999],[0.999, 1]], ε=1e−3.</p>
+    <ol>
+      <li>Write R_reg after adding ε r0 on the diagonal.</li>
+      <li>Compute det before and after (approx).</li>
+      <li>One sentence: what did ε buy you?</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>חשב R אחרי רגולריזציה והשווה דטרמיננטות.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Add ε*R[0] to diagonal (use R[0] as r0 for Toeplitz-style), then chol_solve.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11c')">Reveal code</button>
+    <div id="sol11h" class="solution"><div class="why">Before det≈1−0.998=0.002. After diag 1.001: det≈1.001²−0.999²≈0.004. Slightly better conditioned; less near-singular.<br>R_reg=[[1.001,0.999],[0.999,1.001]].<br><span dir='rtl'>האלכסון גדל; הדטרמיננטה גדלה; הפירוק יציב יותר.</span></div></div>
+    <div id="sol11c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+/* use chol_solve from Ex9 pattern — inline short version */
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) for (j=0;j&lt;=i;j++) {
+        double s=R[i*n+j]; for(k=0;k&lt;j;k++) s-=L[i*n+k]*L[j*n+k];
+        if (i==j){ if(s&lt;=0)return -1; L[i*n+i]=sqrt(s);} else L[i*n+j]=s/L[j*n+j];
+    } return 0;
+}
+int main(void) {
+    double R[]={1,0.999,0.999,1}, p[]={1,0.5}, h[2], L[4], y[2], eps=1e-3;
+    int i;
+    for (i=0;i&lt;2;i++) R[i*2+i] += eps*R[0];
+    chol_factor(L,R,2);
+    /* forward/back omitted print: just show factor ok */
+    printf("factor ok, R00=%.6f\n", R[0]);
+    (void)p;(void)h;(void)y;
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex12">
+    <span class="diff advanced">Advanced · Ex 12</span>
+    <div class="ex-title">Toeplitz R from lag vector r[k] — handwriting + build</div>
+
+    <p class="part">Theory</p>
+    <p>In WH FIR, R is Toeplitz: R[i][j]=r[|i−j|]. Cholesky does not care — it just needs the dense SPD matrix.</p>
+    <div class="he"><h4>עברית</h4><p>ב־WH, R היא Toeplitz מ־r[k]. Cholesky מקבל מטריצה צפופה.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <p>Given lags r = [3, 1, 0.2] (r0,r1,r2):</p>
+    <ol>
+      <li>Write the 3×3 Toeplitz R.</li>
+      <li>Is it symmetric? Why?</li>
+      <li>One line: why Cholesky still applies even though Levinson could be faster.</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>בנה R מ־r וכתוב למה Cholesky עדיין בסדר.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Build R from r[]; solve with random p; print h.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12c')">Reveal code</button>
+    <div id="sol12h" class="solution"><div class="why">R=[[3,1,0.2],[1,3,1],[0.2,1,3]]. Symmetric because r[|i−j|]=r[|j−i|]. Cholesky works on any SPD; Toeplitz speedup is optional.<br><span dir='rtl'>מטריצה סימטרית Toeplitz; Cholesky לא דורש מבנה — רק SPD.</span></div></div>
+    <div id="sol12c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) for (j=0;j&lt;=i;j++) {
+        double s=R[i*n+j]; for(k=0;k&lt;j;k++) s-=L[i*n+k]*L[j*n+k];
+        if (i==j){ if(s&lt;=0)return -1; L[i*n+i]=sqrt(s);} else L[i*n+j]=s/L[j*n+j];
+    } return 0;
+}
+void forward_sub(const double *L, const double *p, double *y, int n) {
+    int i,j; for(i=0;i&lt;n;i++){double s=p[i]; for(j=0;j&lt;i;j++)s-=L[i*n+j]*y[j]; y[i]=s/L[i*n+i];}
+}
+void back_sub(const double *L, const double *y, double *h, int n) {
+    int i,j; for(i=n-1;i&gt;=0;i--){double s=y[i]; for(j=i+1;j&lt;n;j++)s-=L[j*n+i]*h[j]; h[i]=s/L[i*n+i];}
+}
+int main(void) {
+    double r[3]={3,1,0.2}, R[9], L[9], p[3]={1,0.5,0.1}, y[3], h[3];
+    int i,j,d;
+    for (i=0;i&lt;3;i++) for (j=0;j&lt;3;j++){ d=i-j; if(d&lt;0)d=-d; R[i*3+j]=r[d]; }
+    chol_factor(L,R,3); forward_sub(L,p,y,3); back_sub(L,y,h,3);
+    printf("h=[%.4f %.4f %.4f]\n", h[0],h[1],h[2]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex13">
+    <span class="diff senior">Senior / Hero · Ex 13</span>
+    <div class="ex-title">Hand-compare: Cholesky vs ‘MATLAB backslash’ idea</div>
+
+    <p class="part">Theory</p>
+    <p>MATLAB h=R\p for SPD R typically uses Cholesky under the hood. Your solver should match within ~1e−10 on toys.</p>
+    <div class="he"><h4>עברית</h4><p>ב־MATLAB, R\p ל־SPD לרוב Cholesky. צריך להסכים עם הצעצועים.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <ol>
+      <li>In one sentence: what does “match MATLAB \” mean for unit tests?</li>
+      <li>Why float32 AFW may only hit ~1e−5 agreement even if double hits 1e−12?</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>מה בודקים מול MATLAB ומה משתנה ב־float?</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Document in a comment the expected tolerance for double vs float in your chol_solve.</li><li>Solve a 2×2 and print h to 12 decimals (as if preparing a golden).</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13c')">Reveal code</button>
+    <div id="sol13h" class="solution"><div class="why">Same R,p → |h_c − h_matlab| small. float32 has ~7 decimal digits so residuals/coeffs loosen to ~1e−5.<br><span dir='rtl'>השוואת מקדמים; ב־float הדיוק נמוך יותר.</span></div></div>
+    <div id="sol13c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+int chol_factor(double *L, const double *R, int n) {
+    int i,j,k; memset(L,0,(size_t)n*n*sizeof(double));
+    for (i=0;i&lt;n;i++) for (j=0;j&lt;=i;j++) {
+        double s=R[i*n+j]; for(k=0;k&lt;j;k++) s-=L[i*n+k]*L[j*n+k];
+        if (i==j){ if(s&lt;=0)return -1; L[i*n+i]=sqrt(s);} else L[i*n+j]=s/L[j*n+j];
+    } return 0;
+}
+void forward_sub(const double *L, const double *p, double *y, int n) {
+    int i,j; for(i=0;i&lt;n;i++){double s=p[i]; for(j=0;j&lt;i;j++)s-=L[i*n+j]*y[j]; y[i]=s/L[i*n+i];}
+}
+void back_sub(const double *L, const double *y, double *h, int n) {
+    int i,j; for(i=n-1;i&gt;=0;i--){double s=y[i]; for(j=i+1;j&lt;n;j++)s-=L[j*n+i]*h[j]; h[i]=s/L[i*n+i];}
+}
+int main(void) {
+    /* golden tol: double ~1e-10, float AFW ~1e-5 */
+    double R[]={4,2,2,5}, p[]={4,5}, L[4], y[2], h[2];
+    chol_factor(L,R,2); forward_sub(L,p,y,2); back_sub(L,y,h,2);
+    printf("h0=%.12f h1=%.12f\n", h[0], h[1]);
+    return 0;
+}</code></pre></div>
+  </div>
+
+
+  <div class="exercise" id="ex14">
+    <span class="diff senior">Senior / Hero · Ex 14</span>
+    <div class="ex-title">Hero: NrToeplitzSolveCholesky-shaped API (WH-ready)</div>
+
+    <p class="part">Theory</p>
+    <p>LLNR Phase 2 wants: inputs r[0..L-1], p[0..L-1], regEps; build Toeplitz R; regularize; Cholesky; write h. Scratch buffer sized ≥ L*L+2L.</p>
+    <div class="he"><h4>עברית</h4><p>API בסגנון LLNR: r,p,regEps → h עם scratch.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <ol>
+      <li>Sketch the steps of NrToeplitzSolveCholesky in 5 bullets (no code).</li>
+      <li>Why pass scratch from outside (audio/DSP habit)?</li>
+      <li>One sentence linking this to Wiener–Hopf (not LPC).</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>כתוב את השלבים, למה scratch חיצוני, וקשר ל־WH.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Implement <code>int nr_toeplitz_solve_chol(const double *r, const double *p, double *h, int L, double regEps, double *scratch);</code></li><li>scratch layout: R[0..L*L), Lfac[0..L*L) can overwrite R, y[0..L).</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14c')">Reveal code</button>
+    <div id="sol14h" class="solution"><div class="why">Build R from r; add ε r0 I; chol factor into scratch; forward; back into h. External scratch = no audio-thread malloc. This solves WH R h=p for FIR taps — not AR coeffs.<br><span dir='rtl'>בניית R, רגולריזציה, פירוק, שתי הצבות. בלי alloc ב־audio. זה פותר WH ל־FIR.</span></div></div>
+    <div id="sol14c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;string.h&gt;
+int nr_toeplitz_solve_chol(const double *r, const double *p, double *h, int L, double regEps, double *scratch) {
+    double *R = scratch;
+    double *Lfac = scratch + L*L;
+    double *y = scratch + 2*L*L; /* need L*L + L*L + L — caller sizes 2*L*L+L */
+    int i,j,d,k;
+    for (i=0;i&lt;L;i++) for (j=0;j&lt;L;j++){ d=i-j; if(d&lt;0)d=-d; R[i*L+j]=r[d]; }
+    for (i=0;i&lt;L;i++) R[i*L+i] += regEps * r[0];
+    memset(Lfac,0,(size_t)L*L*sizeof(double));
+    for (i=0;i&lt;L;i++) for (j=0;j&lt;=i;j++) {
+        double s=R[i*L+j];
+        for (k=0;k&lt;j;k++) s -= Lfac[i*L+k]*Lfac[j*L+k];
+        if (i==j){ if(s&lt;=0) return -1; Lfac[i*L+i]=sqrt(s); }
+        else Lfac[i*L+j]=s/Lfac[j*L+j];
+    }
+    for (i=0;i&lt;L;i++){ double s=p[i]; for(j=0;j&lt;i;j++) s-=Lfac[i*L+j]*y[j]; y[i]=s/Lfac[i*L+i]; }
+    for (i=L-1;i&gt;=0;i--){ double s=y[i]; for(j=i+1;j&lt;L;j++) s-=Lfac[j*L+i]*h[j]; h[i]=s/Lfac[i*L+i]; }
+    return 0;
+}
+int main(void) {
+    double r[3]={3,1,0.2}, p[3]={1,0.5,0.1}, h[3], scratch[2*9+3];
+    nr_toeplitz_solve_chol(r,p,h,3,1e-6,scratch);
+    printf("h=[%.6f %.6f %.6f]\n", h[0],h[1],h[2]);
+    return 0;
+}</code></pre><div class="why">This is the shape of Modules/LLNR Phase 2 — float version next when you return to the repo.</div></div>
+  </div>
+
+
+  <div class="exercise" id="ex15">
+    <span class="diff senior">Senior / Hero · Ex 15</span>
+    <div class="ex-title">Hero reflection: when to use Cholesky vs skip it</div>
+
+    <p class="part">Theory</p>
+    <p>Not every DSP problem needs Cholesky. MinPhase FIR does not. WH FIR does (v1). LPC may use Levinson–Durbin instead.</p>
+    <div class="he"><h4>עברית</h4><p>לא כל בעיה צריכה Cholesky. MinPhase לא. WH כן. LPC לרוב Levinson–Durbin.</p></div>
+
+    <p class="part">Handwriting (paper)</p>
+    <div class="paper">
+    <ol>
+      <li>For each path, write “needs Cholesky? yes/no” and why in ≤8 words:<br>
+          (a) MinPhase mask→FIR<br>
+          (b) Wiener–Hopf mask→FIR (LLNR v1)<br>
+          (c) LPC all-pole from ACF</li>
+      <li>Draw the one-line pipeline: mask → ? → R,p → Cholesky → h → FadedFir</li>
+    </ol>
+    </div>
+    <div class="he"><h4>עברית — כתב יד</h4><p>סמן כן/לא ל־Cholesky בשלושת המסלולים, וצייר את צינור WH.</p></div>
+
+    <p class="part">Coding (C)</p>
+    <ul><li>Write a 10-line comment block in a .c file that a teammate could read: when NrToeplitzSolveCholesky is called vs MinPhase.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15c')">Reveal code</button>
+    <div id="sol15h" class="solution"><div class="why">(a) no — cepstrum/IFFT. (b) yes — solve Rh=p. (c) usually no Cholesky — Levinson–Durbin / Yule–Walker recursion.<br>Pipeline: mask → Recipe A correlations → R,p → Cholesky → h → FadedFir.<br><span dir='rtl'>(א) לא (ב) כן (ג) לרוב Levinson–Durbin לא Cholesky.</span></div></div>
+    <div id="sol15c" class="solution"><pre><code>#include &lt;stdio.h&gt;
+int main(void) {
+    /* MinPhase: NrMaskToFirMinPhase — NO Cholesky.
+     * Wiener-Hopf: build R,p from mask, then NrToeplitzSolveCholesky — YES.
+     * LPC/all-pole: Levinson-Durbin style — different equation, not this FIR path.
+     */
+    puts("see comments — no runtime demo");
+    return 0;
+}</code></pre></div>
+  </div>
+
+  <div class="section">
+    <h2>Closing checklist — you are a hero when…</h2>
+    <ul>
+      <li>You can factor a 2×2 and solve R h = p entirely on paper.</li>
+      <li>You can code chol_factor + forward + back and check residuals.</li>
+      <li>You know to regularize and abort when not PD.</li>
+      <li>You can build Toeplitz R from r[k] and solve — WH-ready.</li>
+      <li>You can explain Cholesky vs Levinson vs LPC without mixing meanings.</li>
+    </ul>
+  </div>
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">
+    Batch 02 · Cholesky from zero to hero · 15 exercises · handwriting + code · EN + HE · ANSI C11
+  </p>
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Levinson–Durbin Algorithm — From Zero to Hero (C++)</title>
+  <style>
+
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #1f4e79; padding-bottom: 12px; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; }
+    .scope { background: #dceaf7; border-left: 4px solid #1f4e79; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 12px; font-size: 1.15rem; color: #1f4e79; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .section h3 { margin: 18px 0 8px; font-size: 1.02rem; color: #24292f; }
+    p { margin: 0.55em 0; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.76rem; line-height: 1.45; margin: 12px 0; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .math { background: #f6f8fa; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-family: Consolas, 'Courier New', monospace; font-size: 0.88rem; overflow-x: auto; white-space: pre; }
+    table { border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; width: 100%; }
+    th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f6f8fa; }
+    blockquote { border-left: 4px solid #1f4e79; margin: 12px 0; padding: 8px 14px; background: #f6f8fa; color: #424a53; }
+    .he { direction: rtl; text-align: right; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 12px 14px; margin: 12px 0; font-size: 0.93rem; }
+    .he h4 { margin: 0 0 8px; color: #1f4e79; font-size: 0.95rem; }
+    .exercise { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 1px 2px rgba(31,35,40,0.06); }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; margin-right: 6px; color: #fff; }
+    .foundation { background: #0969da; }
+    .building { background: #1a7f37; }
+    .intermediate { background: #bf8700; }
+    .advanced { background: #bc4c00; }
+    .senior { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; }
+    .part { font-weight: 700; margin-top: 14px; color: #57606a; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #1f4e79; color: #fff; }
+    button.reveal-btn:hover { filter: brightness(0.92); }
+    .solution { display: none; margin-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    ul, ol { font-size: 0.95rem; margin: 8px 0 0 1.2em; }
+    li { margin: 5px 0; }
+    .path { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .path span { font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; color: #fff; }
+    .warn { background: #ffebe9; border: 1px solid #ff8182; border-radius: 6px; padding: 10px 12px; margin: 12px 0; font-size: 0.9rem; }
+
+  </style>
+</head>
+<body>
+  <h1>Levinson–Durbin Algorithm — From Zero to Hero (C++)</h1>
+  <p class="subtitle">Batch 02 · Scratch → senior DSP · C++ without STL containers · 15 exercises · EN + HE</p>
+
+  <div class="scope">
+    <strong>What this workbook is:</strong> the same Levinson–Durbin curriculum as the C notebook, implemented in C++ with raw pointers / fixed buffers (no <code>std::vector</code>, no Eigen). Same math ladder, language-idiomatic solutions.
+    Solutions stay behind <strong>Reveal</strong> buttons. Companion C notebook: <code>workbook_08_levinson_durbin_c.html</code>.
+    Source theory inspired by Proakis &amp; Manolakis §11.3.1 (Levinson–Durbin) scanned notes.
+  </div>
+
+
+  <div class="section">
+    <h2>0. Roadmap</h2>
+    <div class="path">
+      <span class="foundation">Theory A–G</span>
+      <span class="foundation">Ex 1–3 Foundation</span>
+      <span class="building">Ex 4–6 Building</span>
+      <span class="intermediate">Ex 7–9 Intermediate</span>
+      <span class="advanced">Ex 10–12 Advanced</span>
+      <span class="senior">Ex 13–15 Senior / Hero</span>
+    </div>
+    <p>Goal: go from “I have never heard of linear prediction” to implementing a solid real-valued
+    <strong>Levinson–Durbin</strong> solver, understanding reflection coefficients, prediction-error energy,
+    Toeplitz structure, and when <em>not</em> to confuse this with Wiener–Hopf FIR design.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>המטרה: מ״מעולם לא שמעתי על חיזוי ליניארי״ עד מימוש Levinson–Durbin אמיתי,
+      הבנת מקדמי השתקפות, אנרגיית שגיאת חיזוי, מבנה Toeplitz, וההבחנה מול תכנון FIR מטיפוס Wiener–Hopf.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>A. What problem are we solving?</h2>
+    <p><strong>Linear prediction</strong> asks: can I predict the next sample from a few past samples?</p>
+    <div class="math">x̂[n] = − Σ<sub>k=1..p</sub> a(k) · x[n−k]</div>
+    <p>The coefficients <code>a(1)..a(p)</code> are chosen to minimize the mean-square prediction error.
+    That leads to the <strong>normal equations</strong> (Yule–Walker for the AR / autocorrelation method).</p>
+    <blockquote>Levinson–Durbin is an <em>efficient solver</em> for those normal equations when the matrix is Toeplitz — not a new estimator by itself.</blockquote>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>חיזוי ליניארי: מנחשים את הדגימה הבאה משילוב של כמה דגימות קודמות.
+      המקדמים נבחרים כדי למזער את שגיאת החיזוי בממוצע ריבועי — וזה מוביל למשוואות נורמליות.
+      Levinson–Durbin הוא פותר יעיל למשוואות האלה כשהמטריצה היא Toeplitz.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>B. Autocorrelation γ_xx(k)</h2>
+    <p>For a wide-sense-stationary signal, the autocorrelation depends only on the lag <code>k</code>:</p>
+    <div class="math">γ_xx(k) = E[ x[n] · x*[n−k] ]</div>
+    <p>In practice (finite real block of length <code>N</code>), a common biased estimate is:</p>
+    <div class="math">r[k] ≈ (1/N) · Σ<sub>n=k..N−1</sub> x[n] · x[n−k]     for k = 0..p</div>
+    <p>We need <code>r[0], r[1], …, r[p]</code> as input to Levinson–Durbin. For real signals, <code>r[−k] = r[k]</code>.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>אוטוקורלציה תלויה רק בהפרש הזמן (lag). בפועל מעריכים אותה מסדרת דגימות סופית.
+      ל־Levinson–Durbin צריך את הווקטור r[0]…r[p]. באות אמיתי: r[−k]=r[k].</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>C. The Toeplitz autocorrelation matrix Γ</h2>
+    <p>The normal equations pack lags into a matrix that is <strong>Toeplitz</strong> (constant along diagonals)
+    and, for complex data, <strong>Hermitian</strong>. For real data it is symmetric Toeplitz:</p>
+    <div class="math">Γ_p =
+[ r[0]   r[1]   r[2]  … r[p−1] ]
+[ r[1]   r[0]   r[1]  … r[p−2] ]
+[ r[2]   r[1]   r[0]  … r[p−3] ]
+[  …      …      …    …   …    ]
+[ r[p−1] r[p−2] …     …  r[0]  ]</div>
+    <p>Only the first row (or first column) needs storage — <code>O(p)</code> numbers define an <code>p×p</code> matrix.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>מטריצת האוטוקורלציה היא Toeplitz (אלכסונים קבועים). באות אמיתי היא גם סימטרית.
+      מספיק לשמור את שורת הלגים — זה הסוד שמאפשר אלגוריתם O(p²) במקום היפוך כללי O(p³).</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>D. Normal equations (what we solve)</h2>
+    <div class="math">Γ_p · a = −γ
+where a = [a(1), a(2), …, a(p)]ᵀ
+      γ = [r[1], r[2], …, r[p]]ᵀ</div>
+    <p>Naive solve: Gaussian elimination / Cholesky on dense Γ → about <code>O(p³)</code>.</p>
+    <p>Levinson–Durbin exploits Toeplitz structure → about <code>O(p²)</code> and also produces
+    <strong>reflection coefficients</strong> <code>K_m</code> and forward prediction-error energies <code>E_m</code> for free.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>פותרים Γ·a = −γ. פתרון כללי יקר; Levinson–Durbin מנצל את המבנה ומחזיר גם מקדמי השתקפות ואנרגיות שגיאה.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>E. Order-1 and order-2 by hand (intuition)</h2>
+    <p><strong>Order 1:</strong></p>
+    <div class="math">a₁(1) = K₁ = − r[1] / r[0]
+E₁ = r[0] · (1 − |K₁|²) = r[0] + a₁(1)·r[1]   (real case)</div>
+    <p><strong>Order 2</strong> (real), building on order 1:</p>
+    <div class="math">K₂ = a₂(2) = − ( r[2] + a₁(1)·r[1] ) / E₁
+a₂(1) = a₁(1) + K₂ · a₁(1)
+E₂ = E₁ · (1 − K₂²)</div>
+    <p>Notice the pattern: each new order adds one reflection coefficient and updates older <code>a</code>’s.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>סדר 1: מקדם יחיד K₁=−r[1]/r[0]. סדר 2 משתמש ב־E₁ כדי לחשב K₂ ומעדכן את a(1).
+      כל עליית סדר = מקדם השתקפות חדש + עדכון המקדמים הישנים.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>F. The full Levinson–Durbin recursion (real signals)</h2>
+    <p>Initialize: <code>E = r[0]</code>. For <code>m = 1 .. p</code>:</p>
+    <div class="math">Δ = r[m] + Σ<sub>k=1..m−1</sub> a[k] · r[m−k]     // “forward residual correlation”
+K = − Δ / E                                 // reflection coeff = a_m(m)
+for k = 1 .. m−1:
+    a_new[k] = a[k] + K · a[m−k]            // use OLD a on the right
+a[m] = K
+E = E · (1 − K·K)                           // must keep |K| &lt; 1 for E &gt; 0</div>
+    <p>Indexing note: many texts use 1-based <code>a(1)..a(p)</code>. In C arrays we often store
+    <code>a[0]</code> unused or shift to <code>a[0]=a(1)</code>. Be consistent.</p>
+    <div class="warn"><strong>In-place trap:</strong> when updating <code>a[k]</code>, you need the <em>old</em> <code>a[m−k]</code>.
+    Use a temporary buffer (or walk only half the indices carefully).</div>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בכל שלב m: מחשבים Δ, אחר כך K=−Δ/E, מעדכנים את המקדמים עם הערכים הישנים, שומרים a[m]=K, ומעדכנים E.
+      מלכודת: בעדכון במקום חייבים לא לדרוס ערך שעדיין נחוץ לצד השני של הנוסחה.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>G. What Levinson–Durbin is / is not (critical for LLNR readers)</h2>
+    <table>
+      <tr><th>It is</th><th>It is not</th></tr>
+      <tr>
+        <td>An O(p²) solver for Toeplitz normal equations of linear prediction</td>
+        <td>Automatically “Wiener–Hopf → FIR taps from a mask”</td>
+      </tr>
+      <tr>
+        <td>A factory for reflection coeffs K_m and AR / all-pole predictor coeffs</td>
+        <td>A substitute for cepstral min-phase FIR design</td>
+      </tr>
+      <tr>
+        <td>Stable all-pole if |K_m| ≤ 1 for all m (real case: &lt; 1 strictly for E&gt;0)</td>
+        <td>A guarantee that a truncated FIR of the AR impulse response matches a spectral mask</td>
+      </tr>
+    </table>
+    <p>Same <em>Toeplitz discipline</em> appears when solving Wiener–Hopf <code>R h = p</code> for FIR —
+    but the right-hand side and meaning of the taps differ. Keep the names straight.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>Levinson–Durbin = פותר למשוואות חיזוי / LPC (לרוב מוביל ל־all-pole).
+      Wiener–Hopf ל־FIR מהמסכה הוא סיפור קשור מבחינת Toeplitz, אבל לא אותו פלט ולא אותה מטרה.</p>
+    </div>
+  </div>
+
+
+  <div class="section">
+    <h2>Exercises — Zero to Hero (15)</h2>
+    <p>Each exercise: theory reminder · handwriting · C++ (no STL containers) coding · revealable solutions.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בכל תרגיל: תיאוריה · כתב יד · מימוש ב־C++ (no STL containers) · פתרונות מאחורי כפתור.</p>
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex1">
+    <span class="diff foundation">Foundation · Ex 1</span>
+    <div class="ex-title">What is linear prediction?</div>
+
+    <p class="part">Theory</p>
+    <p>A p-th order linear predictor forms x̂[n] from the previous p samples with weights −a(k). The prediction error is e[n] = x[n] − x̂[n] = x[n] + Σ a(k) x[n−k]. Minimizing E[e²] gives the normal equations.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>חזאי מסדר p בונה ניחוש לדגימה הנוכחית משילוב של p דגימות קודמות. שגיאת החיזוי היא ההפרש; מזעור הריבוע הממוצע נותן את המשוואות הנורמליות.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>Write e[n] for p=2 in terms of a(1), a(2), x[n], x[n−1], x[n−2].</li><li>If a(1)=a(2)=0, what is e[n]? What does that mean?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב את e[n] ל־p=2. מה קורה אם כל המקדמים אפס?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same as C: compute e[2] for a(1)=−0.9 on {1, 0.9, 0.81}.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol1c')">Reveal code</button>
+    <div id="sol1h" class="solution">
+      <div class="why">e[n] = x[n] + a(1)x[n−1] + a(2)x[n−2]. If a=0, e[n]=x[n]: “predict nothing,” error is the signal itself.<br><span dir='rtl'>אם המקדמים אפס — אין חיזוי; השגיאה היא האות עצמו.</span></div>
+    </div>
+    <div id="sol1c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    const double x0 = 1.0, x1 = 0.9, x2 = 0.81;
+    const double a1 = -0.9;
+    const double e2 = x2 + a1 * x1;
+    std::printf("e[2]=%.6f\n", e2);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex2">
+    <span class="diff foundation">Foundation · Ex 2</span>
+    <div class="ex-title">Estimate autocorrelation from a short block</div>
+
+    <p class="part">Theory</p>
+    <p>Biased ACF for real x[0..N−1]: r[k] = (1/N) Σ_{n=k}^{N−1} x[n] x[n−k]. r[0] is (average) energy. You need r[0..p] for order-p Levinson–Durbin.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>אוטוקורלציה מוטה: ממוצע של מכפלות בהפרש k. r[0] הוא אנרגיה ממוצעת. ל־LD צריך r[0]…r[p].</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>For x = {1, 1, 1, 1}, N=4, compute r[0] and r[1] with the biased formula.</li><li>Why is r[1] smaller than r[0] here?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>חשב r[0], r[1] ל־x={1,1,1,1}. למה r[1] קטן יותר?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Implement the same <code>acf_biased</code> with raw pointers (no STL).</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol2c')">Reveal code</button>
+    <div id="sol2h" class="solution">
+      <div class="why">r[0]=(1+1+1+1)/4=1. r[1]=(1·1+1·1+1·1)/4=0.75. Fewer products and same samples → smaller lag-1 sum.<br><span dir='rtl'>r[0]=1, r[1]=0.75. יש פחות איברים ב־lag 1.</span></div>
+    </div>
+    <div id="sol2c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void acf_biased(const double *x, int N, double *r, int p)
+{
+    for (int k = 0; k &lt;= p; ++k) {
+        double s = 0.0;
+        for (int n = k; n &lt; N; ++n)
+            s += x[n] * x[n - k];
+        r[k] = s / static_cast&lt;double&gt;(N);
+    }
+}
+
+int main()
+{
+    double x[4] = {1,1,1,1};
+    double r[3];
+    acf_biased(x, 4, r, 2);
+    std::printf("r0=%.6f r1=%.6f r2=%.6f\n", r[0], r[1], r[2]);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex3">
+    <span class="diff foundation">Foundation · Ex 3</span>
+    <div class="ex-title">Build a Toeplitz Γ from the lag vector</div>
+
+    <p class="part">Theory</p>
+    <p>Given r[0..p−1], the p×p matrix has Γ[i][j] = r[|i−j|] (real case). You should be able to write Γ without storing a full 2D table in production — but building it once aids learning.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>במקרה אמיתי: Γ[i][j]=r[|i−j|]. בפרודקשן לא חייבים מטריצה מלאה; לבנייה ללמידה זה מצוין.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Given r = {4, 2, 1}, write the 3×3 Γ explicitly.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב את מטריצת 3×3 עבור r={4,2,1}.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same API with C++ headers; still raw buffers.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol3c')">Reveal code</button>
+    <div id="sol3h" class="solution">
+      <div class="why"><pre>[ 4 2 1 ]
+[ 2 4 2 ]
+[ 1 2 4 ]</pre><span dir='rtl'>אלכסון ראשי 4; אלכסון ראשון 2; פינות 1.</span></div>
+    </div>
+    <div id="sol3c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void toeplitz_from_r(const double *r, int p, double *G)
+{
+    for (int i = 0; i &lt; p; ++i)
+        for (int j = 0; j &lt; p; ++j) {
+            int d = i - j;
+            if (d &lt; 0) d = -d;
+            G[i * p + j] = r[d];
+        }
+}
+
+int main()
+{
+    double r[3] = {4,2,1};
+    double G[9];
+    toeplitz_from_r(r, 3, G);
+    for (int i = 0; i &lt; 3; ++i) {
+        for (int j = 0; j &lt; 3; ++j) std::printf("%g ", G[i*3+j]);
+        std::putchar('\n');
+    }
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex4">
+    <span class="diff building">Building · Ex 4</span>
+    <div class="ex-title">Order-1 normal equation by hand</div>
+
+    <p class="part">Theory</p>
+    <p>For p=1: Γ = [r[0]], γ = [r[1]], so r[0]·a(1) = −r[1] ⇒ a(1)=−r[1]/r[0]=K₁. Then E₁ = r[0](1−K₁²).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בסדר 1 המשוואה היא סקלרית. K₁=a(1). האנרגיה E₁=r[0](1−K₁²).</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>r[0]=1, r[1]=0.5. Find K₁ and E₁.</li><li>If |r[1]| &gt; r[0], what goes wrong conceptually?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>עם r0=1, r1=0.5 מצא K₁ ו־E₁. מה אם |r1|&gt;r0?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same logic; prefer references for outputs if you like: <code>bool ld_order1(... double&amp; k, double&amp; E)</code>.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol4c')">Reveal code</button>
+    <div id="sol4h" class="solution">
+      <div class="why">K₁=−0.5, E₁=1·(1−0.25)=0.75. If |r1|&gt;r0, |K|&gt;1 and E becomes negative — invalid ACF / non-positive-definite Γ.<br><span dir='rtl'>K=−0.5, E=0.75. |K|&gt;1 אומר שמטריצה לא חוקית/לא PD.</span></div>
+    </div>
+    <div id="sol4c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+bool ld_order1(double r0, double r1, double &amp;k, double &amp;E)
+{
+    if (r0 &lt;= 0.0) return false;
+    k = -r1 / r0;
+    if (std::fabs(k) &gt;= 1.0) return false;
+    E = r0 * (1.0 - k * k);
+    return true;
+}
+
+int main()
+{
+    double k = 0.0, E = 0.0;
+    if (ld_order1(1.0, 0.5, k, E))
+        std::printf("K=%.6f E=%.6f\n", k, E);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex5">
+    <span class="diff building">Building · Ex 5</span>
+    <div class="ex-title">Order-2 step from the textbook formulas</div>
+
+    <p class="part">Theory</p>
+    <p>Real order-2 update (Proakis-style): K₂ = −(r[2]+a₁(1)r[1])/E₁, a₂(1)=a₁(1)+K₂ a₁(1), a₂(2)=K₂, E₂=E₁(1−K₂²).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>מעדכנים מסדר 1 לסדר 2 עם הנוסחאות בספר: K₂ מהשארית, ואז a₂(1) ו־E₂.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Start from r[0]=1, r[1]=0.5, r[2]=0.2. You already have K₁=−0.5, E₁=0.75. Compute K₂, a₂(1), a₂(2), E₂.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>חשב את סדר 2 מתוך הנתונים למעלה.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same numeric path in C++.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol5c')">Reveal code</button>
+    <div id="sol5h" class="solution">
+      <div class="why">Δ = r2 + a1*r1 = 0.2 + (−0.5)(0.5) = −0.05. K₂ = −Δ/E₁ = 0.05/0.75 ≈ 0.066667.<br>a₂(1)=−0.5 + K₂(−0.5)≈−0.53333. a₂(2)=K₂. E₂=0.75(1−K₂²)≈0.74667.<br><span dir='rtl'>K₂≈0.0667, a(1)≈−0.533, E₂ מעט מתחת ל־E₁.</span></div>
+    </div>
+    <div id="sol5c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+int main()
+{
+    const double r0=1, r1=0.5, r2=0.2;
+    const double a1 = -r1/r0;
+    const double E1 = r0*(1.0 - a1*a1);
+    const double delta = r2 + a1*r1;
+    const double K2 = -delta / E1;
+    const double a2_1 = a1 + K2*a1;
+    const double a2_2 = K2;
+    const double E2 = E1*(1.0 - K2*K2);
+    std::printf("a=[%.6f %.6f] E2=%.6f\n", a2_1, a2_2, E2);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex6">
+    <span class="diff building">Building · Ex 6</span>
+    <div class="ex-title">Reflection coefficients and the |K|≤1 rule</div>
+
+    <p class="part">Theory</p>
+    <p>At each stage, a_m(m)=K_m. For a valid positive-definite autocorrelation, |K_m|&lt;1 (real case) and the forward error energies are nonincreasing: E₀≥E₁≥…≥E_p≥0. Lattice filters use the K_m directly.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בכל שלב המקדם האחרון הוא מקדם ההשתקפות. |K|&lt;1 נדרש ליציבות/חיוביות. האנרגיות יורדות מונוטונית.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>If some |K_m|=1, what happens to E_m?</li><li>Why might a DSP engineer prefer checking |K| over checking roots of A(z)?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>מה קורה ל־E כש־|K|=1? למה לבדוק K נוח יותר משורשי הפולינום?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same check; 1-based K buffer with unused [0].</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol6c')">Reveal code</button>
+    <div id="sol6h" class="solution">
+      <div class="why">E_m = E_{m−1}(1−1)=0: perfect prediction / singular. Checking |K| is O(1) per stage and gives a stability test for the all-pole filter without root finding.<br><span dir='rtl'>|K|=1 מאפס את האנרגיה. בדיקת K זולה ויציבה כמבחן ליציבות all-pole.</span></div>
+    </div>
+    <div id="sol6c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+int check_k(const double *K, int p)
+{
+    const double eps = 1e-12;
+    for (int m = 1; m &lt;= p; ++m)
+        if (!(std::fabs(K[m]) &lt; 1.0 - eps))
+            return -1;
+    return 0;
+}
+
+int main()
+{
+    double K[4] = {0, -0.5, 0.1, 0.2};
+    std::printf("ok=%d\n", check_k(K, 3) == 0);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex7">
+    <span class="diff intermediate">Intermediate · Ex 7</span>
+    <div class="ex-title">One recursive stage: Δ, K, update a, update E</div>
+
+    <p class="part">Theory</p>
+    <p>General stage m: Δ = r[m] + Σ_{k=1}^{m−1} a[k] r[m−k], K=−Δ/E, a'[k]=a[k]+K a[m−k], a'[m]=K, E'=E(1−K²). This is the heart of Levinson–Durbin.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>זה לב האלגוריתם: חישוב Δ, K, עדכון a, עדכון E.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Suppose current (order 2) a(1)=−0.533333, a(2)=0.066667, E=0.746667, and r[3]=0.05. Compute Δ and K₃ only (you may round to 6 decimals).</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>חשב Δ ו־K₃ בקירוב.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same stage helper; fixed temp buffer size OK for the notebook.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol7c')">Reveal code</button>
+    <div id="sol7h" class="solution">
+      <div class="why">Δ = r3 + a1 r2 + a2 r1 ≈ 0.05 + (−0.533333)(0.2) + (0.066667)(0.5) ≈ 0.05 − 0.106667 + 0.033333 ≈ −0.023333.<br>K₃ = −Δ/E ≈ 0.023333/0.746667 ≈ 0.03125.<br><span dir='rtl'>Δ≈−0.0233, K₃≈0.031.</span></div>
+    </div>
+    <div id="sol7c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+int ld_stage(double *a, double *E, const double *r, int m)
+{
+    double delta = r[m];
+    double anew[64];
+    if (m &gt;= 64) return -1;
+    for (int k = 1; k &lt;= m - 1; ++k)
+        delta += a[k] * r[m - k];
+    if (*E &lt;= 0.0) return -1;
+    const double K = -delta / *E;
+    if (std::fabs(K) &gt;= 1.0) return -1;
+    for (int k = 1; k &lt;= m - 1; ++k)
+        anew[k] = a[k] + K * a[m - k];
+    for (int k = 1; k &lt;= m - 1; ++k)
+        a[k] = anew[k];
+    a[m] = K;
+    *E *= (1.0 - K * K);
+    return 0;
+}
+
+int main()
+{
+    double r[4] = {1.0, 0.5, 0.2, 0.05};
+    double a[4] = {0};
+    double E = r[0];
+    ld_stage(a, &amp;E, r, 1);
+    ld_stage(a, &amp;E, r, 2);
+    ld_stage(a, &amp;E, r, 3);
+    std::printf("a1=%.6f a2=%.6f a3=%.6f E=%.6f\n", a[1], a[2], a[3], E);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex8">
+    <span class="diff intermediate">Intermediate · Ex 8</span>
+    <div class="ex-title">Full Levinson–Durbin driver (order p)</div>
+
+    <p class="part">Theory</p>
+    <p>Wrap stages 1..p: initialize E=r[0], zero a[], run ld_stage for m=1..p. Optionally store K[m]=a[m] after each stage (same value).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>עטיפה: אתחול E=r[0], לולאה על השלבים 1…p.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>List the outputs your API should return for a production DSP module (coeffs, K, E_final, status).</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>אילו פלטים כדאי להחזיר במודול DSP אמיתי?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same signature; you may wrap it in a tiny <code>namespace lpc { ... }</code>.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol8c')">Reveal code</button>
+    <div id="sol8h" class="solution">
+      <div class="why">a[1..p], optionally K[1..p], E_p, and an error code (singular / |K|≥1 / bad r0).<br><span dir='rtl'>מקדמים, אופציונלית K, אנרגיה סופית, וקוד שגיאה.</span></div>
+    </div>
+    <div id="sol8c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+#include &lt;cstring&gt;
+
+namespace lpc {
+
+int levinson_durbin(const double *r, int p, double *a, double *E_out)
+{
+    if (p &lt; 1 || p &gt;= 256 || r[0] &lt;= 0.0) return -1;
+    std::memset(a, 0, static_cast&lt;size_t&gt;(p + 1) * sizeof(double));
+    double E = r[0];
+    double anew[256];
+    for (int m = 1; m &lt;= p; ++m) {
+        double delta = r[m];
+        for (int k = 1; k &lt;= m - 1; ++k)
+            delta += a[k] * r[m - k];
+        const double K = -delta / E;
+        if (std::fabs(K) &gt;= 1.0) return -2;
+        for (int k = 1; k &lt;= m - 1; ++k)
+            anew[k] = a[k] + K * a[m - k];
+        for (int k = 1; k &lt;= m - 1; ++k)
+            a[k] = anew[k];
+        a[m] = K;
+        E *= (1.0 - K * K);
+    }
+    *E_out = E;
+    return 0;
+}
+
+} // namespace lpc
+
+int main()
+{
+    double r[4] = {1.0, 0.5, 0.2, 0.05};
+    double a[4], E;
+    if (lpc::levinson_durbin(r, 3, a, &amp;E) != 0) return 1;
+    for (int i = 1; i &lt;= 3; ++i) std::printf("a[%d]=%.8f\n", i, a[i]);
+    std::printf("E=%.8f\n", E);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex9">
+    <span class="diff intermediate">Intermediate · Ex 9</span>
+    <div class="ex-title">Verify E recursion vs residual energy on a toy AR signal</div>
+
+    <p class="part">Theory</p>
+    <p>For exact AR(p) driven by unit-variance white noise (infinite data), the LD residual energy matches the innovation variance. On a short block it is approximate — still, E should decrease and stay positive when Γ is PD.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>על אות AR אידיאלי האנרגיה תואמת את שונות החידוש; בבלוק קצר זה קירוב, אבל E חייב לרדת ולהישאר חיובי.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Explain in one sentence why E_m ≥ E_{m+1} always holds in exact LD when |K|&lt;1.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>למה E יורד מונוטונית כש־|K|&lt;1?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same energy trace in C++.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol9h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol9c')">Reveal code</button>
+    <div id="sol9h" class="solution">
+      <div class="why">Because E_m = E_{m−1}(1−K_m²) and (1−K²)∈(0,1] when |K|&lt;1.<br><span dir='rtl'>מכפילים ב־(1−K²) הקטן מ־1.</span></div>
+    </div>
+    <div id="sol9c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+int main()
+{
+    double r[4] = {1.0, 0.5, 0.2, 0.05};
+    double a[4] = {0};
+    double E = r[0];
+    std::printf("E0=%.8f\n", E);
+    for (int m = 1; m &lt;= 3; ++m) {
+        double delta = r[m];
+        double anew[4];
+        for (int k = 1; k &lt;= m - 1; ++k) delta += a[k] * r[m - k];
+        const double K = -delta / E;
+        for (int k = 1; k &lt;= m - 1; ++k) anew[k] = a[k] + K * a[m - k];
+        for (int k = 1; k &lt;= m - 1; ++k) a[k] = anew[k];
+        a[m] = K;
+        E *= (1.0 - K * K);
+        std::printf("E%d=%.8f |K|=%.6f\n", m, E, std::fabs(K));
+    }
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex10">
+    <span class="diff advanced">Advanced · Ex 10</span>
+    <div class="ex-title">In-place update without destroying needed values</div>
+
+    <p class="part">Theory</p>
+    <p>The update a_m(k)=a_{m−1}(k)+K a_{m−1}(m−k) couples k and m−k. If you write a[k] first, a[m−k] may already be wrong. Classic fixes: temp array, or update only k=1..floor((m−1)/2) swapping pairs carefully.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>עדכון במקום מסוכן כי a[k] ו־a[m−k] תלויים זה בזה. פתרון: מערך זמני או עדכון זוגי זהיר.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Show a wrong in-place loop for m=3 that updates k=1 then k=2 using already-new a[1]. Explain the bug in one line.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>תאר באג עדכון במקום לסדר 3.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same experiment in C++.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol10c')">Reveal code</button>
+    <div id="sol10h" class="solution">
+      <div class="why">After updating a[1] with old a[2], using new a[1] to form a[2] uses the wrong partner.<br><span dir='rtl'>הערך החדש של a[1] מזהם את חישוב a[2].</span></div>
+    </div>
+    <div id="sol10c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void update_temp(double *a, int m, double K)
+{
+    double t[8];
+    for (int k = 1; k &lt;= m - 1; ++k) t[k] = a[k] + K * a[m - k];
+    for (int k = 1; k &lt;= m - 1; ++k) a[k] = t[k];
+    a[m] = K;
+}
+
+void update_broken(double *a, int m, double K)
+{
+    for (int k = 1; k &lt;= m - 1; ++k)
+        a[k] = a[k] + K * a[m - k];
+    a[m] = K;
+}
+
+int main()
+{
+    double a1[4] = {0, 1.0, 2.0, 0};
+    double a2[4] = {0, 1.0, 2.0, 0};
+    const double K = 0.1;
+    update_temp(a1, 3, K);
+    update_broken(a2, 3, K);
+    std::printf("temp:   %.6f %.6f %.6f\n", a1[1], a1[2], a1[3]);
+    std::printf("broken: %.6f %.6f %.6f\n", a2[1], a2[2], a2[3]);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex11">
+    <span class="diff advanced">Advanced · Ex 11</span>
+    <div class="ex-title">Cross-check LD against a tiny dense solve (p=2)</div>
+
+    <p class="part">Theory</p>
+    <p>For p=2 you can solve Γ a = −γ with 2×2 inversion and compare to LD. Agreement within ~1e−12 (double) on a well-conditioned r proves your indexing.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>בסדר 2 אפשר להשוות להיפוך 2×2. התאמה מוכיחה אינדקסים נכונים.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Write the 2×2 system explicitly for general r0,r1,r2.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב את מערכת 2×2.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same numeric cross-check.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol11c')">Reveal code</button>
+    <div id="sol11h" class="solution">
+      <div class="why">[[r0,r1],[r1,r0]] [a1,a2]ᵀ = −[r1,r2]ᵀ.<br><span dir='rtl'>זו בדיוק Γ₂ a = −γ.</span></div>
+    </div>
+    <div id="sol11c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+int main()
+{
+    const double r0=1, r1=0.5, r2=0.2;
+    const double det = r0*r0 - r1*r1;
+    const double a1 = (-r0*r1 + r1*r2) / det;
+    const double a2 = (-r0*r2 + r1*r1) / det;
+
+    const double A1 = -r1/r0;
+    const double E1 = r0*(1-A1*A1);
+    const double K2 = -(r2 + A1*r1)/E1;
+    const double L1 = A1 + K2*A1;
+    const double L2 = K2;
+
+    std::printf("dense a=(%.12f, %.12f)\n", a1, a2);
+    std::printf("LD    a=(%.12f, %.12f)\n", L1, L2);
+    std::printf("err=%.3e\n", std::fmax(std::fabs(a1-L1), std::fabs(a2-L2)));
+    return 0;
+}</code></pre>
+      <div class="why">If err is not ~0, your RHS sign or a-update is wrong — fix before going higher order.</div>
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex12">
+    <span class="diff advanced">Advanced · Ex 12</span>
+    <div class="ex-title">Samples → ACF → LPC pipeline</div>
+
+    <p class="part">Theory</p>
+    <p>Real modules chain: frame of samples → window (optional) → biased/unbiased ACF → Levinson–Durbin → use a[k] in an all-pole filter or reflection lattice. Skipping the window can bias spectral shape.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>שרשרת אמיתית: פריים → (חלון) → ACF → LD → שימוש במקדמים. בלי חלון יש הטיית ספקטרום.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <p>Name one reason to apply a Hann window before ACF in speech LPC.</p>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>למה חלון Hann לפני ACF בדיבור?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same pipeline; keep buffers on the stack.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol12c')">Reveal code</button>
+    <div id="sol12h" class="solution">
+      <div class="why">Reduce spectral leakage / frame-edge discontinuity so the Toeplitz ACF better matches a periodic-like analysis assumption.<br><span dir='rtl'>מפחית דליפה ספקטרלית מקצות הפריים.</span></div>
+    </div>
+    <div id="sol12c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+
+void acf_biased(const double *x, int N, double *r, int p)
+{
+    for (int k = 0; k &lt;= p; ++k) {
+        double s = 0.0;
+        for (int n = k; n &lt; N; ++n) s += x[n] * x[n-k];
+        r[k] = s / static_cast&lt;double&gt;(N);
+    }
+}
+
+int levinson_durbin(const double *r, int p, double *a, double *E_out)
+{
+    double E = r[0];
+    double anew[32];
+    if (r[0] &lt;= 0) return -1;
+    for (int k = 0; k &lt;= p; ++k) a[k] = 0;
+    for (int m = 1; m &lt;= p; ++m) {
+        double delta = r[m];
+        for (int k = 1; k &lt;= m-1; ++k) delta += a[k]*r[m-k];
+        const double K = -delta / E;
+        if (std::fabs(K) &gt;= 1.0) return -2;
+        for (int k = 1; k &lt;= m-1; ++k) anew[k] = a[k] + K*a[m-k];
+        for (int k = 1; k &lt;= m-1; ++k) a[k] = anew[k];
+        a[m] = K; E *= (1.0 - K*K);
+    }
+    *E_out = E; return 0;
+}
+
+int main()
+{
+    enum { N = 64, P = 4 };
+    double x[N], r[P+1], a[P+1], E;
+    const double w[8] = {0.1,-0.2,0.05,0.3,-0.1,0.2,-0.05,0.0};
+    x[0] = w[0];
+    for (int n = 1; n &lt; N; ++n) x[n] = 0.9 * x[n-1] + w[n &amp; 7];
+    acf_biased(x, N, r, P);
+    levinson_durbin(r, P, a, &amp;E);
+    for (int i = 1; i &lt;= P; ++i) std::printf("a%d=%.6f\n", i, a[i]);
+    std::printf("E=%.6f\n", E);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex13">
+    <span class="diff senior">Senior / Hero · Ex 13</span>
+    <div class="ex-title">All-pole interpretation and stability via K</div>
+
+    <p class="part">Theory</p>
+    <p>The polynomial A(z)=1 + a(1)z^{−1}+…+a(p)z^{−p} defines an all-pole synthesis filter 1/A(z) when used as an AR model. If all |K_m|&lt;1, the filter is minimum-phase / stable (real LPC).</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>הפולינום A(z) מגדיר מודל all-pole. אם כל |K|&lt;1 הסינתזה יציבה (במקרה הקלאסי האמיתי).</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>Write A(z) for p=1 with a(1)=−0.9.</li><li>Where is the pole? Is |pole|&lt;1?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>כתוב A(z) ל־a(1)=−0.9 ומצא את הקוטב.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same stability demo with a self-contained LD.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol13c')">Reveal code</button>
+    <div id="sol13h" class="solution">
+      <div class="why">A(z)=1 − 0.9 z^{−1}. Pole at z=0.9, inside the unit circle → stable.<br><span dir='rtl'>קוטב ב־0.9, בתוך מעגל היחידה.</span></div>
+    </div>
+    <div id="sol13c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+#include &lt;cmath&gt;
+#include &lt;cstring&gt;
+
+int levinson_durbin(const double *r, int p, double *a, double *E_out)
+{
+    if (p &lt; 1 || r[0] &lt;= 0.0) return -1;
+    std::memset(a, 0, static_cast&lt;size_t&gt;(p + 1) * sizeof(double));
+    double E = r[0];
+    double anew[32];
+    for (int m = 1; m &lt;= p; ++m) {
+        double delta = r[m];
+        for (int k = 1; k &lt;= m - 1; ++k) delta += a[k] * r[m - k];
+        const double K = -delta / E;
+        if (std::fabs(K) &gt;= 1.0) return -2;
+        for (int k = 1; k &lt;= m - 1; ++k) anew[k] = a[k] + K * a[m - k];
+        for (int k = 1; k &lt;= m - 1; ++k) a[k] = anew[k];
+        a[m] = K;
+        E *= (1.0 - K * K);
+    }
+    *E_out = E;
+    return 0;
+}
+
+int main()
+{
+    double r_ok[3] = {1.0, 0.5, 0.2};
+    double r_bad[3] = {1.0, 0.99, 0.98};
+    double a[3], E;
+    if (levinson_durbin(r_ok, 2, a, &amp;E) == 0) {
+        bool stable = true;
+        for (int m = 1; m &lt;= 2; ++m)
+            if (std::fabs(a[m]) &gt;= 1.0) stable = false;
+        std::printf("ok path stable=%d E=%.6f\n", stable ? 1 : 0, E);
+    }
+    std::printf("bad path rc=%d\n", levinson_durbin(r_bad, 2, a, &amp;E));
+    return 0;
+}</code></pre>
+      <div class="why">Hero habit: never ship LPC coeffs without a |K| gate (or equivalent PD test).</div>
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex14">
+    <span class="diff senior">Senior / Hero · Ex 14</span>
+    <div class="ex-title">Complexity: why O(p²) beats O(p³), and Schür in one paragraph</div>
+
+    <p class="part">Theory</p>
+    <p>Each stage m costs O(m) for the inner product Δ plus O(m) for the a-update → sum_m O(m) = O(p²). Dense inversion ignores Toeplitz → O(p³). The Schür algorithm is a related Toeplitz-positive-definiteness / reflection recursion that avoids some inner products and maps well to parallel hardware — know it exists.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>כל שלב עולה O(m) ולכן סה״כ O(p²). היפוך צפוף O(p³). אלגוריתם Schür קשור ומתאים יותר למקביליות.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>For p=256, rough multiply count ratio p³/p²?</li><li>In one sentence: when would you still use Cholesky on a small dense Γ instead of LD?</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>יחס עלויות ל־p=256? מתי בכל זאת Cholesky?</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same instrumentation in C++.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol14c')">Reveal code</button>
+    <div id="sol14h" class="solution">
+      <div class="why">Ratio ≈ p = 256× more for naive dense. Use Cholesky when p is tiny (e.g. ≤16), you already have a general solver, or the matrix is Toeplitz-plus-small-perturbation / not exactly Toeplitz.<br><span dir='rtl'>בערך פי 256. ל־p קטן או מטריצה לא בדיוק Toeplitz — Cholesky בסדר.</span></div>
+    </div>
+    <div id="sol14c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+long long flops;
+
+int levinson_durbin_counted(const double *r, int p, double *a, double *E_out)
+{
+    double E = r[0];
+    double anew[256];
+    flops = 0;
+    for (int k = 0; k &lt;= p; ++k) a[k] = 0;
+    for (int m = 1; m &lt;= p; ++m) {
+        double delta = r[m];
+        for (int k = 1; k &lt;= m - 1; ++k) { delta += a[k] * r[m - k]; ++flops; }
+        const double K = -delta / E; ++flops;
+        for (int k = 1; k &lt;= m - 1; ++k) { anew[k] = a[k] + K * a[m - k]; flops += 2; }
+        for (int k = 1; k &lt;= m - 1; ++k) a[k] = anew[k];
+        a[m] = K;
+        E *= (1.0 - K * K); flops += 2;
+    }
+    *E_out = E; return 0;
+}
+
+int main()
+{
+    double r[64], a[64], E;
+    for (int i = 0; i &lt; 64; ++i) r[i] = (i == 0) ? 1.0 : 0.5 / static_cast&lt;double&gt;(i);
+    for (int p = 8; p &lt;= 32; p *= 2) {
+        levinson_durbin_counted(r, p, a, &amp;E);
+        std::printf("p=%d flops=%lld flops/p^2=%.2f\n", p, flops, flops / static_cast&lt;double&gt;(p * p));
+    }
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="exercise" id="ex15">
+    <span class="diff senior">Senior / Hero · Ex 15</span>
+    <div class="ex-title">Hero lab: LPC on a frame + lattice step + FIR confusion check</div>
+
+    <p class="part">Theory</p>
+    <p>Hero level: (1) run ACF+LD on a frame, (2) apply one lattice section using K (forward/backward residual idea), (3) write a short comment explaining why these a[k] are NOT the same object as Wiener–Hopf FIR taps fitted to a spectral NR mask.</p>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>רמת גיבור: ACF+LD, שלב lattice אחד, והסבר למה זה לא מקדמי FIR מ־Wiener–Hopf על מסכת NR.</p>
+    </div>
+
+    <p class="part">Handwriting</p>
+    <ol><li>In prose: name the output of LD vs the output of mask→WH→FIR.</li><li>Give one scenario where you would choose LD/LPC, and one where you would choose WH-FIR.</li></ol>
+    <div class="he">
+      <h4>עברית — כתב יד</h4>
+      <p>הבחן בין פלטי LD לבין WH-FIR, ותן תרחיש לכל אחד.</p>
+    </div>
+
+    <p class="part">Coding (C++)</p>
+    <ul><li>Same lattice_step + comment discipline in C++.</li><li>Optional: put LD in <code>namespace lpc</code> and WH notes in <code>namespace whfir</code> comments only.</li></ul>
+
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15h')">Reveal handwriting</button>
+    <button type="button" class="reveal-btn" onclick="toggleSol('sol15c')">Reveal code</button>
+    <div id="sol15h" class="solution">
+      <div class="why">LD → AR / predictor / reflection coeffs (all-pole world). WH-FIR → transversal FIR taps matching a desired response/correlations.<br>Choose LD for classical speech LPC / all-pole spectral envelopes; choose WH-FIR when the product needs a short FIR in FadedFir matched to a mask.<br><span dir='rtl'>LD לעולם all-pole/LPC; WH-FIR כשצריך מקדמי FIR קצרים מותאמים למסכה.</span></div>
+    </div>
+    <div id="sol15c" class="solution">
+      <pre><code>#include &lt;cstdio&gt;
+
+void lattice_step(double f, double b, double K, double *f_out, double *b_out)
+{
+    *f_out = f + K * b;
+    *b_out = b + K * f;
+}
+
+/*
+ * lpc:: — Levinson-Durbin / all-pole predictor world
+ * whfir:: — Wiener-Hopf FIR taps from mask (different RHS, different product meaning)
+ * Sharing a Toeplitz solver is fine; sharing the *semantics* is not.
+ */
+
+int main()
+{
+    const double K = -0.5;
+    double f2 = 0.0, b2 = 0.0;
+    lattice_step(1.0, 0.2, K, &amp;f2, &amp;b2);
+    std::printf("f'=%.4f b'=%.4f\n", f2, b2);
+    return 0;
+}</code></pre>
+      
+    </div>
+  </div>
+
+
+  <div class="section">
+    <h2>Closing checklist — you are a hero when…</h2>
+    <ul>
+      <li>You can write the normal equations Γa=−γ and explain Toeplitz structure.</li>
+      <li>You can derive order-1 and order-2 by hand, then code the full O(p²) recursion.</li>
+      <li>You never update <code>a[k]</code> in-place without protecting <code>a[m−k]</code>.</li>
+      <li>You gate on <code>|K_m|&lt;1</code> and watch E decrease.</li>
+      <li>You can explain LD/LPC vs Wiener–Hopf FIR without mixing the products.</li>
+    </ul>
+    <div class="he">
+      <h4>עברית</h4>
+      <p>סיימת ברמה גבוהה כשאתה כותב את המשוואות הנורמליות, מממש את הרקורסיה המלאה בזהירות,
+      בודק |K| ו־E, ויודע להבדיל בין LPC/all-pole לבין FIR מ־Wiener–Hopf.</p>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#57606a;font-size:0.88rem;margin-top:28px;">
+    Batch 02 · Levinson–Durbin from zero to hero · 15 exercises · EN + HE · C++ (no STL containers)
+  </p>
+
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
