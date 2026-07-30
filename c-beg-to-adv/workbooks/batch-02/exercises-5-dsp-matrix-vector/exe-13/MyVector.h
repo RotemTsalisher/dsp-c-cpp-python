@@ -19,8 +19,8 @@ class MyVector {
         const double& operator[](size_t i) const;
         double& operator[](size_t i);
         friend std::ostream& operator<<(std::ostream& os, const MyVector& vec);
-        MyVector& fir_via_matvec(const Matrix& toeplitz);
-        MyVector& fir_direct(const MyVector& h) const;
+        MyVector fir_via_matvec(const MyVector& h) const;
+        MyVector fir_direct(const MyVector& h) const;
 };
 
 

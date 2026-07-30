@@ -6,6 +6,7 @@ static constexpr size_t MAX_ROWS = 100, MAX_COLS = 100;
 
 class MyVector;
 class Matrix {
+    friend class MyVector;
     private:
         double mat[MAX_ROWS][MAX_COLS];
         size_t m,n;
