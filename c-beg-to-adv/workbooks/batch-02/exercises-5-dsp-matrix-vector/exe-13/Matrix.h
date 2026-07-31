@@ -19,8 +19,8 @@ class Matrix {
 
         const double& operator()(size_t i, size_t j) const;
         double& operator()(size_t i, size_t j);
-        MyVector& operator*(const MyVector& vec) const;
-        friend std::ostream& operator<<(std::ostream& os, const Matrix mat);
+        MyVector operator*(const MyVector& vec) const;
+        friend std::ostream& operator<<(std::ostream& os, const Matrix& mat);
 
 };
 

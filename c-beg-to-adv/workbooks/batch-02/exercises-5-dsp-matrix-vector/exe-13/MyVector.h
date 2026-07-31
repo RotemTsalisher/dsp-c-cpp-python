@@ -2,10 +2,11 @@
 #define __MYVECTOR__H
 
 #include <iostream>
-#include "Matrix.h"
 static constexpr size_t MAX_DIM_SIZE = 100;
 
+class Matrix;
 class MyVector {
+    friend class Matrix;
     private:
         double vec[MAX_DIM_SIZE];
         size_t l;

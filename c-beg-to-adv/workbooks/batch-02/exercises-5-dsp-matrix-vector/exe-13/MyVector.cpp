@@ -1,5 +1,5 @@
 #include "MyVector.h"
-
+#include "Matrix.h"
 double& MyVector::operator[](size_t i) {
     return this->vec[i];
 };
@@ -73,7 +73,8 @@ MyVector MyVector::fir_via_matvec(const MyVector& h) const {
 
     MyVector y;
 
-    y.l = this->l;
+    y = (circulant * (*this));
+/*    y.l = this->l;
 
     for(size_t i = 0; i < y.l; ++i) {
         y[i] = 0.0;
@@ -82,6 +83,6 @@ MyVector MyVector::fir_via_matvec(const MyVector& h) const {
             y[i] += (circulant(i , k) * (*this)[k]);
         };
     };
-
+*/
     return y;
 };
