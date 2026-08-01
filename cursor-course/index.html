@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cursor Zero to Hero — Embedded DSP Engineers</title>
+  <style>
+:root {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --surface2: #243044;
+  --text: #e7ecf3;
+  --muted: #9aa8bc;
+  --accent: #3d9cf5;
+  --accent2: #5eead4;
+  --warn: #fbbf24;
+  --ok: #4ade80;
+  --border: #2d3a4f;
+  --ex: #1e2a3d;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+a { color: var(--accent); }
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+nav.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1rem;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+nav.sidebar h1 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+nav.sidebar .sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+nav.sidebar input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+nav.sidebar ul { list-style: none; padding: 0; margin: 0; }
+nav.sidebar li { margin-bottom: 0.15rem; }
+nav.sidebar button.module-link {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+nav.sidebar button.module-link:hover { background: var(--surface2); }
+nav.sidebar button.module-link.active {
+  background: var(--accent);
+  color: #061018;
+  font-weight: 600;
+}
+nav.sidebar .level {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.progress-wrap {
+  margin: 1rem 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.progress-bar {
+  height: 6px;
+  background: var(--bg);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+.progress-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0%;
+  transition: width 0.3s ease;
+}
+main {
+  padding: 1.5rem 2rem 4rem;
+  max-width: 920px;
+}
+.hero {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero h2 { margin: 0 0 0.5rem; font-size: 1.75rem; }
+.hero p { color: var(--muted); margin: 0; }
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--accent2);
+  margin-right: 0.35rem;
+}
+.lesson h3 { margin-top: 1.5rem; color: var(--accent2); }
+.lesson h4 { margin-top: 1rem; }
+.lesson pre.code-block {
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+}
+.lesson code {
+  background: var(--surface2);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+.exercise {
+  background: var(--ex);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  margin: 1.25rem 0;
+}
+.exercise header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.exercise h5 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.exercise .ex-id {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+}
+.exercise .prompt { margin: 0.75rem 0; }
+.exercise .hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-top: 1px dashed var(--border);
+  padding-top: 0.65rem;
+  margin-top: 0.65rem;
+}
+.exercise .actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+button.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+button.btn-primary { background: var(--accent); color: #061018; }
+button.btn-ghost { background: var(--surface2); color: var(--text); }
+button.btn-ok { background: #166534; color: #ecfdf5; }
+.exercise.done { border-left-color: var(--ok); opacity: 0.92; }
+.solution {
+  display: none;
+  margin-top: 0.85rem;
+  padding: 0.85rem;
+  background: #0a0e14;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.8rem;
+}
+.solution.visible { display: block; }
+.stretch {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--warn);
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.sidebar { position: relative; height: auto; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Course navigation">
+      <h1 id="course-title">Loading…</h1>
+      <p class="sub" id="course-sub"></p>
+      <div class="progress-wrap">
+        <span id="progress-label">0 / 0 exercises</span>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+      </div>
+      <input type="search" id="search" placeholder="Filter modules…" aria-label="Filter modules" />
+      <p class="level">Modules</p>
+      <ul id="module-list"></ul>
+    </nav>
+    <main>
+      <section class="hero">
+        <h2 id="module-title">Welcome</h2>
+        <div id="module-meta"></div>
+        <p id="module-summary" style="margin-top:0.75rem;color:var(--muted);"></p>
+        <p style="font-size:0.85rem;color:var(--muted);margin-top:1rem;">
+          Open this file in any browser. Progress saves locally. Work in a real <code>dsp-sandbox</code> repo alongside the course.
+          <strong>88 exercises</strong> · scratch → expert · embedded DSP context.
+        </p>
+      </section>
+      <section class="lesson" id="lesson-body"></section>
+      <section>
+        <h3 style="color:var(--accent2);">Exercises</h3>
+        <p id="exercise-count" style="color:var(--muted);font-size:0.9rem;"></p>
+        <div id="exercises"></div>
+      </section>
+    </main>
+  </div>
+  <script>
+    window.COURSE_DATA = {"title": "Cursor Zero to Hero for Embedded DSP Engineers", "subtitle": "C / C++ · Python · Firmware · Agent · Git · MCP · Skills · Hooks · Cloud · Automations", "version": "2026.08", "modules": [{"id": "00", "title": "Start Here: Mindset & Setup", "level": "Beginner", "summary": "Install Cursor, open a DSP-friendly repo, and learn how AI pair programming fits firmware work.", "body": "<h3>What you will become fluent in<\/h3>\n<p>Cursor is an IDE built on VS Code with **Chat**, **Inline Edit**, **Tab completion**, and an **Agent** that can edit files, run terminals, and use tools. For embedded DSP, your superpower is giving the agent **deterministic context**: register maps, Q-format rules, build commands, and test harnesses.<\/p>\n<h3>Install &amp; first launch<\/h3>\n<p>1. Download Cursor from [cursor.com](https://cursor.com).<\/p>\n<p>2. Sign in and pick a model (Composer / Agent models change over time — use the default recommended tier for coding).<\/p>\n<p>3. **File → Open Folder** on a small C or Python DSP sandbox (you will create one in Exercise 1).<\/p>\n<h3>The three surfaces you will live in<\/h3>\n<ul>\n<li>**Editor + Tab**: micro-edits, boilerplate, repetitive register structs.<\/li>\n<li>**Chat (Ask)**: explain ISR code, compare CMSIS-DSP vs your custom kernel, plan refactors without touching files.<\/li>\n<li>**Agent (Composer)**: multi-file features, tests, CMake fixes, git operations — with approval gates you control.<\/li>\n<\/ul>\n<h3>Embedded DSP safety habits (use from day one)<\/h3>\n<ul>\n<li>Never paste production keys, J-Link licenses, or customer binaries into prompts.<\/li>\n<li>Treat agent shell commands like a junior engineer: review before run on hardware scripts.<\/li>\n<li>Keep **golden vectors** (small <code>.csv<\/code> / <code>.npy<\/code>) in-repo so the agent can regression-test DSP.<\/li>\n<\/ul>\n<h4>Key settings to locate now<\/h4>\n<p>Open **Cursor Settings** and find: **Rules**, **Models**, **Features → Agent**, **MCP**, **Beta / Labs** (names shift — search settings for &quot;rules&quot;, &quot;agent&quot;, &quot;mcp&quot;).<\/p>", "exercises": [{"id": "00-1", "prompt": "Create a folder `dsp-sandbox` with `src/`, `tests/`, `scripts/`, and `docs/`. Add a one-line `README.md` describing a fictional MCU + FPU target.", "hints": "Use Agent: \"Create minimal embedded DSP sandbox layout only, no large files.\"", "solution": "Layout:\n```\ndsp-sandbox/\n  README.md\n  src/\n  tests/\n  scripts/\n  docs/\n```\nREADME example: \"Target: ARM Cortex-M4F @ 96 MHz, CMSIS-DSP optional, float32 FFT bring-up.\" ", "stretch": ""}, {"id": "00-2", "prompt": "Open Cursor Settings and list (in your own notes) where **Project Rules**, **User Rules**, and **MCP** live.", "hints": "Settings search: rules, mcp, agent.", "solution": "Typical locations (UI labels vary by version):\n- Project rules: `.cursor/rules/*.mdc` in repo + Settings → Rules\n- User rules: global rules in Settings\n- MCP: Settings → MCP (or Cursor Settings → Features → MCP) plus per-project `mcp.json` where supported", "stretch": ""}, {"id": "00-3", "prompt": "In Chat (Ask mode), ask: \"Explain fixed-point Q15 multiply in one paragraph and give a 3-line C example.\" Do not allow file edits.", "hints": "Use @Docs only if you have CMSIS docs indexed; otherwise plain Ask is fine.", "solution": "You should get: product needs >>15 scaling, saturation optional, example like `(int16_t)(((int32_t)a * b) >> 15)` with commentary on overflow.", "stretch": ""}]}, {"id": "01", "title": "UI Tour: Editor, Terminal, Source Control", "level": "Beginner", "summary": "Navigate like a pro: panels, multi-root, problems tab, and running `cmake`/`make` from integrated terminal.", "body": "<h3>VS Code DNA<\/h3>\n<p>Cursor inherits **Command Palette** (<code>Ctrl+Shift+P<\/code>), **Problems**, **Output**, **Debug**, and **Extensions**. Your embedded flow usually pins: **Terminal** (build/flash), **Problems** (compiler errors Agent must see), **Git**.<\/p>\n<h3>Layout recipe for DSP firmware<\/h3>\n<ul>\n<li>Left: file tree with <code>src/<\/code>, <code>tests/<\/code>, <code>third_party/<\/code> separated.<\/li>\n<li>Bottom: terminal running <code>cmake --build<\/code> or <code>west build<\/code>.<\/li>\n<li>Right or bottom: Chat/Agent panel docked where it does not cover <code>*.h<\/code> register maps.<\/li>\n<\/ul>\n<h3>Command Palette tricks<\/h3>\n<ul>\n<li><code>Terminal: Create New Terminal<\/code><\/li>\n<li><code>Git: View History<\/code><\/li>\n<li><code>Preferences: Open User Settings (JSON)<\/code> — advanced tuning<\/li>\n<\/ul>\n<h3>Let the Agent see compiler errors<\/h3>\n<p>After a failed build, select the error lines in terminal → **Add to Chat** (or copy). Agents fix faster with **exact** diagnostics than with &quot;build failed&quot; alone.<\/p>", "exercises": [{"id": "01-1", "prompt": "Add `src/biquad.h` with an empty struct `BiquadState` and function prototype `void biquad_process(...)`. No implementation yet.", "hints": "Tab completion in the header after you type the struct name.", "solution": "Example header snippet:\n```c\n#pragma once\n#include <stdint.h>\ntypedef struct { float z1, z2; } BiquadState;\nvoid biquad_process(const float *in, float *out, uint32_t n, const float *coeffs, BiquadState *st);\n```", "stretch": ""}, {"id": "01-2", "prompt": "Open integrated terminal, `cd` to your sandbox, run `echo Build placeholder` — then pin that terminal tab.", "hints": "Right-click terminal tab → rename to \"build\".", "solution": "Pinned terminal named `build` so Agent instructions can say \"use the build terminal\".", "stretch": ""}, {"id": "01-3", "prompt": "Intentionally introduce a syntax error in a `.c` file, build if you have a build system — or rely on C/C++ extension squiggles. Copy **Problems** panel text into Chat and ask for a fix **explanation only**.", "hints": "This trains error-driven Ask workflow before Agent auto-fix.", "solution": "Chat should identify missing semicolon/brace/type mismatch without editing until you switch to Agent.", "stretch": ""}]}, {"id": "02", "title": "Tab Inline Completion (Copilot-style)", "level": "Beginner", "summary": "Use Tab for repetitive embedded patterns: DMA descriptors, CMSIS calls, Python numpy vector prep.", "body": "<h3>When Tab shines in DSP<\/h3>\n<ul>\n<li>Expanding **repetitive** code: tap delay lines, cordic iterations, unrolled MAC loops (where you want consistency).<\/li>\n<li>Header guard + include blocks copied across drivers.<\/li>\n<li>Python: generating test vectors matching C array literals.<\/li>\n<\/ul>\n<h3>When to refuse Tab<\/h3>\n<ul>\n<li>Safety-critical register writes without comments.<\/li>\n<li>Changing **Q-format** or **shift** constants — verify manually.<\/li>\n<li>License headers — paste from your legal template instead.<\/li>\n<\/ul>\n<h3>Steering Tab with context<\/h3>\n<p>Open related files (<code>coeffs.h<\/code>, <code>unit_test.c<\/code>) in background tabs — Tab uses recent context. For project-specific style, add a short rule (Module 05).<\/p>", "exercises": [{"id": "02-1", "prompt": "In `tests/test_vectors.py`, start typing `import numpy as np` and a function `def tone(fs, f0, n):` — accept Tab suggestions to finish a sine generator.", "hints": "Type docstring first: \"Generate float32 sine for FFT golden vector.\"", "solution": "```python\nimport numpy as np\n\ndef tone(fs: float, f0: float, n: int) -> np.ndarray:\n    t = np.arange(n, dtype=np.float64) / fs\n    return np.sin(2 * np.pi * f0 * t).astype(np.float32)\n```", "stretch": ""}, {"id": "02-2", "prompt": "In C, type `static inline int32_t q15_mul` and use Tab to suggest body; **edit** the shift to match your project's Q format.", "hints": "Comment `// Q15 * Q15 -> Q15` above function.", "solution": "Correct pattern uses `int32_t` accumulator and `>> 15`, with optional saturation helper your project defines.", "stretch": ""}, {"id": "02-3", "prompt": "Write a 5-line comment block describing an ISR: \"ADC DMA half-complete, double buffer swap\". Use Tab to draft the ISR skeleton; delete any hardware-specific registers you have not verified.", "hints": "Rule: ISR skeleton only — no fictional register addresses in committed code.", "solution": "Skeleton with empty callbacks `on_half_complete()` / `on_full_complete()` and `// TODO: verify DR register flags on target silicon`.", "stretch": ""}]}, {"id": "03", "title": "Inline Edit (Cmd/Ctrl+K)", "level": "Beginner", "summary": "Surgical edits inside a selection: vectorize, add const correctness, convert float kernel to fixed-point.", "body": "<h3>Inline Edit pattern<\/h3>\n<p>1. Select function or lines.<\/p>\n<p>2. <code>Ctrl+K<\/code> (Windows) / <code>Cmd+K<\/code> (macOS).<\/p>\n<p>3. Instruction: precise, testable — &quot;Add <code>const<\/code> to read-only pointers, preserve MISRA-style naming.&quot;<\/p>\n<h3>DSP examples<\/h3>\n<ul>\n<li>&quot;Replace divide with multiply-by-reciprocal with comment showing precomputed <code>invN<\/code>.&quot;<\/li>\n<li>&quot;Add <code>restrict<\/code> only if C99 and project allows; else explain why not.&quot;<\/li>\n<li>Python: &quot;Convert list comprehension to numpy for speed, keep same dtype float32.&quot;<\/li>\n<\/ul>\n<h3>Verify<\/h3>\n<p>Always re-run unit tests after Inline Edit — it does not have full Agent planning context.<\/p>", "exercises": [{"id": "03-1", "prompt": "Select a loop that copies samples and Inline Edit: \"Use `memcpy` for byte-aligned float blocks; keep scalar tail for odd lengths.\"", "hints": "If no loop exists, create a naive for-loop first.", "solution": "Uses `memcpy` for `n/4*4` floats or byte count `len & ~3` pattern with documented alignment assumption.", "stretch": ""}, {"id": "03-2", "prompt": "Inline Edit a Python test to use `np.testing.assert_allclose(rtol=1e-5)` comparing C output loaded from file.", "hints": "Mention path `tests/golden/out.bin` in prompt.", "solution": "Load with `np.fromfile(..., dtype=np.float32)` and assert length match.", "stretch": ""}, {"id": "03-3", "prompt": "Inline Edit: add Doxygen-style brief to each function in one `.c` file without changing logic.", "hints": "Select whole file or each function separately for control.", "solution": "Each function gets `@brief`, `@param`, `@return` consistent with your team template.", "stretch": ""}]}, {"id": "04", "title": "Chat vs Agent vs Plan Mode", "level": "Beginner", "summary": "Pick the right mode: exploration, execution, or architecture planning before touching DMA code.", "body": "<h3>Ask / Chat<\/h3>\n<p>Best for: &quot;What does this NVIC line do?&quot;, comparing filter topologies, reviewing stack usage estimates.<\/p>\n<h3>Agent<\/h3>\n<p>Best for: implement feature + tests + wire CMake + run build. You approve tool use (terminal, writes).<\/p>\n<h3>Plan Mode<\/h3>\n<p>Use when refactoring **cross-cutting** concerns: splitting <code>dsp/<\/code> from <code>bsp/<\/code>, introducing platform abstraction, migrating Q31 → float on FPU targets. Agent produces a plan; you iterate before execution.<\/p>\n<h3>Embedded rule of thumb<\/h3>\n<p>| Task | Mode |<\/p>\n<p>| Bootloader touch | Plan → small Agent steps with review |<\/p>\n<p>| New CMSIS-DSP wrapper | Agent with tests |<\/p>\n<p>| Understand aliasing in your ISR | Ask |<\/p>", "exercises": [{"id": "04-1", "prompt": "Ask Chat to draw a **text** dataflow for double-buffered ADC → FFT → magnitude without writing files.", "hints": "Mention buffer sizes N, hop size H.", "solution": "Flow: ADC DMA fills A/B; on half/full flag compute FFT in worker context; publish magnitude array to consumer with seqlock or atomic index.", "stretch": ""}, {"id": "04-2", "prompt": "Switch to **Plan Mode** (or ask Agent to plan only): \"Plan adding unit tests for `biquad_process` without editing yet.\" Approve nothing destructive.", "hints": "Require deliverables: test list, files to add, cmake target name.", "solution": "Plan lists: impulse response test, step response, sine sweep SNR threshold, file paths under `tests/`.", "stretch": ""}, {"id": "04-3", "prompt": "Agent: implement **one** planned test file only (e.g. impulse response) and run it. Stop before refactoring production code.", "hints": "Tell Agent: minimal diff, no unrelated formatting.", "solution": "Single test binary or pytest wrapper invoking compiled test harness; Agent log shows command run + pass/fail.", "stretch": ""}]}, {"id": "05", "title": "Context: @ Files, Folders, Code, Docs, Web", "level": "Intermediate", "summary": "Precision context beats long prompts — critical for register maps and coefficient headers.", "body": "<h3>@ mentions<\/h3>\n<ul>\n<li><code>@src/filter.c<\/code> — single file<\/li>\n<li><code>@src/<\/code> — folder (use sparingly; can burn context)<\/li>\n<li><code>@Code<\/code> — symbols (when indexed)<\/li>\n<li><code>@Docs<\/code> — vendor docs you added<\/li>\n<li><code>@Git<\/code> — diffs, commits (great for review)<\/li>\n<\/ul>\n<h3>DSP workflow<\/h3>\n<p>Pin **golden** references: <code>@tests/golden/fft_256_ref.npy<\/code> description in prompt, not always the binary itself.<\/p>\n<h3>Anti-pattern<\/h3>\n<p>Attaching entire <code>third_party/CMSIS<\/code> — instead add a rule summarizing which CMSIS functions you allow.<\/p>", "exercises": [{"id": "05-1", "prompt": "Ask with `@README.md` + `@src/biquad.h`: \"List missing pieces to ship a minimal biquad module.\"", "hints": "Create README if empty with target and build notes.", "solution": "Answer should mention: `.c` implementation, coeffs design doc, tests, cmake source list, maybe Q format note.", "stretch": ""}, {"id": "05-2", "prompt": "Agent task: \"Using only `@tests/`, propose a python script layout to generate C arrays\" — no implementation until you approve plan in message.", "hints": "Keep scope to tests folder.", "solution": "Proposes `tests/gen_vectors.py` outputting `tests/generated/vectors.c` with `const float tap[] = {...};`", "stretch": ""}, {"id": "05-3", "prompt": "Use @Git (or paste `git diff`) after a small change; ask Chat for a **review checklist** tuned to ISR safety.", "hints": "Change anything in a `.c` file first.", "solution": "Checklist covers: reentrancy, volatile MMIO, stack usage, FPU context save, priority inversion.", "stretch": ""}]}, {"id": "06", "title": "Project Rules (.mdc) for C/C++/DSP", "level": "Intermediate", "summary": "Encode MISRA-ish style, Q-format, CMSIS policy, and \"never touch bootloader\" as persistent rules.", "body": "<h3>`.cursor/rules/*.mdc`<\/h3>\n<p>Rules are markdown with YAML frontmatter:<\/p>\n<pre class=\"code-block\" data-lang=\"yaml\"><code>\n---\ndescription: DSP fixed-point conventions\nglobs: **/*.{c,h,cpp,hpp}\nalwaysApply: false\n---\n<\/code><\/pre>\n<h3>What embedded teams put in rules<\/h3>\n<ul>\n<li>Integer types (<code>stdint.h<\/code> only), forbid implicit narrowing<\/li>\n<li>ISR rules: no malloc, no printf, flag-only in ISR<\/li>\n<li>Naming: <code>Module_Action<\/code> for HAL, <code>dsp_<\/code> prefix for algorithms<\/li>\n<li>Build: always run <code>cmake --build build --target tests<\/code> after DSP changes<\/li>\n<li>Forbidden paths: <code>bootloader/**<\/code>, <code>cert/**<\/code><\/li>\n<\/ul>\n<h3>Keep rules short<\/h3>\n<p>Under ~50 lines each; split by concern. The agent reads many rules — verbosity hurts.<\/p>", "exercises": [{"id": "06-1", "prompt": "Create `.cursor/rules/dsp-fixed-point.mdc` with globs for C/H and 8–15 lines: Q15 multiply, saturation function name, no float in ISR paths.", "hints": "Ask Agent if unsure about frontmatter fields.", "solution": "File includes frontmatter + bullets: use `dsp_q15_mul`, saturate via `dsp_sat_q15`, `#ifdef DSP_USE_FPU` for non-ISR.", "stretch": ""}, {"id": "06-2", "prompt": "Create `alwaysApply: true` rule `00-global-safety.mdc`: no secrets, no force git push, review before flash scripts.", "hints": "One concern: safety.", "solution": "Always-apply rule with explicit never-commit patterns and hardware script approval.", "stretch": ""}, {"id": "06-3", "prompt": "Add Python rule `globs: **/*.py` requiring numpy float32 for golden vectors and pytest for tests.", "hints": "Cross-link to tests folder in rule text.", "solution": "Rule says: golden vectors dtype float32; tests live in `tests/`; prefer `assert_allclose`.", "stretch": ""}, {"id": "06-4", "prompt": "Prompt Agent: \"Add a biquad coeff helper violating our Q15 rule\" then confirm Agent **corrects** per rule or you fix rule gaps.", "hints": "Meta-exercise on rule enforcement.", "solution": "Either Agent refuses float in ISR path or rule updated to clarify allowed contexts.", "stretch": ""}]}, {"id": "07", "title": "AGENTS.md & Team Conventions", "level": "Intermediate", "summary": "Repository-level agent instructions for onboarding and consistent multi-engineer behavior.", "body": "<h3>AGENTS.md (repo root)<\/h3>\n<p>Some teams add <code>AGENTS.md<\/code> describing:<\/p>\n<ul>\n<li>How to build/flashing **simulator vs hardware**<\/li>\n<li>Where tests live<\/li>\n<li>Code owners mindset (don&#x27;t edit vendor blobs)<\/li>\n<\/ul>\n<h3>Pair with CODEOWNERS<\/h3>\n<p>Agent can split PRs aligned to ownership (see Module 16).<\/p>\n<h3>Template sections<\/h3>\n<p>1. Build commands (Debug/Release)<\/p>\n<p>2. Target matrix (M4F, H7, Linux host sim)<\/p>\n<p>3. DSP numerical tolerances<\/p>\n<p>4. PR checklist<\/p>", "exercises": [{"id": "07-1", "prompt": "Draft `AGENTS.md` with **Build**, **Test**, **Flash** sections for a hypothetical `arm-none-eabi-gcc` CMake project.", "hints": "Keep commands copy-paste ready.", "solution": "Includes `cmake -B build -DCMAKE_TOOLCHAIN_FILE=cmake/arm-gcc.cmake`, `cmake --build build`, `ctest --test-dir build`, flash via `pyocd` placeholder.", "stretch": ""}, {"id": "07-2", "prompt": "Ask Agent to read `AGENTS.md` and scaffold `CMakeLists.txt` host build for algorithm sim (no HAL).", "hints": "Single executable `biquad_sim`.", "solution": "Top-level CMake adds `src/biquad.c`, links math lib on UNIX, enables `-std=c99 -Wall -Wextra`.", "stretch": ""}, {"id": "07-3", "prompt": "Add **Numerical tolerance** section: FFT SNR > 60 dB vs golden; max biquad coeff error 1e-6 float sim.", "hints": "These become acceptance criteria for later Agent tasks.", "solution": "Documented thresholds Agent can cite when writing tests.", "stretch": ""}]}, {"id": "08", "title": "Building, Problems Tab, Agent Fix Loops", "level": "Intermediate", "summary": "Close the loop: compile → paste errors → Agent patch → repeat until green.", "body": "<h3>The embedded fix loop<\/h3>\n<p>1. <code>cmake --build build 2&gt;&amp;1 | tee build.log<\/code><\/p>\n<p>2. Select failures → Add to Chat **or** tell Agent &quot;read terminal output&quot;<\/p>\n<p>3. Agent edits **minimal** hunks<\/p>\n<p>4. Rebuild before optimizing<\/p>\n<h3>Cross-compile tips in prompts<\/h3>\n<p>State toolchain file, CPU flags (<code>-mfpu=fpv4-sp-d16<\/code>), and whether <code>double<\/code> is banned.<\/p>\n<h3>Host vs target<\/h3>\n<p>Prefer **host unit tests** for DSP numerical parity; target tests for cycle counts / DMA integration.<\/p>", "exercises": [{"id": "08-1", "prompt": "Introduce wrong prototype in header vs `.c`; run build; Agent fix with terminal output attached.", "hints": "One error at a time if learning.", "solution": "Matching signatures and `#include` order restored; build succeeds.", "stretch": ""}, {"id": "08-2", "prompt": "Add `-Werror` in CMake for host build; Agent resolves first warning in `biquad.c`.", "hints": "Prompt: fix without suppressing globally.", "solution": "Local cast or const fix rather than blanket pragma unless rule allows.", "stretch": ""}, {"id": "08-3", "prompt": "Create `scripts/build_host.sh` (or `.ps1`) wrapping configure+build; Agent must use script in future tasks ( mention in AGENTS.md).", "hints": "Idempotent script.", "solution": "Script exits non-zero on failure; documents env vars.", "stretch": ""}]}, {"id": "09", "title": "Testing: C host tests, pytest, golden vectors", "level": "Intermediate", "summary": "Make DSP testable: Python generates goldens, C compares, Agent maintains parity.", "body": "<h3>Layered testing pyramid for DSP firmware<\/h3>\n<p>1. **Pure C algorithm** on host (fast)<\/p>\n<p>2. **Python reference** (numpy/scipy) for goldens<\/p>\n<p>3. **Target-in-the-loop** (optional, slower)<\/p>\n<h3>pytest + subprocess<\/h3>\n<p>Run compiled test binary from pytest, or use <code>ctypes<\/code>/<code>cffi<\/code> if you export a sim <code>.so<\/code>.<\/p>\n<h3>Tell Agent acceptance criteria<\/h3>\n<p>&quot;Impulse response peak within 1 LSB of reference&quot; beats &quot;make tests pass&quot;.<\/p>", "exercises": [{"id": "09-1", "prompt": "Add host test `tests/test_biquad_impulse.c` with `main()` returning 0/1; compare first output sample to expected 1.0 for DC gain 1.", "hints": "Keep coeff simple (identity-like).", "solution": "Minimal test harness with `assert(fabs(out[0]-1.0) < 1e-5);` style checks.", "stretch": ""}, {"id": "09-2", "prompt": "Python: `tests/test_biquad_pytest.py` runs C test exe via `subprocess.run` and asserts return code 0.", "hints": "Skip if exe missing with clear message.", "solution": "Uses `pytest.skip` when binary not built; documents build dep.", "stretch": ""}, {"id": "09-3", "prompt": "Generate 256-point FFT golden: Python writes `tests/golden/fft_mag.bin`; C test reads file (host) and compares max error.", "hints": "Agent implements both sides in small steps.", "solution": "Document generation command in `tests/golden/README.md`.", "stretch": ""}, {"id": "09-4", "prompt": "Ask Agent to add CI snippet (GitHub Actions) **host only** building and running tests — no hardware.", "hints": "yaml under `.github/workflows/dsp-host.yml`.", "solution": "Workflow: checkout, apt install cmake gcc, build, ctest/pytest.", "stretch": ""}]}, {"id": "10", "title": "Debugging: GDB, printf trace, Agent as debugger buddy", "level": "Intermediate", "summary": "Combine traditional embedded debug with Agent explaining faults and suggesting watch expressions.", "body": "<h3>Cursor + C/C++ extension debugging<\/h3>\n<ul>\n<li><code>launch.json<\/code> for J-Link / OpenOCD / pyOCD<\/li>\n<li>Conditional breakpoints on buffer index<\/li>\n<\/ul>\n<h3>Agent role<\/h3>\n<p>Paste **HardFault** register dump or GDB backtrace — Ask mode explains **likely** causes; Agent can propose defensive checks in code.<\/p>\n<h3>SWO / RTT<\/h3>\n<p>Ask Agent to stub an <code>log_rtt()<\/code> macro matching your SEGGER setup — you verify addresses.<\/p>\n<h3>Don&#x27;t<\/h3>\n<p>Agent cannot replace reading the Reference Manual — use it to accelerate hypothesis generation.<\/p>", "exercises": [{"id": "10-1", "prompt": "Create `.vscode/launch.json` template for **host** gdb debugging `biquad_sim` (not hardware yet).", "hints": "Ask Agent; verify paths.", "solution": "Config with `program`, `args`, `cwd`, stop at `main`.", "stretch": ""}, {"id": "10-2", "prompt": "Paste a fake backtrace (write one) into Chat; ask for ranked hypotheses and **one** defensive code change.", "hints": "Simulate null pointer in process loop.", "solution": "Suggests NULL checks, length validation, assert macros gated by `DEBUG`.", "stretch": ""}, {"id": "10-3", "prompt": "Inline Edit: add optional `DSP_TRACE` macro expanding to `printf` on host only.", "hints": "Use `#ifdef HOST_BUILD`.", "solution": "`#ifdef HOST_BUILD` `#include <stdio.h>` `#define DSP_TRACE(fmt, ...) printf(fmt, ##__VA_ARGS__)` else empty.", "stretch": ""}]}, {"id": "11", "title": "Git Basics with Agent", "level": "Intermediate", "summary": "Status, diff, focused commits — agent follows your git safety rules.", "body": "<h3>Teach Agent your git etiquette via rules<\/h3>\n<ul>\n<li>No <code>git add -A<\/code> unless asked<\/li>\n<li>Conventional commits or your team format<\/li>\n<li>Never force-push main<\/li>\n<\/ul>\n<h3>Typical flow<\/h3>\n<p>1. You: &quot;Prepare commit for biquad tests only&quot;<\/p>\n<p>2. Agent: status, diff, stage named files, propose message<\/p>\n<p>3. You: approve commit<\/p>\n<h3>`.gitignore` for DSP<\/h3>\n<p>Ignore <code>build/<\/code>, <code>*.o<\/code>, <code>*.bin<\/code> flash artifacts, large captures — but **keep** small goldens.<\/p>", "exercises": [{"id": "11-1", "prompt": "Agent: show `git status` and `git diff` summary; do **not** commit until next exercise.", "hints": "Practice read-only git ops.", "solution": "Clean summary of tracked/untracked; highlights test additions vs junk.", "stretch": ""}, {"id": "11-2", "prompt": "Commit only `src/biquad.c` and matching header with message `feat(dsp): add biquad process stub`.", "hints": "Explicit file list in prompt.", "solution": "Single-purpose commit; other dirty files remain unstaged.", "stretch": ""}, {"id": "11-3", "prompt": "Add `.gitignore` for CMake artifacts; separate commit `chore: ignore build tree`.", "hints": "Two-commit discipline.", "solution": "Ignores `build/`, `cmake-build-*/`, `*.user`, optional `.vscode/` local settings if team policy says so.", "stretch": ""}]}, {"id": "12", "title": "Branches, PRs, and gh CLI", "level": "Advanced", "summary": "Feature branches, pull requests, CI checks — Agent as release engineer assistant.", "body": "<h3>Branch workflow<\/h3>\n<p><code>main<\/code> protected → <code>feat/dsp-biquad-tests<\/code> → PR → review → merge.<\/p>\n<h3>gh CLI<\/h3>\n<p><code>gh pr create<\/code>, <code>gh pr checks<\/code>, <code>gh run view<\/code> — Agent can run if you allow shell.<\/p>\n<h3>PR description quality<\/h3>\n<p>Ask Agent for Summary + Test plan bullets matching your team template.<\/p>\n<h3>Embedded PR extras<\/h3>\n<p>Note: **flash size delta**, **CPU load**, **FPU context** impacts in description.<\/p>", "exercises": [{"id": "12-1", "prompt": "Create branch `feat/dsp-host-tests` from main; verify with `git branch --show-current`.", "hints": "Agent can run git write commands with approval.", "solution": "On feature branch; working tree understood.", "stretch": ""}, {"id": "12-2", "prompt": "Push branch and open draft PR with Summary/Test plan via `gh pr create --draft`.", "hints": "Needs remote; skip if no GitHub remote — practice message drafting instead.", "solution": "PR body includes build instructions and \"host-only CI\".", "stretch": ""}, {"id": "12-3", "prompt": "Ask Agent to respond to a **mock review comment**: \"Add bound check on n samples\" — push fix commit.", "hints": "Edit code + commit + push.", "solution": "Early return or assert on `n==0` / max block size policy.", "stretch": ""}]}, {"id": "13", "title": "Splitting Work into Small PRs", "level": "Advanced", "summary": "Use split-to-prs mindset: independent reviewable slices for DSP + infra changes.", "body": "<h3>When to split<\/h3>\n<ul>\n<li>PR touches **CMake**, **DSP core**, and **BSP** → three PRs<\/li>\n<li>Generated vectors separate from algorithm change<\/li>\n<\/ul>\n<h3>Agent skill: split-to-prs<\/h3>\n<p>Ask: &quot;Propose split plan only&quot; before any git writes. Requires backup stash ref before moving hunks.<\/p>\n<h3>Stacking<\/h3>\n<p>Foundation PR (headers + empty impl) → tests PR → optimization PR with perf notes.<\/p>", "exercises": [{"id": "13-1", "prompt": "Make a messy working tree: CMake + biquad + python gen in one diff. Ask Agent for **split plan only** (titles + files per PR).", "hints": "No git mutations.", "solution": "Plan with 3 PRs: build infra, algorithm, test vectors.", "stretch": ""}, {"id": "13-2", "prompt": "Execute first slice only: commit CMake + AGENTS.md; leave DSP code unstaged.", "hints": "Stage named paths only.", "solution": "First PR ready; other changes still local.", "stretch": ""}, {"id": "13-3", "prompt": "Write Mermaid diagram in PR comment showing dependency between stacked PRs.", "hints": "Agent generates mermaid; you paste to PR.", "solution": "Graph: PR1 CMake → PR2 biquad → PR3 tests depending on PR2.", "stretch": ""}]}, {"id": "14", "title": "Git Worktrees for Parallel Bring-up", "level": "Advanced", "summary": "Work on `feat/fpu-fft` while hotfixing `release/1.2` without stashing chaos.", "body": "<h3>Worktrees 101<\/h3>\n<pre class=\"code-block\" data-lang=\"bash\"><code>\ngit worktree add ../dsp-fft-work feat/fpu-fft\ngit worktree add ../dsp-hotfix release/1.2\n<\/code><\/pre>\n<p>Open **separate Cursor windows** per worktree — agents stay isolated.<\/p>\n<h3>DSP use cases<\/h3>\n<ul>\n<li>Parallel: **optimization branch** vs **bugfix on shipping firmware**<\/li>\n<li>Long Agent job on feature worktree while you manually debug hardware in another<\/li>\n<\/ul>\n<h3>Cleanup<\/h3>\n<p><code>git worktree remove<\/code> when done; avoid deleting branch with unmerged work.<\/p>", "exercises": [{"id": "14-1", "prompt": "Create a second worktree for a fake branch `exp/q31-biquad`; open it in new Cursor window.", "hints": "Document path in notes.", "solution": "Two folders side-by-side; independent `.git` worktree metadata.", "stretch": ""}, {"id": "14-2", "prompt": "In worktree A, Agent adds Q15 biquad; in worktree B, float biquad — confirm no cross-contamination.", "hints": "Same repo, different branches.", "solution": "Build trees separate; git status isolated per worktree.", "stretch": ""}, {"id": "14-3", "prompt": "Remove experimental worktree after merging or abandoning — Agent lists worktrees first.", "hints": "`git worktree list`.", "solution": "Clean list; only main worktree remains or expected set.", "stretch": ""}]}, {"id": "15", "title": "Agent Skills (SKILL.md)", "level": "Advanced", "summary": "Package team workflows: CMSIS-DSP integration, release notes, coefficient validation.", "body": "<h3>Skills location<\/h3>\n<ul>\n<li>Personal: <code>~/.cursor/skills/your-skill/SKILL.md<\/code><\/li>\n<li>Project: <code>.cursor/skills/your-skill/SKILL.md<\/code><\/li>\n<li>**Never** commit to <code>~/.cursor/skills-cursor/<\/code> (reserved)<\/li>\n<\/ul>\n<h3>SKILL.md frontmatter<\/h3>\n<pre class=\"code-block\" data-lang=\"yaml\"><code>\n---\nname: dsp-coeff-review\ndescription: Validates biquad/IIR coefficients for stability and Q-format scaling. Use when changing filters or DSP coeffs.\n---\n<\/code><\/pre>\n<h3>disable-model-invocation<\/h3>\n<p>Default <code>true<\/code> — invoke explicitly: &quot;Use dsp-coeff-review skill&quot;.<\/p>\n<h3>Embedded skill ideas<\/h3>\n<ul>\n<li>Flash procedure checker<\/li>\n<li>Register map diff reviewer<\/li>\n<li>MISRA spot-check (not certification!)<\/li>\n<\/ul>", "exercises": [{"id": "15-1", "prompt": "Create project skill `.cursor/skills/dsp-golden-vectors/SKILL.md` describing how to regenerate and commit goldens.", "hints": "Include trigger terms in description.", "solution": "Steps: run gen script, check file size limits, update README, run pytest.", "stretch": ""}, {"id": "15-2", "prompt": "Invoke skill explicitly in Agent: \"Use dsp-golden-vectors skill to add a new sine wave golden.\"", "hints": "Observe skill-shaped behavior.", "solution": "Agent follows SKILL steps rather than improvising.", "stretch": ""}, {"id": "15-3", "prompt": "Add optional `reference.md` with numpy snippet for FFT reference generation.", "hints": "Keep SKILL.md under 80 lines.", "solution": "Reference holds long code; SKILL links to it.", "stretch": ""}]}, {"id": "16", "title": "MCP: Extending the Agent", "level": "Advanced", "summary": "Connect GitHub, Linear, docs, or custom tools — with embedded-safe guardrails.", "body": "<h3>What MCP gives you<\/h3>\n<p>Model Context Protocol servers expose **tools** the Agent can call: issues, PRs, databases, internal APIs.<\/p>\n<h3>Configure<\/h3>\n<p>Cursor Settings → MCP: add server (stdio or HTTP). Project-level configs may live in <code>.cursor/mcp.json<\/code> depending on version.<\/p>\n<h3>Embedded guardrails<\/h3>\n<p>Use hooks (<code>beforeMCPExecution<\/code>) to block production flash tools from cloud agents.<\/p>\n<h3>Practical MCP for firmware teams<\/h3>\n<ul>\n<li>GitHub: PR status, issues<\/li>\n<li>Sentry: field crash logs<\/li>\n<li>Custom: read-only artifact server for benchmark results<\/li>\n<\/ul>\n<h3>Automations note<\/h3>\n<p>Dashboard-backed MCP servers differ from local-only servers — cloud automations may only use eligible servers.<\/p>", "exercises": [{"id": "16-1", "prompt": "List which MCP servers you have enabled (if any) and write one paragraph on **read-only** policy for production.", "hints": "No keys in course repo.", "solution": "Policy: CI triggers ok; flash/delete tools disabled for cloud; secrets via env not repo.", "stretch": ""}, {"id": "16-2", "prompt": "If GitHub MCP available: Ask Agent to summarize open issues labeled `dsp` (or mock if unavailable).", "hints": "Fallback: use `gh issue list` in terminal.", "solution": "Structured summary with links/numbers.", "stretch": ""}, {"id": "16-3", "prompt": "Design (on paper) a **read-only** MCP tool `get_benchmark_csv` returning last night's CMSIS-DSP bench — no hardware control.", "hints": "Write spec in `docs/mcp-benchmark-spec.md`.", "solution": "Spec: inputs run_id, outputs CSV text, auth token env var, rate limits.", "stretch": ""}]}, {"id": "17", "title": "Cursor Hooks (.cursor/hooks.json)", "level": "Advanced", "summary": "Audit and gate agent actions: shell, MCP, file edits — fail-closed for flash scripts.", "body": "<h3>hooks.json version 1<\/h3>\n<p>Events include: <code>beforeShellExecution<\/code>, <code>afterFileEdit<\/code>, <code>beforeSubmitPrompt<\/code>, <code>preToolUse<\/code>, <code>sessionStart<\/code>, ...<\/p>\n<h3>Embedded examples<\/h3>\n<ul>\n<li>**beforeShellExecution**: block <code>openocd<\/code> flash unless env <code>ALLOW_FLASH=1<\/code><\/li>\n<li>**afterFileEdit**: run <code>clang-format<\/code> on touched <code>.c/.h<\/code><\/li>\n<li>**beforeSubmitPrompt**: regex scan for AWS keys<\/li>\n<\/ul>\n<h3>Project vs user hooks<\/h3>\n<p>Project: <code>.cursor/hooks.json<\/code> — share with team. User: <code>~/.cursor/hooks.json<\/code>.<\/p>\n<h3>Fail open vs closed<\/h3>\n<p>Safety gates should **fail closed** (deny on error).<\/p>", "exercises": [{"id": "17-1", "prompt": "Create `.cursor/hooks.json` with a stub `afterFileEdit` entry pointing to a script that echoes JSON ack (no-op pass-through).", "hints": "See Cursor hooks docs for schema version 1.", "solution": "Valid JSON listing hook command path under `.cursor/hooks/`.", "stretch": ""}, {"id": "17-2", "prompt": "Implement `beforeShellExecution` hook denying commands matching `flash|openocd|pyocd` unless allow flag set.", "hints": "Document in AGENTS.md.", "solution": "Hook returns deny decision with user-visible reason string.", "stretch": ""}, {"id": "17-3", "prompt": "Test: ask Agent to run a harmless `echo test` (allow) vs blocked flash command (deny).", "hints": "Observe hook interaction.", "solution": "Allow succeeds; flash blocked with clear message.", "stretch": ""}]}, {"id": "18", "title": "Cloud Agents & Background Work", "level": "Advanced", "summary": "Run agents while your laptop is closed — ideal for long refactors, CI fixes, doc sweeps.", "body": "<h3>Cloud / background agents<\/h3>\n<p>Use for: multi-file test generation, addressing review comments, rebasing stacks — **not** for secrets-heavy or hardware tasks.<\/p>\n<h3>Prep repo for cloud<\/h3>\n<ul>\n<li>Clear AGENTS.md build/test commands<\/li>\n<li>Rules forbidding destructive git<\/li>\n<li>Small reproducible host tests<\/li>\n<\/ul>\n<h3>Handoff workflow<\/h3>\n<p>1. Push branch<\/p>\n<p>2. Start cloud agent with scoped task<\/p>\n<p>3. Review PR diff like any human contributor<\/p>\n<h3>Security<\/h3>\n<p>Treat cloud agent like CI: read-only prod MCP, no flash hooks allowed.<\/p>", "exercises": [{"id": "18-1", "prompt": "Write a cloud-safe task brief (paste into agent): \"Add host tests for biquad only; no git push; open PR when green.\"", "hints": "Bullet constraints and acceptance tests.", "solution": "Brief includes file scope, commands, tolerance, forbidden paths.", "stretch": ""}, {"id": "18-2", "prompt": "Audit repo for secrets: Agent runs `git grep -i password` / scan `.env` patterns — fix `.gitignore`.", "hints": "No real secrets in sandbox.", "solution": "Clean scan or documented false positives.", "stretch": ""}, {"id": "18-3", "prompt": "Simulate review: pull remote branch (or friend’s patch) and use Agent \"apply review feedback\" with small commits.", "hints": "Practice async collaboration.", "solution": "Incremental commits per review thread.", "stretch": ""}]}, {"id": "19", "title": "Cursor Automations", "level": "Advanced", "summary": "Scheduled/triggered agents: nightly golden regen, PR triage, Slack notifications.", "body": "<h3>Automations (product feature)<\/h3>\n<p>Explicit **Cursor Automations** — not generic GitHub Actions unless you choose that separately.<\/p>\n<p>Triggers may include: git push, PR opened, schedule, Slack.<\/p>\n<h3>Good automation tasks for DSP teams<\/h3>\n<ul>\n<li>Regenerate goldens + open PR if diff detected<\/li>\n<li>Comment CPU cycle regression when benchmark artifact changes<\/li>\n<li>Label PRs touching <code>src/dsp/**<\/code><\/li>\n<\/ul>\n<h3>Finish in editor<\/h3>\n<p>Many automations need final trigger/channel picks in the Automations UI.<\/p>", "exercises": [{"id": "19-1", "prompt": "Draft automation spec table: Name, Trigger, Tools, Instructions, Outcome — for \"nightly host DSP tests on main\".", "hints": "Plain language, no secrets.", "solution": "Table row set describing schedule + run pytest + open issue on fail.", "stretch": ""}, {"id": "19-2", "prompt": "Draft second automation: on PR touching `**/*.c`, run Bugbot-like review instruction (manual invoke if no bot).", "hints": "Use review checklist from Module 20.", "solution": "Automation comment template with ISR checklist.", "stretch": ""}, {"id": "19-3", "prompt": "List **defer to editor** fields (channels, repo scope) you cannot safely guess.", "hints": "PCD completeness mindset.", "solution": "Notes Slack channel IDs, org/repo pickers.", "stretch": ""}]}, {"id": "20", "title": "Subagents: Bugbot & Security Review", "level": "Advanced", "summary": "Dedicated review passes on diffs before merge — especially memory safety in C.", "body": "<h3>When to invoke<\/h3>\n<ul>\n<li>Before merging DSP changes touching ISRs or DMA<\/li>\n<li>After large Agent-generated refactors<\/li>\n<\/ul>\n<h3>Bugbot-style review<\/h3>\n<p>Ask explicitly: &quot;Bugbot on branch changes&quot; with focus areas (overflow, off-by-one in block processing).<\/p>\n<h3>Security review<\/h3>\n<p>For tools talking to cloud, OTA, or crypto — not every IIR patch needs it.<\/p>\n<h3>Your job<\/h3>\n<p>Triage findings: real bug vs noise — embedded static analysis already noisy.<\/p>", "exercises": [{"id": "20-1", "prompt": "Run an explicit review pass on your last DSP commit (Agent with review instructions: off-by-one, Q format, ISR safety).", "hints": "Use diff scope, not whole repo.", "solution": "Written findings ranked P0/P1/P2.", "stretch": ""}, {"id": "20-2", "prompt": "Fix one P1 finding (e.g. missing length check); commit with `fix(dsp): guard block length`.", "hints": "Show before/after in notes.", "solution": "Patch + test proving fix.", "stretch": ""}, {"id": "20-3", "prompt": "Write `.cursor/rules/review-before-merge.mdc` reminding Agent to run review checklist when user says \"pre-merge\".", "hints": "Short rule.", "solution": "Trigger phrase + bullet checklist.", "stretch": ""}]}, {"id": "21", "title": "Multi-file Refactors & Codebase Search", "level": "Advanced", "summary": "Rename Q31 types, extract `dsp/` library, migrate CMSIS calls — Agent + ripgrep discipline.", "body": "<h3>Agent search tools<\/h3>\n<p>Agent uses ripgrep/glob — help it with unique symbols (<code>dsp_biquad_<\/code> prefix).<\/p>\n<h3>Refactor recipe<\/h3>\n<p>1. Plan mode: impact analysis<\/p>\n<p>2. Add compatibility <code>#define<\/code> shims<\/p>\n<p>3. Migrate tests first<\/p>\n<p>4. Remove shims in final PR<\/p>\n<h3>Python/C boundary<\/h3>\n<p>Regenerate ctypes headers when changing exported sim API.<\/p>", "exercises": [{"id": "21-1", "prompt": "Plan rename `BiquadState` → `dsp_biquad_state_t` across repo; Agent executes in two commits (typedef alias, then rename).", "hints": "Watch for break in tests.", "solution": "Intermediate typedef alias commit optional for smooth review.", "stretch": ""}, {"id": "21-2", "prompt": "Extract `src/dsp/` and `src/platform/` — move files; fix includes; build green.", "hints": "Agent updates CMake lists.", "solution": "Includes updated without circular deps.", "stretch": ""}, {"id": "21-3", "prompt": "Add ripgrep-friendly `#error` guard in header if wrong include path used (`platform/hal.h` from dsp).", "hints": "Document include graph in docs/architecture.md.", "solution": "Compile-time error message guides correct include.", "stretch": ""}]}, {"id": "22", "title": "Canvas, Docs, and Long-running Analysis", "level": "Advanced", "summary": "Use Canvas for visual bring-up timelines, filter response plots, benchmark dashboards.", "body": "<h3>Canvas<\/h3>\n<p>When Agent produces charts, benchmark tables, or architecture timelines, **Canvas** gives a side pane React app for exploration.<\/p>\n<h3>DSP fits<\/h3>\n<ul>\n<li>Bode plot exploration from exported CSV<\/li>\n<li>DMA timeline visualization<\/li>\n<li>Flash/RAM budget tables<\/li>\n<\/ul>\n<h3>When to skip Canvas<\/h3>\n<p>Single-file fix — stay in editor.<\/p>", "exercises": [{"id": "22-1", "prompt": "Export CSV `docs/bench/filter_cycles.csv` (fake data ok); ask Agent for Canvas-friendly summary table of cycles vs block size.", "hints": "Columns: block_size, cycles, sram_bytes.", "solution": "Table + brief analysis identifying knee in cache behavior.", "stretch": ""}, {"id": "22-2", "prompt": "Maintain `docs/architecture.md` mermaid: ADC → DSP chain → comms; update after refactor.", "hints": "Keep in sync with code.", "solution": "Diagram matches module boundaries in repo.", "stretch": ""}, {"id": "22-3", "prompt": "Ask Chat to critique architecture doc for **missing failure modes** (overflow, underrun).", "hints": "No file edits required.", "solution": "List adds watchdog, buffer underrun metric, clip detect.", "stretch": ""}]}, {"id": "23", "title": "Cursor SDK & Programmatic Agents (Overview)", "level": "Expert", "summary": "Run agents from CI or internal portals via @cursor/sdk — nightly DSP regression orchestration.", "body": "<h3>SDK use cases<\/h3>\n<ul>\n<li>Kick agent on new golden diff in artifact store<\/li>\n<li>Auto-triage static analysis upload<\/li>\n<li>Internal &quot;DSP copilot&quot; web UI for your team<\/li>\n<\/ul>\n<h3>Concepts<\/h3>\n<p><code>Agent.create<\/code>, streaming runs, cancellation, MCP configuration per agent instance.<\/p>\n<h3>Embedded caution<\/h3>\n<p>SDK agents inherit repo rules; run in isolated runners; no JTAG from cloud.<\/p>\n<p>Deep reference: Cursor SDK skill docs when integrating.<\/p>", "exercises": [{"id": "23-1", "prompt": "Write pseudo-code (Python) calling SDK: on artifact upload, spawn agent with prompt \"compare CSV to baseline thresholds\".", "hints": "No API keys in repo.", "solution": "Shows trigger, prompt template, exit criteria.", "stretch": ""}, {"id": "23-2", "prompt": "Map which steps in your current manual workflow SDK could automate vs must stay human (flash, bench validation).", "hints": "Table in notes.", "solution": "Human: target timing, EMC, analog bring-up. Automate: host numerical, lint, doc sync.", "stretch": ""}]}, {"id": "24", "title": "Capstone: End-to-end DSP Feature Shipment", "level": "Expert", "summary": "Ship a mini feature: DC blocker IIR + tests + CI + PR + review — all Cursor workflows combined.", "body": "<h3>Capstone spec<\/h3>\n<p>Implement **DC blocker** (first-order high-pass) for float32 audio blocks:<\/p>\n<ul>\n<li><code>src/dc_block.h<\/code>, <code>src/dc_block.c<\/code><\/li>\n<li>Host tests vs Python reference<\/li>\n<li>CMake target + CI workflow<\/li>\n<li>Rules + skill + AGENTS.md updated<\/li>\n<li>PR with perf note (cycles estimated on host only)<\/li>\n<\/ul>\n<h3>Acceptance<\/h3>\n<ul>\n<li>Step response settles<\/li>\n<li>Sine at 1 kHz attenuated &lt; 0.1 dB (config dependent — document)<\/li>\n<li>Agent git history clean, split if needed<\/li>\n<\/ul>\n<h3>Expert bonus<\/h3>\n<p>Worktree for experimental Q15 version; hook blocking flash; MCP issue filed for follow-up target benchmark.<\/p>", "exercises": [{"id": "24-1", "prompt": "Plan Mode: full work breakdown with PR slices, owners, and test matrix for DC blocker.", "hints": "Do not code until plan approved by you.", "solution": "WBS + PR list + risks (coeff precision, subnormal handling).", "stretch": ""}, {"id": "24-2", "prompt": "Implement slice 1: algorithm + host unit tests only; green build.", "hints": "Agent allowed; minimal scope.", "solution": "Passes impulse/sine tests; documented coeff derivation.", "stretch": ""}, {"id": "24-3", "prompt": "Implement slice 2: pytest goldens + CI; open PR; run review checklist.", "hints": "Include Test plan in PR body.", "solution": "CI badge green; review comments addressed.", "stretch": ""}, {"id": "24-4", "prompt": "Expert: parallel Q15 experimental branch in worktree; document SNR tradeoff in Canvas or markdown report.", "hints": "Optional float vs fixed essay.", "solution": "Report with plots/tables and recommendation for MCU target.", "stretch": ""}, {"id": "24-5", "prompt": "Write personal cheat sheet `docs/my-cursor-playbook.md`: modes, @ mentions, when hooks fire, top 5 prompts you use weekly.", "hints": "This is **your** operating manual.", "solution": "One-page dense reference tailored to your job.", "stretch": ""}]}, {"id": "drills", "title": "Daily Drills (Quick reps)", "level": "All levels", "summary": "5-minute exercises to keep Cursor muscle memory warm.", "body": "<h3>How to use drills<\/h3>\n<p>Do one drill per day between modules. Repeat until automatic.<\/p>\n<h3>Drill categories<\/h3>\n<ul>\n<li>Tab / Inline Edit<\/li>\n<li>@ context<\/li>\n<li>Agent git hygiene<\/li>\n<li>Test-first prompts<\/li>\n<\/ul>", "exercises": [{"id": "D-01", "prompt": "Tab-complete a 10-line `const float` Hann window array in C.", "hints": "Start `static const float hann[10]`.", "solution": "Completed symmetric window values summing reasonably for 10-point.", "stretch": ""}, {"id": "D-02", "prompt": "Ask: convert this time-domain IIR diff to direct form II equation — paste your biquad code.", "hints": "Single math question.", "solution": "Correct DFII state update equations.", "stretch": ""}, {"id": "D-03", "prompt": "Inline Edit `#pragma once` guard and include order in a messy header.", "hints": "Select all.", "solution": "IWYU-friendly order: stdint, project, extern C.", "stretch": ""}, {"id": "D-04", "prompt": "Agent: run only `ctest -R biquad` equivalent or your test binary — no other commands.", "hints": "Narrow tool scope.", "solution": "Only requested test executes.", "stretch": ""}, {"id": "D-05", "prompt": "@ folder `tests/` — ask what's missing for 90% coverage confidence.", "hints": "Review-only.", "solution": "Gap list: edge cases, NaN, denormals, block size 1, max block.", "stretch": ""}, {"id": "D-06", "prompt": "Write a one-sentence rule addition banning `malloc` in `src/dsp/**`.", "hints": "mdc globs.", "solution": "Rule file updated with glob `src/dsp/**`.", "stretch": ""}, {"id": "D-07", "prompt": "Compose git commit message for test-only change — Ask mode only.", "hints": "Conventional commits.", "solution": "Message like `test(dsp): add sine sweep case`.", "stretch": ""}, {"id": "D-08", "prompt": "Plan-only: estimate RAM for 256-pt complex FFT buffers (float32).", "hints": "Show formula.", "solution": "256*2*4 bytes for interleaved re/im plus twiddle table note.", "stretch": ""}, {"id": "D-09", "prompt": "Hook or rule: ensure `clang-format` mentioned for `.c` edits.", "hints": "Team policy.", "solution": "Documented formatting step post-edit.", "stretch": ""}, {"id": "D-10", "prompt": "Simulate HardFault: Ask what to log from CFSR register.", "hints": "Debug Ask.", "solution": "MemManage/BusFault/UsageFault bit meanings overview.", "stretch": ""}]}]};
+  </script>
+  <script>
+const STORAGE_KEY = 'cursor-dsp-course-progress-v1';
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveProgress(p) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+
+function countExercises(modules) {
+  return modules.reduce((n, m) => n + (m.exercises?.length || 0), 0);
+}
+
+function renderModuleList(modules, activeId, filter) {
+  const ul = document.getElementById('module-list');
+  ul.innerHTML = '';
+  const q = (filter || '').toLowerCase();
+  modules.forEach(m => {
+    const hay = (m.title + ' ' + m.summary + ' ' + m.level).toLowerCase();
+    if (q && !hay.includes(q)) return;
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'module-link' + (m.id === activeId ? ' active' : '');
+    btn.textContent = m.id === 'drills' ? '⚡ ' + m.title : m.id + ' · ' + m.title;
+    btn.onclick = () => showModule(m.id);
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
+}
+
+function showModule(id) {
+  const m = COURSE.modules.find(x => x.id === id) || COURSE.modules[0];
+  history.replaceState(null, '', '#' + m.id);
+  document.getElementById('module-title').textContent = m.title;
+  document.getElementById('module-meta').innerHTML =
+    `<span class="badge">${m.level}</span><span class="badge">Module ${m.id}</span>`;
+  document.getElementById('module-summary').textContent = m.summary;
+  document.getElementById('lesson-body').innerHTML = m.body;
+
+  const exRoot = document.getElementById('exercises');
+  exRoot.innerHTML = '';
+  const progress = loadProgress();
+
+  (m.exercises || []).forEach(ex => {
+    const done = progress[ex.id];
+    const el = document.createElement('article');
+    el.className = 'exercise' + (done ? ' done' : '');
+    el.dataset.exId = ex.id;
+
+    el.innerHTML = `
+      <header>
+        <h5>Exercise</h5>
+        <span class="ex-id">${ex.id}</span>
+      </header>
+      <p class="prompt">${escapeHtml(ex.prompt)}</p>
+      ${ex.hints ? `<div class="hint"><strong>Hint:</strong> ${escapeHtml(ex.hints)}</div>` : ''}
+      ${ex.stretch ? `<div class="stretch"><strong>Stretch:</strong> ${escapeHtml(ex.stretch)}</div>` : ''}
+      <div class="actions">
+        <button type="button" class="btn btn-primary btn-solution">Reveal solution</button>
+        <button type="button" class="btn btn-ghost btn-hide">Hide solution</button>
+        <button type="button" class="btn btn-ok btn-done">${done ? '✓ Completed' : 'Mark complete'}</button>
+      </div>
+      <div class="solution" role="region" aria-label="Solution">${escapeHtml(ex.solution)}</div>
+    `;
+
+    el.querySelector('.btn-solution').onclick = () => {
+      el.querySelector('.solution').classList.add('visible');
+    };
+    el.querySelector('.btn-hide').onclick = () => {
+      el.querySelector('.solution').classList.remove('visible');
+    };
+    el.querySelector('.btn-done').onclick = (ev) => {
+      progress[ex.id] = true;
+      saveProgress(progress);
+      el.classList.add('done');
+      ev.target.textContent = '✓ Completed';
+      updateProgressBar();
+    };
+
+    exRoot.appendChild(el);
+  });
+
+  renderModuleList(COURSE.modules, m.id, document.getElementById('search').value);
+  document.getElementById('exercise-count').textContent =
+    (m.exercises || []).length + ' exercises in this module';
+  updateProgressBar();
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateProgressBar() {
+  const total = countExercises(COURSE.modules);
+  const progress = loadProgress();
+  const done = Object.keys(progress).filter(k => progress[k]).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progress-label').textContent = `${done} / ${total} exercises (${pct}%)`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function init() {
+  const data = window.COURSE_DATA;
+  window.COURSE = data;
+  document.getElementById('course-title').textContent = data.title;
+  document.getElementById('course-sub').textContent = data.subtitle;
+
+  document.getElementById('search').oninput = (e) => {
+    const id = (location.hash || '#00').slice(1);
+    renderModuleList(COURSE.modules, id, e.target.value);
+  };
+
+  const startId = (location.hash || '#00').replace('#', '');
+  showModule(COURSE.modules.some(m => m.id === startId) ? startId : '00');
+  window.onhashchange = () => {
+    const id = (location.hash || '#00').slice(1);
+    if (COURSE.modules.some(m => m.id === id)) showModule(id);
+  };
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
