@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01 — C/C++ Foundations</title><style>
+:root{--bg:#0b1020;--card:#121a2d;--card2:#17223a;--text:#eef3ff;--muted:#aab7d1;--accent:#63b3ff;--green:#69d89c;--yellow:#ffd166;--red:#ff7b8b}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#090e1a,#101a31);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.6}
+header{padding:36px 7%;background:linear-gradient(120deg,#101b36,#15284a);border-bottom:1px solid #263555}
+h1{font-size:2.25rem;margin:.2em 0}.sub{color:var(--muted);font-size:1.05rem}
+main{max-width:1150px;margin:28px auto;padding:0 20px}.card{background:var(--card);border:1px solid #263555;border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #0003}
+h2{color:var(--accent);margin-top:0} h3{color:#dce8ff} code,pre{font-family:"JetBrains Mono","Consolas",monospace} code{background:#0a1121;padding:2px 5px;border-radius:4px}
+pre{background:#080d18;padding:16px;border-radius:10px;overflow:auto;border:1px solid #24314d}
+.exercise{border-left:4px solid var(--yellow);padding-left:16px}.solution{display:none;background:#0b1629;border:1px solid #2c476e;border-radius:10px;padding:16px;margin-top:12px}.solution.show{display:block}
+button{background:#1e6fb8;color:white;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.12)}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#1c2e4d;color:#b9dcff;margin:2px;font-size:.82rem}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #293750;text-align:left;vertical-align:top}th{color:#bfe0ff}
+.callout{background:#12263a;border-left:4px solid var(--green);padding:14px 17px;border-radius:8px}
+.warn{background:#30261a;border-left:4px solid var(--yellow);padding:14px 17px;border-radius:8px}
+.bilingual{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.bilingual{grid-template-columns:1fr}}
+.small{font-size:.9rem;color:var(--muted)} .check{color:var(--green)} ul{padding-left:24px}.toc a{color:#a9d8ff;text-decoration:none}.toc li{margin:5px 0}
+footer{color:var(--muted);text-align:center;padding:30px}
+</style><script>
+function toggle(id){const e=document.getElementById(id);e.classList.toggle('show');}
+function showAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.add('show'))}
+function hideAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.remove('show'))}
+</script></head><body>
+<header><h1>01 — C/C++ Foundations</h1><div class="sub">From variables and pointers to production-grade low-level kernel thinking</div></header>
+<main>
+<div class="card"><h2>1. C from absolute zero</h2>
+<p><b>Core mental model:</b> a C program manipulates values stored in memory. A variable has a type, a size, an address, and a value. A pointer stores an address. An array is a contiguous sequence of elements. A function receives arguments and can return a value.</p>
+<div class="bilingual"><div><b>English</b><p>For DSP kernels, the important question is often not “what does this expression mean?” but “what memory does it touch, how often, and in what order?”</p></div>
+<div dir="rtl"><b>עברית</b><p>ב-DSP השאלה החשובה היא לא רק “מה הביטוי מחשב?”, אלא גם “איזה זיכרון הוא ניגש אליו, כמה פעמים, ובאיזה סדר?”.</p></div></div>
+<pre><code>#include &lt;stddef.h&gt;
+float dot(const float* x, const float* h, size_t n) {
+    float acc = 0.0f;
+    for (size_t i = 0; i &lt; n; ++i)
+        acc += x[i] * h[i];
+    return acc;
+}</code></pre>
+<p>Read it slowly: <code>const float*</code> means the function reads floats through a pointer without modifying them. <code>n</code> is the number of elements. The loop performs multiply-accumulate work.</p>
+</div>
+<div class="card"><h2>2. Memory and pointers</h2>
+<ul><li>Stack: typically automatic storage for local objects.</li><li>Heap: dynamically allocated storage with explicit lifetime management in C.</li><li>Static/global storage: lifetime usually spans the program.</li><li>Pointer arithmetic is scaled by the pointed-to type.</li><li>Undefined behavior means the language no longer guarantees what happens.</li></ul>
+</div>
+<div class="exercise"><h3>Exercise 1.1</h3><p>What is the difference between <code>int *p</code>, <code>int x[10]</code>, and <code>int *p = x</code>?</p><button onclick="toggle('s1.1')">Show / hide solution</button><div id="s1.1" class="solution"><p><code>x</code> is an array object containing 10 ints. In most expressions it converts to a pointer to its first element. <code>p</code> is a pointer variable. After <code>int *p = x</code>, p points at x[0]. But an array is not itself a pointer: <code>sizeof(x)</code> is the whole array size, while <code>sizeof(p)</code> is the pointer size.</p></div></div><div class="exercise"><h3>Exercise 1.2</h3><p>Find the bug: <code>float* make_buffer(size_t n){ float x[1024]; return x; }</code></p><button onclick="toggle('s1.2')">Show / hide solution</button><div id="s1.2" class="solution"><p><code>x</code> has automatic storage duration and ceases to exist when the function returns. Returning its address creates a dangling pointer. Safer alternatives include caller-provided storage, static storage where appropriate, or dynamic allocation with a clearly defined owner.</p></div></div><div class="exercise"><h3>Exercise 1.3</h3><p>Write a C function that reverses an array in-place. Then state its time and extra-space complexity.</p><button onclick="toggle('s1.3')">Show / hide solution</button><div id="s1.3" class="solution"><pre><code>void reverse(int *a, size_t n) {
+    for (size_t i = 0; i &lt; n/2; ++i) {
+        int t = a[i];
+        a[i] = a[n-1-i];
+        a[n-1-i] = t;
+    }
+}</code></pre><p>Time O(n), extra space O(1).</p></div></div>
+<div class="card"><h2>3. C++ for DSP/embedded interviews</h2>
+<p>Know the distinction between value semantics and ownership. Understand constructors/destructors, RAII, references, const-correctness, templates, move semantics, smart pointers, containers, iterators, algorithms, and basic concurrency.</p>
+<pre><code>class Buffer {
+public:
+    explicit Buffer(size_t n) : data_(n) {}
+    float* data() { return data_.data(); }
+    const float* data() const { return data_.data(); }
+private:
+    std::vector&lt;float&gt; data_;
+};</code></pre>
+<p>For low-level code, be able to discuss abstraction cost: an abstraction is acceptable when the compiler can remove its overhead or when its engineering value outweighs the cost. Do not claim “C++ is slow” or “STL is slow” as blanket statements.</p>
+</div>
+<div class="exercise"><h3>Exercise 1.4</h3><p>Why is <code>const float* x</code> useful in an API?</p><button onclick="toggle('s1.4')">Show / hide solution</button><div id="s1.4" class="solution"><p>It documents that the function only reads through x and lets the compiler diagnose accidental writes through that pointer. It improves API clarity and can enable compiler reasoning. It does not by itself make the pointed-to memory immutable globally.</p></div></div><div class="exercise"><h3>Exercise 1.5</h3><p>Explain RAII in Hebrew, then in English, as if asked by an interviewer.</p><button onclick="toggle('s1.5')">Show / hide solution</button><div id="s1.5" class="solution"><div class="bilingual"><div dir="rtl"><b>עברית:</b> RAII הוא עיקרון שבו משאב קשור לאורך החיים של אובייקט. הקונסטרקטור רוכש/מאתחל את המשאב וה-destructor משחרר אותו, כך שגם במסלולי יציאה שונים ניהול המשאב מסודר.</div><div><b>English:</b> RAII ties resource lifetime to object lifetime. Construction acquires or establishes the resource; destruction releases it, making cleanup deterministic and reducing leak-prone manual control.</div></div></div></div><div class="exercise"><h3>Exercise 1.6</h3><p>Implement a dot product and list at least five ways to optimize it without changing the mathematical result.</p><button onclick="toggle('s1.6')">Show / hide solution</button><div id="s1.6" class="solution"><ol><li>Ensure contiguous/aligned data where applicable.</li><li>Use a suitable compiler optimization level.</li><li>Reduce unnecessary loads/stores.</li><li>Use SIMD/vector instructions where the target supports them.</li><li>Unroll carefully if it helps instruction scheduling.</li><li>Consider multiple accumulators to reduce dependency chains.</li><li>Measure cache/memory behavior.</li></ol><p>Always validate numerical correctness and benchmark on the target architecture.</p></div></div></main><footer>Interview preparation workbook • Source basis: the supplied DSP & AI Development Engineer role description.</footer></body></html>

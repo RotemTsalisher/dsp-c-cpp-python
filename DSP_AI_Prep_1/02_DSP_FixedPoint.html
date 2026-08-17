@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>02 — DSP, Numerical Methods &amp; Fixed Point</title><style>
+:root{--bg:#0b1020;--card:#121a2d;--card2:#17223a;--text:#eef3ff;--muted:#aab7d1;--accent:#63b3ff;--green:#69d89c;--yellow:#ffd166;--red:#ff7b8b}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#090e1a,#101a31);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.6}
+header{padding:36px 7%;background:linear-gradient(120deg,#101b36,#15284a);border-bottom:1px solid #263555}
+h1{font-size:2.25rem;margin:.2em 0}.sub{color:var(--muted);font-size:1.05rem}
+main{max-width:1150px;margin:28px auto;padding:0 20px}.card{background:var(--card);border:1px solid #263555;border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #0003}
+h2{color:var(--accent);margin-top:0} h3{color:#dce8ff} code,pre{font-family:"JetBrains Mono","Consolas",monospace} code{background:#0a1121;padding:2px 5px;border-radius:4px}
+pre{background:#080d18;padding:16px;border-radius:10px;overflow:auto;border:1px solid #24314d}
+.exercise{border-left:4px solid var(--yellow);padding-left:16px}.solution{display:none;background:#0b1629;border:1px solid #2c476e;border-radius:10px;padding:16px;margin-top:12px}.solution.show{display:block}
+button{background:#1e6fb8;color:white;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.12)}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#1c2e4d;color:#b9dcff;margin:2px;font-size:.82rem}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #293750;text-align:left;vertical-align:top}th{color:#bfe0ff}
+.callout{background:#12263a;border-left:4px solid var(--green);padding:14px 17px;border-radius:8px}
+.warn{background:#30261a;border-left:4px solid var(--yellow);padding:14px 17px;border-radius:8px}
+.bilingual{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.bilingual{grid-template-columns:1fr}}
+.small{font-size:.9rem;color:var(--muted)} .check{color:var(--green)} ul{padding-left:24px}.toc a{color:#a9d8ff;text-decoration:none}.toc li{margin:5px 0}
+footer{color:var(--muted);text-align:center;padding:30px}
+</style><script>
+function toggle(id){const e=document.getElementById(id);e.classList.toggle('show');}
+function showAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.add('show'))}
+function hideAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.remove('show'))}
+</script></head><body>
+<header><h1>02 — DSP, Numerical Methods &amp; Fixed Point</h1><div class="sub">Signals → filters → FFT → quantization → implementation</div></header>
+<main>
+<div class="card"><h2>1. Sampling and discrete-time signals</h2>
+<p>A discrete-time signal is a sequence x[n]. Sampling a continuous signal at rate Fs creates discrete samples. Nyquist reasoning: a band-limited signal needs a sampling rate greater than twice its highest frequency to avoid ideal aliasing.</p>
+<p><b>Interview habit:</b> always track units: Hz, samples, seconds, cycles/sample, radians/sample.</p>
+</div>
+<div class="card"><h2>2. Convolution</h2>
+<p>For an FIR filter:</p><pre><code>y[n] = Σ(k=0..M-1) h[k] x[n-k]</code></pre>
+<p>This is the archetypal DSP kernel: repeated loads, multiply-accumulate operations, predictable loops, and opportunities for SIMD/unrolling.</p>
+</div>
+<div class="exercise"><h3>Exercise 2.1</h3><p>For a 64-tap FIR processing 48 kHz mono audio, how many multiply operations per second are required (ignoring boundary effects)?</p><button onclick="toggle('s2.1')">Show / hide solution</button><div id="s2.1" class="solution"><p>64 multiplications/sample × 48,000 samples/s = <b>3,072,000 multiplications/s</b>. If each output also has 64 additions, there are roughly the same order of additions. The point is to translate algorithmic complexity into a workload.</p></div></div><div class="exercise"><h3>Exercise 2.2</h3><p>Why can an FIR be easier to optimize than a general recursive filter?</p><button onclick="toggle('s2.2')">Show / hide solution</button><div id="s2.2" class="solution"><p>An FIR has a finite, feed-forward dependency pattern. Each output depends on a fixed window of input samples and coefficients. An IIR introduces feedback, so future outputs depend on previous outputs, creating stronger loop-carried dependencies and potentially more numerical sensitivity.</p></div></div>
+<div class="card"><h2>3. Frequency-domain thinking</h2>
+<p>Know the DFT definition conceptually and why FFT algorithms reduce the direct DFT's O(N²) work to roughly O(N log N). Understand complex numbers, magnitude/phase, bins, windowing, leakage, and the difference between a spectrum and a PSD estimate.</p>
+</div>
+<div class="exercise"><h3>Exercise 2.3</h3><p>Explain why windowing can reduce spectral leakage but also changes the effective spectral response.</p><button onclick="toggle('s2.3')">Show / hide solution</button><div id="s2.3" class="solution"><p>Finite observation truncates a signal in time, which corresponds to convolution with the window spectrum in frequency. A tapered window reduces sidelobes, decreasing leakage into distant bins, but widens the main lobe and therefore reduces frequency resolution. The trade-off is fundamental.</p></div></div>
+<div class="card"><h2>4. Fixed-point arithmetic — חובה</h2>
+<p>Suppose an integer stores a real value using scale S. A simple model is:</p>
+<pre><code>real_value = integer_value / S</code></pre>
+<p>In Q-format, the number of fractional bits defines S = 2^F. For Q1.15, an int16 typically represents a signed fractional range near [-1,1) with scale 2^15.</p>
+<p>Multiplication is the dangerous step: multiplying two Q1.15 integers produces a wider product with twice the fractional-bit count. You must rescale, round, and handle saturation/overflow deliberately.</p>
+</div>
+<div class="exercise"><h3>Exercise 2.4</h3><p>Two Q1.15 numbers are 0.5 and 0.25. What integer representations do they have, and what happens after integer multiplication?</p><button onclick="toggle('s2.4')">Show / hide solution</button><div id="s2.4" class="solution"><p>0.5 × 32768 = 16384; 0.25 × 32768 = 8192. Their raw integer product is 16384×8192 = 134,217,728. That product has 30 fractional bits, not 15. To return to Q1.15 you shift right by 15 (with an appropriate rounding policy), obtaining 4096, which represents 0.125.</p></div></div><div class="exercise"><h3>Exercise 2.5</h3><p>What is saturation and why is wraparound dangerous in DSP?</p><button onclick="toggle('s2.5')">Show / hide solution</button><div id="s2.5" class="solution"><p>With saturation, an out-of-range result is clamped to the representable maximum/minimum. With two's-complement wraparound, overflow can jump from a large positive number to a large negative number. In a signal-processing pipeline this can create severe distortion or destabilize an algorithm, especially in feedback systems.</p></div></div><div class="exercise"><h3>Exercise 2.6</h3><p>Design a fixed-point FIR accumulator strategy. What width would you consider and why?</p><button onclick="toggle('s2.6')">Show / hide solution</button><div id="s2.6" class="solution"><p>Start from coefficient/input bit widths and the number of summed products. Each multiplication needs a wider intermediate. The accumulator must have enough headroom for worst-case sum magnitude, often adding guard bits related to the number of taps. Then explicitly define rounding and final saturation. The exact width depends on signal bounds, coefficient bounds, and implementation requirements; never choose it blindly.</p></div></div>
+<div class="card"><h2>5. DSP coding drill</h2><pre><code>float fir(const float *x, const float *h, int taps) {
+    float y = 0;
+    for (int k=0; k&lt;taps; ++k)
+        y += x[k] * h[k];
+    return y;
+}</code></pre>
+<p>Be ready to transform this baseline into: (1) safe production C, (2) fixed point, (3) SIMD/vectorized form, (4) a cache-friendly version, and (5) a version with measured performance.</p></div>
+</main><footer>Interview preparation workbook • Source basis: the supplied DSP & AI Development Engineer role description.</footer></body></html>

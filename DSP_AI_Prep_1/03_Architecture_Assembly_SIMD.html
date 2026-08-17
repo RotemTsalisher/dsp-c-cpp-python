@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>03 — CPU/DSP/GPU Architecture, Assembly &amp; SIMD</title><style>
+:root{--bg:#0b1020;--card:#121a2d;--card2:#17223a;--text:#eef3ff;--muted:#aab7d1;--accent:#63b3ff;--green:#69d89c;--yellow:#ffd166;--red:#ff7b8b}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#090e1a,#101a31);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.6}
+header{padding:36px 7%;background:linear-gradient(120deg,#101b36,#15284a);border-bottom:1px solid #263555}
+h1{font-size:2.25rem;margin:.2em 0}.sub{color:var(--muted);font-size:1.05rem}
+main{max-width:1150px;margin:28px auto;padding:0 20px}.card{background:var(--card);border:1px solid #263555;border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #0003}
+h2{color:var(--accent);margin-top:0} h3{color:#dce8ff} code,pre{font-family:"JetBrains Mono","Consolas",monospace} code{background:#0a1121;padding:2px 5px;border-radius:4px}
+pre{background:#080d18;padding:16px;border-radius:10px;overflow:auto;border:1px solid #24314d}
+.exercise{border-left:4px solid var(--yellow);padding-left:16px}.solution{display:none;background:#0b1629;border:1px solid #2c476e;border-radius:10px;padding:16px;margin-top:12px}.solution.show{display:block}
+button{background:#1e6fb8;color:white;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.12)}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#1c2e4d;color:#b9dcff;margin:2px;font-size:.82rem}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #293750;text-align:left;vertical-align:top}th{color:#bfe0ff}
+.callout{background:#12263a;border-left:4px solid var(--green);padding:14px 17px;border-radius:8px}
+.warn{background:#30261a;border-left:4px solid var(--yellow);padding:14px 17px;border-radius:8px}
+.bilingual{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.bilingual{grid-template-columns:1fr}}
+.small{font-size:.9rem;color:var(--muted)} .check{color:var(--green)} ul{padding-left:24px}.toc a{color:#a9d8ff;text-decoration:none}.toc li{margin:5px 0}
+footer{color:var(--muted);text-align:center;padding:30px}
+</style><script>
+function toggle(id){const e=document.getElementById(id);e.classList.toggle('show');}
+function showAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.add('show'))}
+function hideAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.remove('show'))}
+</script></head><body>
+<header><h1>03 — CPU/DSP/GPU Architecture, Assembly &amp; SIMD</h1><div class="sub">Learn to see the machine underneath the C/C++</div></header>
+<main>
+<div class="card"><h2>1. CPU / DSP / GPU mental model</h2>
+<p>The supplied role explicitly asks for deep understanding of DSP/GPU and/or CPU architectures, plus assembly and SIMD/vector processing. fileciteturn0file0L18-L27</p>
+<table><tr><th>Concept</th><th>What you must be able to explain</th></tr>
+<tr><td>ISA</td><td>Instruction set visible to software: operations, registers, addressing, vector instructions, etc.</td></tr>
+<tr><td>Pipeline</td><td>Instructions overlap in execution; dependencies and hazards can limit throughput.</td></tr>
+<tr><td>SIMD</td><td>One instruction operates on multiple data elements.</td></tr>
+<tr><td>Cache</td><td>Small/faster memory holding recently/nearby used data; locality matters.</td></tr>
+<tr><td>Bandwidth</td><td>Rate at which data can move; a kernel can be limited by data movement rather than arithmetic.</td></tr>
+<tr><td>Latency</td><td>Delay until a particular operation/result completes.</td></tr>
+</table></div>
+<div class="exercise"><h3>Exercise 3.1</h3><p>A scalar loop does 8 independent float multiplies per iteration. Why might SIMD help? What can prevent a speedup?</p><button onclick="toggle('s3.1')">Show / hide solution</button><div id="s3.1" class="solution"><p>SIMD can perform multiple multiplies in one vector instruction, reducing instruction count. Speedup may be limited by memory bandwidth, unaligned or irregular accesses, dependencies, loop overhead, insufficient vector width utilization, instruction scheduling, or other surrounding work. Measure rather than assume.</p></div></div><div class="exercise"><h3>Exercise 3.2</h3><p>What is a loop-carried dependency? Give a DSP example.</p><button onclick="toggle('s3.2')">Show / hide solution</button><div id="s3.2" class="solution"><p>A later iteration depends on a value produced by an earlier iteration. Example: <code>acc += x[i]*h[i]</code> uses one accumulator, creating a dependency chain. Multiple partial accumulators can sometimes expose more instruction-level parallelism, though floating-point reassociation can alter numerical results.</p></div></div>
+<div class="card"><h2>2. Assembly literacy</h2>
+<p>You do not need to memorize an ISA not named in the document. Instead, learn to read the structure of low-level code:</p>
+<pre><code>load   r1, [x]
+load   r2, [h]
+mul    r3, r1, r2
+add    acc, acc, r3
+add    x, x, stride
+add    h, h, stride</code></pre>
+<p>Translate it back to C. Then ask: how many loads? stores? arithmetic operations? dependencies? branches? address calculations? Can loads overlap? Can operations vectorize?</p>
+</div>
+<div class="exercise"><h3>Exercise 3.3</h3><p>A kernel performs 16 FLOPs and loads 64 bytes per output. What kind of question should you ask before trying more arithmetic optimization?</p><button onclick="toggle('s3.3')">Show / hide solution</button><div id="s3.3" class="solution"><p>Ask whether the kernel is memory-bound. The arithmetic intensity is 16/64 = 0.25 FLOP/byte before considering cache reuse and stores. If data movement dominates, reducing memory traffic or improving locality may matter more than shaving one arithmetic instruction.</p></div></div>
+<div class="card"><h2>3. SIMD exercise: vector dot product</h2>
+<p>Start from scalar:</p>
+<pre><code>float dot(const float* a, const float* b, int n) {
+    float s = 0;
+    for (int i=0;i&lt;n;i++) s += a[i]*b[i];
+    return s;
+}</code></pre>
+<p>Design a vector version conceptually: load a vector from a, load a vector from b, multiply, accumulate into a vector accumulator, repeat, horizontal-reduce at the end, then handle the tail. Be ready to discuss alignment, aliasing, vector width, and numerical differences.</p>
+</div>
+<div class="exercise"><h3>Exercise 3.4</h3><p>Why can two mathematically equivalent floating-point implementations produce different answers?</p><button onclick="toggle('s3.4')">Show / hide solution</button><div id="s3.4" class="solution"><p>Floating-point addition is not perfectly associative. Changing operation order changes rounding. SIMD reductions, loop unrolling, fused operations, and compiler transformations can therefore change the last bits—and sometimes accumulated error materially. For an optimized DSP kernel, define an acceptable numerical tolerance and test against it.</p></div></div><div class="exercise"><h3>Exercise 3.5</h3><p>Explain cache locality in Hebrew.</p><button onclick="toggle('s3.5')">Show / hide solution</button><div id="s3.5" class="solution"><p dir="rtl">לוקליות בזיכרון מתארת נטייה של תוכנית להשתמש שוב בנתונים שניגשה אליהם לאחרונה (temporal locality), או בנתונים שנמצאים בקרבתם בזיכרון (spatial locality). לכן לולאה שעוברת בצורה רציפה על מערך לרוב מתאימה יותר ל-cache מאשר גישה אקראית.</p></div></div></main><footer>Interview preparation workbook • Source basis: the supplied DSP & AI Development Engineer role description.</footer></body></html>

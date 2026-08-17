@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>16 — Hard C/C++ Coding Laboratory</title><style>
+:root{--bg:#080d18;--card:#111a2c;--card2:#17243b;--text:#eef4ff;--muted:#a9b8d3;--blue:#70bfff;--green:#72e0a3;--yellow:#ffd166;--red:#ff8795;--purple:#c5a4ff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#070c16,#101a30);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.65}
+header{padding:40px 7%;background:linear-gradient(120deg,#101c38,#162d4c);border-bottom:1px solid #293b5b}
+h1{font-size:2.3rem;margin:.1em 0}h2{color:var(--blue);font-size:1.65rem}h3{color:#dbe9ff}.sub{color:var(--muted);font-size:1.05rem}
+main{max-width:1200px;margin:30px auto;padding:0 22px}.card{background:var(--card);border:1px solid #293a58;border-radius:14px;padding:24px;margin:20px 0;box-shadow:0 10px 30px #0004}
+pre{background:#060b14;border:1px solid #253653;border-radius:10px;padding:16px;overflow:auto;font-family:Consolas,monospace}code{background:#071020;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace}
+button{background:#1d6fae;color:white;border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;margin:4px 0}button:hover{filter:brightness(1.15)}
+.solution{display:none;background:#0b1729;border:1px solid #315276;border-radius:10px;padding:16px;margin-top:10px}.solution.show{display:block}
+.exercise{border-left:4px solid var(--yellow);padding-left:17px;margin:24px 0}.challenge{border-left-color:var(--red)}.oral{border-left-color:var(--purple)}
+.callout{background:#102a25;border-left:4px solid var(--green);padding:15px 18px;border-radius:8px}.warn{background:#302619;border-left:4px solid var(--yellow);padding:15px 18px;border-radius:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:850px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #2a3954;text-align:left;vertical-align:top}th{color:#bfe1ff}
+.small{color:var(--muted);font-size:.92rem}.tag{display:inline-block;background:#1a3151;color:#b9ddff;border-radius:99px;padding:3px 9px;margin:2px;font-size:.82rem}
+.rtl{direction:rtl;text-align:right}.formula{font-size:1.05rem;background:#0c1930;padding:12px;border-radius:8px}.score{font-weight:700;color:var(--green)}
+footer{text-align:center;color:var(--muted);padding:35px}
+</style><script>
+function toggle(id){document.getElementById(id).classList.toggle('show')}
+function allShow(){document.querySelectorAll('.solution').forEach(x=>x.classList.add('show'))}
+function allHide(){document.querySelectorAll('.solution').forEach(x=>x.classList.remove('show'))}
+</script></head><body><header><h1>16 — Hard C/C++ Coding Laboratory</h1><div class="sub">DSP-flavored interview coding with optimization and edge-case reasoning</div></header><main>
+<div class="card"><h2>Interview coding laboratory</h2>
+<p>Do these on paper first. Then write C or C++. For every solution, state: assumptions → algorithm → complexity → edge cases → test cases → optimization ideas.</p>
+</div>
+<div class="exercise challenge"><h3>Exercise 16.1</h3><div>Implement <code>memmove</code>-style copying for overlapping ranges. Explain why copying direction matters.</div><button onclick="toggle('sol161')">Show / hide solution</button><div id="sol161" class="solution"><p>If destination starts after source and ranges overlap, copy from the end toward the beginning; otherwise copy forward. The direction prevents overwriting source bytes before they are read.</p><pre><code>void move_bytes(unsigned char* d,const unsigned char* s,size_t n){
+    if(d==s || n==0) return;
+    if(d &lt; s){
+        for(size_t i=0;i&lt;n;i++) d[i]=s[i];
+    } else {
+        for(size_t i=n;i&gt;0;i--) d[i-1]=s[i-1];
+    }
+}</code></pre></div></div><div class="exercise challenge"><h3>Exercise 16.2</h3><div>Implement a ring buffer for fixed-size float samples. Define full/empty semantics and make all boundary conditions explicit.</div><button onclick="toggle('sol162')">Show / hide solution</button><div id="sol162" class="solution"><p>A good solution uses storage + read index + write index + count, or a one-empty-slot convention. The important part is defining the invariant. For example: 0≤count≤capacity; write increments modulo capacity; read increments modulo capacity. In a concurrent embedded system, synchronization/atomicity becomes another design dimension.</p></div></div><div class="exercise"><h3>Exercise 16.3</h3><div>Implement a moving average of length N in O(1) work per new sample instead of summing N samples every time.</div><button onclick="toggle('sol163')">Show / hide solution</button><div id="sol163" class="solution"><p>Maintain a running sum and a circular buffer. For each new sample: subtract the outgoing sample, add the incoming sample, store it, advance the index, divide by N. Complexity becomes O(1) per sample, with O(N) storage.</p></div></div><div class="exercise"><h3>Exercise 16.4</h3><div>Why can the moving-average optimization introduce fixed-point issues?</div><button onclick="toggle('sol164')">Show / hide solution</button><div id="sol164" class="solution"><p>The running sum has a larger dynamic range than an individual sample. It can overflow if stored in the same width. Also, division by N may require scaling/rounding. Choose accumulator width based on worst-case sum and define saturation/rounding.</p></div></div><div class="exercise challenge"><h3>Exercise 16.5</h3><div>Implement a function that finds the maximum absolute value of an int16 array without overflowing when negating INT16_MIN.</div><button onclick="toggle('sol165')">Show / hide solution</button><div id="sol165" class="solution"><p><code>-INT16_MIN</code> cannot be represented in int16. Convert to a wider signed type before taking absolute value.</p><pre><code>int16_t max_abs(const int16_t* x,size_t n){
+    int32_t best=0;
+    for(size_t i=0;i&lt;n;i++){
+        int32_t v=x[i];
+        if(v&lt;0) v=-v;
+        if(v&gt;best) best=v;
+    }
+    return (int16_t)best; // only safe if caller accepts that max abs may be 32768
+}</code></pre><p>For a truly correct API, return int32_t because 32768 cannot fit in int16_t.</p></div></div><div class="exercise"><h3>Exercise 16.6</h3><div>Implement a dot product using two accumulators and explain what changes if the function is compiled with aggressive floating-point reassociation.</div><button onclick="toggle('sol166')">Show / hide solution</button><div id="sol166" class="solution"><p>Use two independent accumulators over alternating elements or chunks. Reassociation can change rounding compared with the scalar left-to-right sum. The output should therefore be validated against a defined tolerance rather than assumed bit-identical.</p></div></div><div class="exercise"><h3>Exercise 16.7</h3><div>You are given an array of interleaved complex samples [I0,Q0,I1,Q1,...]. Write the magnitude-squared sequence without computing square roots.</div><button onclick="toggle('sol167')">Show / hide solution</button><div id="sol167" class="solution"><pre><code>for(size_t k=0;k&lt;n;k++){
+    float I=x[2*k], Q=x[2*k+1];
+    y[k]=I*I+Q*Q;
+}</code></pre><p>Magnitude squared is sufficient when only relative power/comparison is required. Avoiding sqrt saves work.</p></div></div><div class="exercise challenge"><h3>Exercise 16.8</h3><div>Optimize a 2D convolution for cache locality. What dimensions would you consider and why?</div><button onclick="toggle('sol168')">Show / hide solution</button><div id="sol168" class="solution"><p>Consider contiguous memory order, which dimension is innermost, reuse of input tiles, coefficient reuse, output tile size, padding/boundaries, and vectorization direction. A tiled/blocking strategy can improve reuse by keeping working sets in cache/local memory. The best layout depends on row-major/column-major storage and target hardware.</p></div></div></main><footer>Batch 2 • Advanced preparation based on the supplied DSP & AI Development Engineer role description.</footer></body></html>

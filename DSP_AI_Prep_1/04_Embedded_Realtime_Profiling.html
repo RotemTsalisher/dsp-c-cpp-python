@@ -1,0 +1,52 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 — Embedded, Real-Time, Profiling, Testing &amp; Optimization</title><style>
+:root{--bg:#0b1020;--card:#121a2d;--card2:#17223a;--text:#eef3ff;--muted:#aab7d1;--accent:#63b3ff;--green:#69d89c;--yellow:#ffd166;--red:#ff7b8b}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#090e1a,#101a31);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.6}
+header{padding:36px 7%;background:linear-gradient(120deg,#101b36,#15284a);border-bottom:1px solid #263555}
+h1{font-size:2.25rem;margin:.2em 0}.sub{color:var(--muted);font-size:1.05rem}
+main{max-width:1150px;margin:28px auto;padding:0 20px}.card{background:var(--card);border:1px solid #263555;border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #0003}
+h2{color:var(--accent);margin-top:0} h3{color:#dce8ff} code,pre{font-family:"JetBrains Mono","Consolas",monospace} code{background:#0a1121;padding:2px 5px;border-radius:4px}
+pre{background:#080d18;padding:16px;border-radius:10px;overflow:auto;border:1px solid #24314d}
+.exercise{border-left:4px solid var(--yellow);padding-left:16px}.solution{display:none;background:#0b1629;border:1px solid #2c476e;border-radius:10px;padding:16px;margin-top:12px}.solution.show{display:block}
+button{background:#1e6fb8;color:white;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.12)}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#1c2e4d;color:#b9dcff;margin:2px;font-size:.82rem}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #293750;text-align:left;vertical-align:top}th{color:#bfe0ff}
+.callout{background:#12263a;border-left:4px solid var(--green);padding:14px 17px;border-radius:8px}
+.warn{background:#30261a;border-left:4px solid var(--yellow);padding:14px 17px;border-radius:8px}
+.bilingual{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.bilingual{grid-template-columns:1fr}}
+.small{font-size:.9rem;color:var(--muted)} .check{color:var(--green)} ul{padding-left:24px}.toc a{color:#a9d8ff;text-decoration:none}.toc li{margin:5px 0}
+footer{color:var(--muted);text-align:center;padding:30px}
+</style><script>
+function toggle(id){const e=document.getElementById(id);e.classList.toggle('show');}
+function showAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.add('show'))}
+function hideAll(){document.querySelectorAll('.solution').forEach(e=>e.classList.remove('show'))}
+</script></head><body>
+<header><h1>04 — Embedded, Real-Time, Profiling, Testing &amp; Optimization</h1><div class="sub">Turn “make it fast” into an engineering method</div></header>
+<main>
+<div class="card"><h2>1. Real-time embedded thinking</h2>
+<p>The role explicitly calls for real-time embedded software and performance/accuracy constraints. fileciteturn0file0L11-L24</p>
+<p>For a periodic workload with period T, the critical question is whether the worst-case execution time and scheduling overhead fit within the deadline. Average execution time is not enough when missed deadlines are unacceptable.</p>
+</div>
+<div class="exercise"><h3>Exercise 4.1</h3><p>A block processes 128 samples at 48 kHz. What is the block period? If processing takes 2 ms, is it inside the nominal deadline?</p><button onclick="toggle('s4.1')">Show / hide solution</button><div id="s4.1" class="solution"><p>128/48000 s = 2.6667 ms. A 2 ms processing time fits the nominal 2.667 ms budget, leaving about 0.667 ms before the next block deadline. In real systems you still need margin for jitter, interrupts, DMA, scheduling, and other workloads.</p></div></div>
+<div class="card"><h2>2. Profiling workflow / תהליך פרופיילינג</h2>
+<ol><li>Define the metric: cycles, wall time, CPU utilization, memory bandwidth, power, latency, or deadline misses.</li>
+<li>Create a reproducible baseline.</li>
+<li>Profile the workload.</li>
+<li>Locate the hottest or most constrained region.</li>
+<li>Classify the bottleneck: compute, memory, branch/control, synchronization, I/O, or numerical.</li>
+<li>Form one optimization hypothesis.</li>
+<li>Change the implementation.</li>
+<li>Run correctness tests.</li>
+<li>Benchmark again on the target-like environment.</li>
+<li>Keep or revert based on evidence.</li></ol>
+<p>The job description explicitly mentions profiling and analysis tools for performance, memory utilization, and power efficiency. fileciteturn0file0L21-L23</p>
+</div>
+<div class="exercise"><h3>Exercise 4.2</h3><p>Your code is 20% faster after an optimization, but output error increased beyond the allowed tolerance. What do you do?</p><button onclick="toggle('s4.2')">Show / hide solution</button><div id="s4.2" class="solution"><p>Reject the change as-is. First determine whether the numerical change is expected (e.g., reassociation/SIMD/fixed-point) and whether the tolerance or algorithm is wrong. If the product specification requires the original accuracy, optimize elsewhere or redesign the numerical method. Performance without required correctness is not a successful optimization.</p></div></div>
+<div class="card"><h2>3. Testing strategy</h2>
+<ul><li>Unit tests for kernels.</li><li>Boundary tests: n=0, n=1, maximum sizes, alignment/tail cases.</li><li>Numerical reference comparisons with tolerances.</li><li>Randomized/property tests.</li><li>Stress tests.</li><li>Performance regression tests.</li><li>Target-hardware validation.</li></ul>
+</div>
+<div class="exercise"><h3>Exercise 4.3</h3><p>List five bugs that a vectorized FIR implementation might introduce.</p><button onclick="toggle('s4.3')">Show / hide solution</button><div id="s4.3" class="solution"><ul><li>Wrong tail handling when n is not a multiple of vector width.</li><li>Out-of-bounds loads.</li><li>Incorrect coefficient/input alignment.</li><li>Accumulator/reduction mistakes.</li><li>Different rounding/precision behavior.</li><li>Aliasing assumptions that are not valid.</li><li>Incorrect stride or pointer increments.</li></ul></div></div>
+<div class="card"><h2>4. Memory and power</h2>
+<p>Optimization is multidimensional. A faster kernel can consume more memory, increase power, or complicate maintainability. The role explicitly mentions performance, memory utilization, and power efficiency. fileciteturn0file0L21-L23</p>
+</div>
+<div class="exercise"><h3>Exercise 4.4</h3><p>Why can reducing memory traffic improve both performance and power?</p><button onclick="toggle('s4.4')">Show / hide solution</button><div id="s4.4" class="solution"><p>Moving data costs time and energy. If a processor spends cycles waiting for memory or repeatedly fetches the same data, reducing traffic can increase throughput and reduce energy spent on data movement. The exact result depends on the architecture and workload, so profile it.</p></div></div></main><footer>Interview preparation workbook • Source basis: the supplied DSP & AI Development Engineer role description.</footer></body></html>
