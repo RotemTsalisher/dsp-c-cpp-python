@@ -24,6 +24,23 @@ void vector_to_toeplitz(const double v[],
     }
 }
 
+void autocorr(const double in[], int size, double out[]) {
+    int n,k;
+    int offset = size - 1;
+
+    for(n = 0; n < size; ++n) {
+        double tmp = 0.0;
+        for(k = 0; k < size - n; ++k) {
+            tmp += (in[k] * in[k + n]);
+        };
+        out[n + offset] = (tmp / ((double)size));
+    };
+
+    for(int i = 0; i < offset; ++i) {
+        out[i] = out[(2*size - 1) - i - 1];
+    };
+};
+
 void print_matrix(double p[][AUTOCORR_SIZE], int rows, int cols)
 {
     for (int i = 0; i < rows; ++i) {
@@ -36,11 +53,32 @@ void print_matrix(double p[][AUTOCORR_SIZE], int rows, int cols)
 
 int main(void)
 {
-    vector_to_toeplitz(r, AUTOCORR_SIZE, p);
+    double x[] = {
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0
+    };
 
-    printf("Autocorrelation vector:\n");
-    for (int i = 0; i < AUTOCORR_SIZE; ++i) {
-        printf("r[%d] = %.2f\n", i, r[i]);
+    int x_size = sizeof(x) / sizeof(x[0]);
+
+    double rxx[2 * AUTOCORR_SIZE - 1] = {0.0};
+
+    autocorr(x, x_size, rxx);
+
+    vector_to_toeplitz(&rxx[x_size - 1],
+                       AUTOCORR_SIZE,
+                       p);
+
+    printf("Input signal:\n");
+    for (int i = 0; i < x_size; ++i) {
+        printf("x[%d] = %.2f\n", i, x[i]);
+    }
+
+    printf("\nAutocorrelation:\n");
+    for (int i = 0; i < (2 * x_size - 1); ++i) {
+        printf("rxx[%d] = %.4f\n", i, rxx[i]);
     }
 
     printf("\nToeplitz matrix:\n");
