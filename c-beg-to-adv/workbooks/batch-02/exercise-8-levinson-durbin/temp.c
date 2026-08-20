@@ -2,7 +2,7 @@
 
 #define AUTOCORR_SIZE 5
 #define ABS(x) ((x) > 0 ? (x) : -(x))
-#define MAX_ORDER     2
+#define MAX_ORDER     4
 #define OFFSET        (int)(AUTOCORR_SIZE / 2)
 
 static const double r[AUTOCORR_SIZE] = {
@@ -59,7 +59,58 @@ void levinson_durbin_order_2(const double *rxx, double a[])
     a[1] = a_new[1];
 }
 
-void autocorr(const double in[], int size, double out[]) {
+void levinson_durbin_nth_order(const double *rxx, int order, double a[])
+{
+    double a_new[MAX_ORDER + 1] = {0.0};
+    double e_ = 0.0, k_ = 0.0, delta = 0.0;
+
+    /* init process : */
+    e_= rxx[0];
+    a[0] = 1; /* unused index to fit 1 based indexing */
+
+    /* go to desired order */
+    for(int m = 1; m < (order + 1); ++m) {
+
+        printf("\n=== ORDER %d ===\n", m);
+
+        /* compute forward residual correlation */
+        delta = rxx[m];
+        for(int k = 1; k < m; ++k) {
+            delta += (a[k] * rxx[m - k]);
+        };
+
+        printf("delta   = %+.12f\n", delta);
+
+        /* reflection coeff */
+        k_ = -(delta / e_);
+
+        printf("K%d      = %+.12f\n", m, k_);
+
+        /* loop over new coeffs */
+        for(int k = 1; k < m; ++k) {
+            a_new[k] = a[k] + k_ * a[m - k];
+        }
+
+        a[m] = k_;
+
+        e_ = e_ * (1 - (k_ * k_));
+
+        printf("E%d      = %.12f\n", m, e_);
+
+        for(int i = 1; i < m; ++i) {
+            a[i] = a_new[i];
+        };
+
+        printf("COEFFS\n");
+
+        for(int i = 0; i <= m; ++i) {
+            printf("a[%d] = %+.12f\n", i, a[i]);
+        }
+    };
+}
+
+void autocorr(const double in[], int size, double out[])
+{
     int n,k;
     int offset = size - 1;
 
@@ -88,19 +139,27 @@ void print_matrix(double p[][AUTOCORR_SIZE], int rows, int cols)
 
 int main(void)
 {
-    double a[MAX_ORDER] = {0.0};
+    for(int order = 1; order <= MAX_ORDER; ++order) {
 
-    printf("Levinson-Durbin input:\n");
+        double a[MAX_ORDER + 1] = {0.0};
 
-    for (int i = 0; i < AUTOCORR_SIZE; ++i) {
-        printf("r[%d] = %.6f\n", i, r[i]);
+        printf("\n");
+        printf("========================================\n");
+        printf("TEST ORDER %d\n", order);
+        printf("========================================\n");
+
+        levinson_durbin_nth_order(r,
+                                  order,
+                                  a);
+
+        printf("FINAL COEFFS\n");
+
+        for(int i = 0; i <= order; ++i) {
+            printf("a[%d] = %+.12f\n",
+                   i,
+                   a[i]);
+        }
     }
-
-    levinson_durbin_order_2(r, a);
-
-    printf("\nFinal AR(2) coefficients:\n");
-    printf("a[0] = %+.6f\n", a[0]);
-    printf("a[1] = %+.6f\n", a[1]);
 
     return 0;
 }
