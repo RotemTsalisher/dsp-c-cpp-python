@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>03 · First VST (Gain) — AFW VST Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="03-first-vst">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html">01 · Repository recon</a>
+        <a href="02-fundamentals.html">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html" class="active">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Part 1 · Phases 5–9</span>
+          <span class="badge ok">Baby-step mode</span>
+        </div>
+        <h1>First VST — the simplest gain plugin</h1>
+        <p class="lead">
+          Goal: understand integration, not fancy DSP.
+          Mathematically: <code>y[n] = x[n] × gain</code>.
+          Architecturally: a new (or studied) C module + VST3 header + VS project.
+        </p>
+
+        <div class="callout stop">
+          <strong class="title">Interactive rule</strong>
+          Do <strong>one step</strong>, implement it yourself, build if asked, then stop.
+          Use an AI/human mentor for review between steps. Do not binge-paste the whole module.
+        </div>
+
+        <!-- PHASE 5 -->
+        <h2 id="p5">Phase 5 — Where does the VST belong?</h2>
+        <p>Reasoning checklist (answer before reading further):</p>
+        <ol>
+          <li>What architecture did we find? → Thin JUCE wrapper around C <code>AudioModuleCore</code>.</li>
+          <li>Where does audio enter the plugin? → Host → <code>GenericProcessor::processBlock</code>.</li>
+          <li>Where does DSP happen? → <code>Core-&gt;Calc</code> in your module <code>.c</code>.</li>
+          <li>Where does output leave? → Copy from <code>Outputs</code> back to JUCE buffer → host.</li>
+          <li>What should the plugin integrate with? → Provide <code>amCore</code> + <code>ioConfigs</code>; reuse GenericProcessor.</li>
+          <li>Dependencies? → Framework C sources, JUCE modules listed in the <code>.vcxproj</code>.</li>
+        </ol>
+        <p><strong>Conclusion:</strong> New plugin lives under <span class="path">Modules/&lt;YourName&gt;/</span>
+        with DSP in <code>.c/.h</code> and glue in <span class="path">VST3/&lt;YourName&gt;Plugin.h</span> (+ VS project).
+        You almost never fork GenericProcessor for a normal module.</p>
+
+        <!-- PHASE 6 -->
+        <h2 id="p6">Phase 6 — Scope of the first plugin</h2>
+        <div class="diagram">Input Audio  →  Gain  →  Output Audio
+y[n] = x[n] × gain</div>
+        <p><strong>In scope:</strong> Init / Calc / Free / SetValue / GetValue / GetParamInfo, Plugin.h, build, load in host.</p>
+        <p><strong>Out of scope for VST #1:</strong> custom GUI, MIDI, presets, fancy DSP, full product checklist.</p>
+        <p><strong>Two learning tracks (pick with your mentor):</strong></p>
+        <ul>
+          <li><strong>Study track:</strong> read and rebuild existing <code>Modules/Gain</code> (fastest map of reality).</li>
+          <li><strong>Create track:</strong> copy <code>Modules/Template</code> → e.g. <code>Modules/SimpleGain</code> and fill it in baby steps (best for muscle memory).</li>
+        </ul>
+        <p>Below assumes the <strong>create track</strong>. If you use Gain as reference, open those files beside each step.</p>
+
+        <!-- PHASE 7 -->
+        <h2 id="p7">Phase 7 — Baby-step implementation</h2>
+
+        <!-- STEP 1 -->
+        <section class="step" id="step1">
+          <div class="step-num">Step 1</div>
+          <h3>Create the module folder from Template</h3>
+          <h4>What are we doing?</h4>
+          <p>Copy scaffolding so your module matches AFW conventions.</p>
+          <h4>Why?</h4>
+          <p>Template already has the correct function set and <code>AudioModuleCore</code> layout.</p>
+          <div class="file-card">
+            <div class="label">Repository file change</div>
+            <div class="row"><span>FILE</span><span class="path">Modules/Template/ → Modules/SimpleGain/</span></div>
+            <div class="row"><span>ACTION</span><span>Create (copy + rename)</span></div>
+            <div class="row"><span>WHY</span><span>Official starting point per Documents/AudioFramework.md</span></div>
+            <div class="row"><span>DEPENDENCIES</span><span>Framework/AudioFramework.h</span></div>
+            <div class="row"><span>USED BY</span><span>Upcoming VST3 project + (later) AudioLibrary</span></div>
+          </div>
+          <h4>What should I do?</h4>
+          <p>Copy the folder. Rename <code>Template.*</code> files to <code>SimpleGain.*</code>.
+          Inside files, rename symbols <code>Template</code> → <code>SimpleGain</code> carefully (core name, functions, comments).</p>
+          <h4>Checkpoint</h4>
+          <p>Folder exists; headers compile conceptually; no build required yet if project not wired.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT FOR ME</strong> Report what you renamed. Do not implement Calc yet.</div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section class="step" id="step2">
+          <div class="step-num">Step 2</div>
+          <h3>Declare the AudioModuleCore</h3>
+          <h4>What / Why</h4>
+          <p>Register the module’s function pointers so GenericProcessor can call them.</p>
+          <h4>Code (minimum — fill in your header)</h4>
+          <pre><code>static const AudioModuleCore SimpleGain =
+{
+   "SimpleGain",
+   SimpleGainInit,
+   SimpleGainCalc,
+   0,                 /* no Idle */
+   SimpleGainFree,
+   SimpleGainSetValue,
+   SimpleGainGetValue,
+   BypassSetData,     /* or your SetData */
+   BypassGetData,
+   SimpleGainGetParamInfo,
+   0                  /* DefaultFormat */
+};</code></pre>
+          <div class="levels">
+            <div class="level"><div class="lvl">What?</div>Static “class object” for this module type.</div>
+            <div class="level"><div class="lvl">How?</div>Each field is a function pointer (or 0 / bypass helper).</div>
+            <div class="level"><div class="lvl">Why?</div>Polymorphism without C++ vtables in the DSP layer.</div>
+          </div>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong> Show your header. Next: private state struct.</div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section class="step" id="step3">
+          <div class="step-num">Step 3</div>
+          <h3>Private state + Init</h3>
+          <pre><code>typedef struct {
+   float Gain;   /* linear gain, not dB */
+} SimpleGainSetup;
+
+void SimpleGainInit(AudioModule* setup)
+{
+   SimpleGainSetup* s = (SimpleGainSetup*)afwAlloc(sizeof(SimpleGainSetup));
+   setup->Specific = s;
+   s->Gain = 0.1f;   /* ~ -20 dB starting point, like Template */
+}</code></pre>
+          <p><strong>C concepts:</strong> heap allocation via framework allocator; ownership stored in <code>Specific</code>;
+          Init may run more than once across prepare — follow patterns in existing modules when you hit re-init.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong> Implement Init + matching Free skeleton only.</div>
+        </section>
+
+        <!-- STEP 4 -->
+        <section class="step" id="step4">
+          <div class="step-num">Step 4</div>
+          <h3>Free</h3>
+          <pre><code>void SimpleGainFree(AudioModule* setup)
+{
+   SimpleGainSetup* s = (SimpleGainSetup*)setup->Specific;
+   afwFree(s);
+}</code></pre>
+          <p>Why: every <code>afwAlloc</code> in Init needs a matching free — RAII equivalent in C.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong></div>
+        </section>
+
+        <!-- STEP 5 -->
+        <section class="step" id="step5">
+          <div class="step-num">Step 5</div>
+          <h3>Calc — the audio math</h3>
+          <p>Now implement processing yourself. Constraints:</p>
+          <ul>
+            <li>Loop channels <code>0 .. NumInputs-1</code></li>
+            <li>Loop samples <code>0 .. BlockLength-1</code></li>
+            <li><code>Outputs[ch][i] = Inputs[ch][i] * Gain</code></li>
+            <li>No allocations, no file I/O</li>
+          </ul>
+          <div class="hint-stack">
+            <details><summary>Hint 1 — Conceptual</summary><p>Planar buffers: each channel is its own contiguous float array.</p></details>
+            <details><summary>Hint 2 — Architectural</summary><p>Look at <code>TemplateCalc</code> or <code>GainCalc</code> (Gain uses <code>dspVectorScale</code>).</p></details>
+            <details><summary>Hint 3 — Implementation</summary>
+<pre><code>for (int ch = 0; ch &lt; setup-&gt;NumInputs; ++ch)
+  for (int i = 0; i &lt; setup-&gt;BlockLength; ++i)
+    setup-&gt;Outputs[ch][i] = setup-&gt;Inputs[ch][i] * s-&gt;Gain;</code></pre>
+            </details>
+            <details><summary>Hint 4 — Near solution</summary><p>Cast <code>Specific</code>, then the nested loops above. Match Template’s structure.</p></details>
+            <details><summary>Hint 5 — Full (only if you ask your mentor)</summary><p>Mentor may paste TemplateCalc renamed — only after you request it.</p></details>
+          </div>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong> Paste your Calc for review before parameters.</div>
+        </section>
+
+        <!-- STEP 6 -->
+        <section class="step" id="step6">
+          <div class="step-num">Step 6</div>
+          <h3>Parameters — dB mapping</h3>
+          <p>UI thinks in dB; DSP needs linear gain.</p>
+          <div class="diagram">dB value  →  SetValue  →  linear = 10^(dB/20)
+GetValue  ←  20*log10(linear)</div>
+          <p>Reference (Gain module):</p>
+          <pre><code>/* SetValue sketch */
+s->Gain = value > GAIN_MIN ? powf(10.f, value * 0.05f) : 0.f;
+/* GetValue sketch */
+*value = s->Gain > 1e-5f ? 20.f * log10f(s->Gain) : GAIN_MIN;</code></pre>
+          <p>Add range checks (<code>RETURN_IF_VALUE_OUT_OF_RANGE</code> macros from framework) like Gain does.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong></div>
+        </section>
+
+        <!-- STEP 7 -->
+        <section class="step" id="step7">
+          <div class="step-num">Step 7</div>
+          <h3>GetParamInfo</h3>
+          <pre><code>const ParamInfo infos[] = {
+  { "Gain", "dB", PT_SLIDER_LIN, -100.f, 20.f, 1, -20.f },
+};
+/* For index 0 copy infos[0]; else Type = PT_NO_PARAM */</code></pre>
+          <p>Why <code>PT_NO_PARAM</code>? GenericProcessor scans parameters until you signal “no more”.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong></div>
+        </section>
+
+        <!-- STEP 8 -->
+        <section class="step" id="step8">
+          <div class="step-num">Step 8</div>
+          <h3>VST3 Plugin.h glue</h3>
+          <div class="file-card">
+            <div class="label">Repository file change</div>
+            <div class="row"><span>FILE</span><span class="path">Modules/SimpleGain/VST3/SimpleGainPlugin.h</span></div>
+            <div class="row"><span>ACTION</span><span>Create (copy from GainPlugin.h or Template’s VST3 header)</span></div>
+            <div class="row"><span>WHY</span><span>JUCE macros + amCore + ioConfigs for createPluginFilter</span></div>
+            <div class="row"><span>DEPENDENCIES</span><span>../SimpleGain.h</span></div>
+            <div class="row"><span>USED BY</span><span>JUCE_APP_CONFIG_HEADER in .vcxproj</span></div>
+          </div>
+          <p>Critical lines you must set:</p>
+          <pre><code>#define JucePlugin_Name         "SimpleGain"
+#define JucePlugin_PluginCode   0x????????  /* UNIQUE 32-bit id */
+#define JucePlugin_Build_VST3   1
+#define JucePlugin_Build_VST    0
+
+static const AudioModuleCore* amCore = &amp;SimpleGain;
+static const int ioConfigs[][2] = { {1,1}, {2,2}, {8,8} };</code></pre>
+          <div class="callout warn">
+            <strong class="title">Unique PluginCode</strong>
+            Colliding codes confuse hosts. Invent a new hex constant; do not copy Gain’s code.
+          </div>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong></div>
+        </section>
+
+        <!-- STEP 9 -->
+        <section class="step" id="step9">
+          <div class="step-num">Step 9</div>
+          <h3>Visual Studio project</h3>
+          <p>Copy <span class="path">Modules/Gain/VST3/GainPlugin.vcxproj</span> (and .sln / .filters),
+          then replace names, include <code>../SimpleGain.c</code>, set
+          <code>JUCE_APP_CONFIG_HEADER</code> to your Plugin.h.</p>
+          <h4>What should happen?</h4>
+          <p>Solution opens; project lists Framework + JUCE + your .c sources.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong> Before first build, mentor reviews vcxproj diffs.</div>
+        </section>
+
+        <!-- STEP 10 -->
+        <section class="step" id="step10">
+          <div class="step-num">Step 10</div>
+          <h3>Build</h3>
+          <p>In Visual Studio: Configuration <strong>Debug</strong>, Platform <strong>x64</strong>, Build Solution.</p>
+          <div class="callout info">
+            <strong class="title">Command explanation (if using MSBuild)</strong>
+            <p style="margin:0"><code>msbuild SimpleGainPlugin.sln /p:Configuration=Debug /p:Platform=x64</code><br/>
+            <code>msbuild</code> = VS build engine; <code>/p:</code> sets properties; output is a <code>.vst3</code> dynamic library.</p>
+          </div>
+          <h4>Checkpoint</h4>
+          <p>Zero errors. Note the output path from the build log.</p>
+          <div class="callout stop"><strong class="title">STOP AND WAIT</strong> Paste build success/errors.</div>
+        </section>
+
+        <!-- PHASE 8 -->
+        <h2 id="p8">Phase 8 — Trace one audio block</h2>
+        <div class="diagram">DAW thread
+  → JUCE VST3 client
+  → GenericProcessor::processBlock
+  → copy → AudioModule.Inputs[ch][i]
+  → SimpleGainCalc (your file)
+  → AudioModule.Outputs[ch][i]
+  → copy → JUCE AudioBuffer
+  → DAW</div>
+        <p>At each arrow name: <strong>file · class/function · buffer · thread</strong>.
+        Write this table yourself as an exercise; compare to GenericProcessor.cpp.</p>
+
+        <!-- PHASE 9 -->
+        <h2 id="p9">Phase 9 — Install / load</h2>
+        <ul>
+          <li><strong>Binary type:</strong> VST3 plugin (DLL named <code>.vst3</code> on Windows in this project style).</li>
+          <li><strong>Typical install dir:</strong> <code>C:\Program Files\Common Files\VST3</code>
+            (many AFW post-build steps copy here — may need admin).</li>
+          <li><strong>Discovery:</strong> Host scans VST3 folders; rescanning required after copy.</li>
+          <li><strong>Good hosts for learning:</strong> JUCE AudioPluginHost under Dependencies, Reaper, pluginval.</li>
+        </ul>
+        <div class="callout warn">
+          <strong class="title">Stale binary trap</strong>
+          Host may keep an old copy loaded. Close host, rebuild, recopy, rescan.
+        </div>
+
+        <div class="callout stop">
+          <strong class="title">End of Phase 9 — STOP</strong>
+          When the plugin loads and audio passes with audible gain change, continue to
+          <a href="04-test-debug-quiz.html">testing, debugging, and the knowledge check</a>.
+        </div>
+
+        <div class="pager">
+          <a href="02-fundamentals.html">← Fundamentals</a>
+          <a class="next" href="04-test-debug-quiz.html">Next: Test, debug, quiz →</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

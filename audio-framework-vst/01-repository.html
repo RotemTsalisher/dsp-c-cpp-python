@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>01 · Repository Reconnaissance — AFW VST Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="01-repository">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html" class="active">01 · Repository recon</a>
+        <a href="02-fundamentals.html">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Part 1 · Phase 0</span>
+          <span class="badge">Do not modify the repo yet</span>
+        </div>
+        <h1>Repository reconnaissance</h1>
+        <p class="lead">
+          Before writing a single line of plugin code, build a mental map of <em>this</em> repository.
+          Open your AudioFramework clone side-by-side with this page and verify each claim.
+        </p>
+
+        <h2 id="0-1">0.1 Repository structure</h2>
+        <div class="diagram">AudioFramework/
+├── Framework/          ← C core + JUCE VST glue (GenericProcessor/Editor)
+├── Modules/            ← ~70+ audio modules; many have VST3/
+├── Builds/             ← Win64 test app, embedded static libs, CI
+├── Dependencies/       ← JUCE (submodule), kissfft, NatureDSP, …
+├── Tuning/             ← CardoSoundTune (C#) graph/parameter UI
+├── Utilities/          ← Installer, pluginval, test signals, tools
+├── Products/           ← Product integrations (firmware/apps)
+├── Documents/          ← Framework docs + mkdocs generator
+└── readme.md</div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Directory</th><th>What / why</th><th>VST relevant?</th><th>Will we modify?</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Framework/</code></td>
+                <td>Module lifecycle, graph engine, memory, DSP helpers, <code>GenericProcessor</code>/<code>GenericEditor</code></td>
+                <td>Yes — critical</td>
+                <td>Rarely (study first; only if extending glue)</td>
+              </tr>
+              <tr>
+                <td><code>Modules/</code></td>
+                <td>All DSP modules; each typically <code>.h</code>/<code>.c</code> + optional <code>VST3/</code>, docs, Matlab</td>
+                <td>Yes — where new plugins live</td>
+                <td>Yes — primary work area</td>
+              </tr>
+              <tr>
+                <td><code>Builds/</code></td>
+                <td>Platform/product solutions (Win64 harness, CSL_AFW embedded, …)</td>
+                <td>Indirect (registration checklist)</td>
+                <td>When registering a full product module</td>
+              </tr>
+              <tr>
+                <td><code>Dependencies/JUCE</code></td>
+                <td>Host/plugin API, GUI, VST3 client</td>
+                <td>Yes (compiled into each .vst3)</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td><code>Tuning/</code></td>
+                <td>Desktop tuner consuming <code>AudioModules.xml</code></td>
+                <td>After library registration</td>
+                <td>Later checklist steps</td>
+              </tr>
+              <tr>
+                <td><code>Utilities/</code></td>
+                <td>NSIS installer, pluginval, Python tools</td>
+                <td>Install/validate</td>
+                <td>Installer when shipping</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <strong class="title">Depends on</strong>
+          Modules depend on Framework headers. VST projects compile Framework sources
+          (<code>GenericProcessor.cpp</code>, <code>AudioModule.c</code>, …) plus the module’s <code>.c</code>.
+          Tuning and Products consume the module library / XML metadata.
+        </div>
+
+        <h2 id="0-2">0.2 Build system</h2>
+        <p><strong>Not</strong> a top-level CMake module build. AFW modules use Visual Studio.</p>
+        <ul>
+          <li><strong>IDE / toolset:</strong> Visual Studio 2022, toolset <code>v143</code>, x64, Windows SDK 10</li>
+          <li><strong>Languages:</strong> Module DSP in <strong>C</strong>; VST glue / JUCE in <strong>C++17</strong></li>
+          <li><strong>Plugin output:</strong> Dynamic library with extension <code>.vst3</code></li>
+          <li><strong>Master VST solution:</strong> <span class="path">Modules/VST3Plugins.sln</span></li>
+          <li><strong>Per-plugin:</strong> <span class="path">Modules/&lt;Name&gt;/VST3/&lt;Name&gt;Plugin.sln</span></li>
+          <li><strong>Desktop graph test:</strong> <span class="path">Builds/Win64/AudioFramework.sln</span></li>
+          <li><strong>Embedded static lib:</strong> <span class="path">Builds/CSL_AFW/CSL_AFW.sln</span></li>
+        </ul>
+
+        <h3>How compilation works in this repo</h3>
+        <div class="diagram">Your Module.c + Framework C sources
+        + GenericProcessor.cpp / GenericEditor.cpp
+        + JUCE module .cpp files (listed in .vcxproj)
+                    │
+                    ▼
+         MSVC compile (C / C++17) → .obj files
+                    │
+                    ▼
+         Link as DynamicLibrary → Name.vst3
+                    │
+                    ▼
+         Post-build often copies to
+         C:\Program Files\Common Files\VST3</div>
+
+        <p>Typical configs: <strong>Debug | x64</strong> and <strong>Release | x64</strong>. Start with Debug while learning.</p>
+
+        <div class="callout info">
+          <strong class="title">Command explanation example</strong>
+          Opening <code>Modules\Gain\VST3\GainPlugin.sln</code> in Visual Studio and building
+          <em>GainPlugin</em> | Release | x64 compiles that plugin only. Output lands under
+          <code>Modules\Gain\VST3\x64\Release\</code> (exact path may vary by project settings).
+        </div>
+
+        <h2 id="0-3">0.3 Find the audio pipeline</h2>
+        <p>There are <strong>two</strong> related pipelines. Confusing them is a common beginner mistake.</p>
+
+        <h3>A) Full framework graph (firmware / Win64 / Tuning backend)</h3>
+        <div class="diagram">afwCreate()
+    ↓
+afwAddModule() × N     (from AudioLibrary registry)
+    ↓
+afwAddAudioLink() / afwLinkAll()
+    ↓
+afwInit()              (wire I/O buffers)
+    ↓
+afwCalc() per block
+    ↓
+For each AudioModule:
+  mode OFF/MUTE/BYPASS → special path
+  else → am->Core->Calc(am)
+    ↓
+ParamLink propagation
+    ↓
+Framework Outputs</div>
+        <p>Key files: <span class="path">Framework/AudioFramework.c</span>, <span class="path">Framework/AudioModule.h</span>, <span class="path">Framework/AudioLibrary.c</span>.</p>
+
+        <h3>B) VST3 single-module path (what we use for plugins)</h3>
+        <p>A VST3 does <strong>not</strong> run the full multi-module graph. It owns <em>one</em> <code>AudioModule</code>.</p>
+        <div class="diagram">DAW / Host
+    ↓
+JUCE juce_audio_plugin_client_VST3
+    ↓
+createPluginFilter()          [GenericProcessor.cpp]
+    ↓
+GenericProcessor (juce::AudioProcessor)
+    ↓
+prepareToPlay → Core->Init
+processBlock  → copy host buffer → Inputs[][]
+              → Core->Calc(setup)
+              → copy Outputs[][] → host buffer
+    ↓
+DAW hears processed audio</div>
+
+        <h3>What lives on an AudioModule instance</h3>
+        <ul>
+          <li><code>Inputs</code> / <code>Outputs</code> — <code>float**</code> planar buffers, length <code>BlockLength</code></li>
+          <li><code>SampleRate</code>, <code>NumInputs</code>, <code>NumOutputs</code>, <code>Mode</code>, <code>Format</code></li>
+          <li><code>Specific</code> — private state (e.g. <code>GainSetup*</code>)</li>
+          <li><code>Core</code> — pointer to static <code>AudioModuleCore</code> (vtable of Init/Calc/Free/…)</li>
+        </ul>
+
+        <h2 id="0-4">0.4 Existing plugin infrastructure</h2>
+        <p>Search results in this repo: <strong>VST3 via JUCE is already fully present</strong>. You do not invent a new plugin host bridge.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Concept</th><th>Where in AFW</th></tr></thead>
+            <tbody>
+              <tr><td>VST / VST3</td><td>JUCE client; <code>JucePlugin_Build_VST3=1</code>, VST2 disabled</td></tr>
+              <tr><td>Steinberg / SDK</td><td>Inside JUCE VST3 support (do not edit)</td></tr>
+              <tr><td>Processor</td><td><code>Framework/GenericProcessor</code> — one class for all plugins</td></tr>
+              <tr><td>Controller / GUI</td><td><code>Framework/GenericEditor</code> auto-UI from <code>ParamInfo</code></td></tr>
+              <tr><td>Factory / entry</td><td><code>createPluginFilter()</code> in <code>GenericProcessor.cpp</code></td></tr>
+              <tr><td>Parameters</td><td>Module <code>GetParamInfo</code> / <code>SetValue</code> / <code>GetValue</code></td></tr>
+              <tr><td>State</td><td>JUCE parameter state + module <code>Specific</code></td></tr>
+              <tr><td>CMake plugin targets</td><td>Not used for AFW modules (VS projects instead)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>The two symbols every *Plugin.h must provide</h3>
+        <pre><code>static const AudioModuleCore* amCore = &amp;Gain;   // which C module
+static const int ioConfigs[][2] = {
+  { 8, 8 }, { 2, 2 }, { 1, 1 }               // channel layouts
+};</code></pre>
+        <p><code>createPluginFilter()</code> reads these (via the per-plugin config header) and constructs <code>GenericProcessor</code>.</p>
+
+        <h3>Reference modules to study (read-only)</h3>
+        <ul>
+          <li><strong>Gain</strong> — simplest static gain DSP + VST3 folder</li>
+          <li><strong>Template</strong> — official copy-source for new modules (scaffolding; not in product library by default)</li>
+          <li><strong>Volume</strong> — gain + ramp parameters, meters, buttons (richer ParamInfo)</li>
+          <li><strong>Clipper / SoftMute</strong> — still simple, different DSP shapes</li>
+        </ul>
+
+        <h3>Official new-module checklist</h3>
+        <p>From <span class="path">Documents/AudioFramework.md</span>:</p>
+        <ol>
+          <li>Create plugin from <code>Modules\Template</code></li>
+          <li>Add to <code>Modules\VST3Plugins.sln</code></li>
+          <li>Add to <code>Framework\AudioLibrary.h/.c</code></li>
+          <li>Add to Win64 / CSL_AFW / HiFi4 builds as needed</li>
+          <li>Add to installer NSIS</li>
+          <li>Docs generator + refresh <code>AudioModules.xml</code> + rebuild Tuning</li>
+        </ol>
+        <div class="callout warn">
+          <strong class="title">Learning shortcut</strong>
+          For your <em>first</em> learning VST, you can build a standalone module solution without completing
+          every product-registration step. You still must understand the full checklist before Part 2 / shipping.
+        </div>
+
+        <h2>Architecture summary (memorize this)</h2>
+        <div class="diagram">AudioModuleCore   = static "class" (function pointers + type name)
+AudioModule       = one instance (buffers + Specific state)
+GenericProcessor  = JUCE AudioProcessor wrapping one AudioModule
+GenericEditor     = UI built from ParamInfo metadata
+createPluginFilter= factory the host calls on load</div>
+
+        <div class="callout stop">
+          <strong class="title">STOP AND WAIT</strong>
+          <p style="margin:0">
+            Before Phase 1: open <code>Modules/Gain/</code>, <code>Framework/GenericProcessor.cpp</code>,
+            and <code>Framework/AudioModule.h</code> in your IDE. Sketch the VST path on paper in your own words.
+            Confirm you can find <code>createPluginFilter</code> and <code>GainCalc</code>.
+            Then continue to <a href="02-fundamentals.html">02 · Fundamentals</a>.
+          </p>
+        </div>
+
+        <div class="pager">
+          <a href="index.html">← Course home</a>
+          <a class="next" href="02-fundamentals.html">Next: VST &amp; audio fundamentals →</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

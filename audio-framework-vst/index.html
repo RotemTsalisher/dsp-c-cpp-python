@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AudioFramework VST Course — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="index">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html" class="active">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html">01 · Repository recon</a>
+        <a href="02-fundamentals.html">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Learning project</span>
+          <span class="badge">Source of truth: AudioFramework repo</span>
+          <span class="badge ok">Read-only reference · you write the code</span>
+        </div>
+
+        <h1>From beginner to expert VST developer in this repository</h1>
+        <p class="lead">
+          This course teaches you how <strong>AudioFramework (AFW)</strong> turns C audio modules into VST3 plugins
+          via a thin JUCE wrapper. You implement the code yourself in baby steps. The instructor (or AI mentor)
+          sits beside you — they do not dump finished plugins.
+        </p>
+
+        <div class="progress-bar" style="--pct:0%"><span></span></div>
+        <p style="font-size:0.85rem;color:var(--muted)" class="pct-label">Progress tracked in this browser</p>
+
+        <div class="callout stop">
+          <strong class="title">How this course works</strong>
+          <p style="margin:0">
+            Explain → tiny step → <em>you</em> implement → build/run → report back → review → next step.
+            Do <strong>not</strong> paste 100–200 lines at once. Every implementation step ends with
+            <strong>STOP AND WAIT</strong> before the next one.
+          </p>
+        </div>
+
+        <h2>What you will be able to do</h2>
+        <div class="diagram">Repository
+   ↓
+Audio Framework (C graph + modules)
+   ↓
+Audio pipeline (Inputs → Calc → Outputs)
+   ↓
+VST3 architecture (GenericProcessor + amCore)
+   ↓
+Plugin lifecycle (scan → load → prepare → process → free)
+   ↓
+Parameters (ParamInfo → GenericEditor)
+   ↓
+DSP (your Calc function)
+   ↓
+Build (Visual Studio · .vst3)
+   ↓
+Install / test / debug</div>
+
+        <h2>Repository snapshot (why this is not a generic JUCE tutorial)</h2>
+        <ul>
+          <li><strong>DSP is C</strong>, not C++ AudioProcessor subclasses per plugin.</li>
+          <li>Every VST3 reuses <code>Framework/GenericProcessor</code> + <code>Framework/GenericEditor</code>.</li>
+          <li>Per-plugin glue is a small header: <code>Modules/&lt;Name&gt;/VST3/&lt;Name&gt;Plugin.h</code> with <code>amCore</code> + <code>ioConfigs</code>.</li>
+          <li>Build system is <strong>Visual Studio</strong> (<code>.sln</code> / <code>.vcxproj</code>), not top-level CMake for modules.</li>
+          <li>Canonical starter: copy <code>Modules/Template/</code>. Simplest reference DSP: <code>Modules/Gain/</code>.</li>
+        </ul>
+
+        <h2>Course map</h2>
+        <div class="card-grid">
+          <a class="nav-card" href="01-repository.html">
+            <div class="num">Part 1 · Phase 0</div>
+            <h3>Repository reconnaissance</h3>
+            <p>Tree, build system, audio path, existing VST infrastructure.</p>
+          </a>
+          <a class="nav-card" href="02-fundamentals.html">
+            <div class="num">Phases 1–4</div>
+            <h3>VST &amp; audio fundamentals</h3>
+            <p>Host lifecycle, AFW architecture, buffers, real-time safety.</p>
+          </a>
+          <a class="nav-card" href="03-first-vst.html">
+            <div class="num">Phases 5–9</div>
+            <h3>First VST — Gain</h3>
+            <p>Where the plugin lives, baby-step implementation, install.</p>
+          </a>
+          <a class="nav-card" href="04-test-debug-quiz.html">
+            <div class="num">Phases 10–12</div>
+            <h3>Test, debug, knowledge check</h3>
+            <p>Test procedure, debugging methodology, ~20 questions + answer key.</p>
+          </a>
+          <a class="nav-card" href="05-part2-projects.html">
+            <div class="num">Part 2</div>
+            <h3>Three projects + capstone</h3>
+            <p>Saturation → Delay → Dynamics, then independent expert challenge.</p>
+          </a>
+        </div>
+
+        <h2>Mentor workflow (for AI or human instructor)</h2>
+        <ol>
+          <li>Assume the learner knows programming + DSP, but not this repo or AFW VST wiring.</li>
+          <li>Repository is the source of truth — if generic VST advice conflicts with AFW, follow AFW and explain the difference.</li>
+          <li>Use progressive hints (conceptual → architectural → implementation → near solution → full only on request).</li>
+          <li>Explain significant code at three levels: What / How / Why.</li>
+          <li>Build after every tiny change.</li>
+        </ol>
+
+        <div class="callout info">
+          <strong class="title">Repo location</strong>
+          <p style="margin:0">
+            Study and build against your local AudioFramework clone (e.g. <code>c:\repo\AudioFramework</code>).
+            This course folder is documentation only — it does not modify the framework.
+          </p>
+        </div>
+
+        <div class="pager">
+          <span></span>
+          <a class="next" href="01-repository.html">Start Phase 0 → Repository recon</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

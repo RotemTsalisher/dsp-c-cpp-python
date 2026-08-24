@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>04 · Test, Debug &amp; Knowledge Check — AFW VST Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="04-test-debug-quiz">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html">01 · Repository recon</a>
+        <a href="02-fundamentals.html">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html" class="active">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Part 1 · Phases 10–12</span>
+          <span class="badge">Knowledge check before Part 2</span>
+        </div>
+        <h1>Testing, debugging &amp; Part 1 knowledge check</h1>
+        <p class="lead">Prove the gain plugin works, learn a systematic debug loop, then take the quiz without peeking at the answer key.</p>
+
+        <h2 id="p10">Phase 10 — Test procedure</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Test</th><th>Why it matters</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Plugin loads without crash</td><td>Factory, Init, linking OK</td></tr>
+              <tr><td>2</td><td>Appears in host browser</td><td>Install path + unique IDs + scan</td></tr>
+              <tr><td>3</td><td>Audio passes through</td><td>Buffer copy + Calc wired</td></tr>
+              <tr><td>4</td><td>Gain changes loudness</td><td>SetValue → linear gain path</td></tr>
+              <tr><td>5</td><td>0 dB ≈ unity</td><td>dB mapping correctness</td></tr>
+              <tr><td>6</td><td>Silence in → silence out</td><td>No DC offset / noise injection</td></tr>
+              <tr><td>7</td><td>Stereo both channels</td><td>Channel loops / ioConfigs</td></tr>
+              <tr><td>8</td><td>Block sizes 64 / 256 / 512</td><td>No fixed-size assumptions</td></tr>
+              <tr><td>9</td><td>Sample rates 44.1 / 48 / 96</td><td>prepareToPlay / re-init</td></tr>
+              <tr><td>10</td><td>Edge params (min/max)</td><td>Range checks, no NaNs</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Optional: run <span class="path">Utilities/pluginval</span> against your <code>.vst3</code> for automated host-compliance checks.</p>
+
+        <h2 id="p11">Phase 11 — Debugging methodology</h2>
+        <div class="diagram">Symptom
+  ↓
+Hypothesis
+  ↓
+Smallest diagnostic
+  ↓
+Result
+  ↓
+Updated hypothesis
+  ↓
+Fix
+  ↓
+Explain root cause</div>
+        <p>Do <strong>not</strong> randomly change code. One hypothesis at a time.</p>
+
+        <h3>Symptom → first hypotheses</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Symptom</th><th>First places to look</th></tr></thead>
+            <tbody>
+              <tr><td>Not appearing</td><td>Install folder, PluginCode collision, host scan paths, 32 vs 64-bit</td></tr>
+              <tr><td>Fails to load</td><td>Missing DLL deps, ctor crash, Init crash, debugger attach on load</td></tr>
+              <tr><td>Crash on init</td><td><code>Init</code>, buffer alloc sizes, null Core</td></tr>
+              <tr><td>Crash in process</td><td>Channel count mismatch, BlockLength, null Specific</td></tr>
+              <tr><td>Silence</td><td>Gain≈0, muted host track, Outputs not copied, wrong bus</td></tr>
+              <tr><td>Distortion</td><td>Gain ≫ 1, denormals later, uninitialized memory</td></tr>
+              <tr><td>Wrong channels</td><td>ioConfigs vs host layout, loop bounds</td></tr>
+              <tr><td>Build / linker errors</td><td>Missing .c in vcxproj, wrong include paths, duplicate symbols</td></tr>
+              <tr><td>Stale behavior</td><td>Old binary still installed; host cache</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="p12">Phase 12 — Beginner mistakes</h2>
+        <div class="quiz-item">
+          <p><strong>Wrong architecture layer</strong> — rewriting GenericProcessor for one plugin.<br/>
+          <em>Symptom:</em> huge diffs, merge hell.<br/>
+          <em>Fix:</em> only add/adjust C module + Plugin.h.</p>
+        </div>
+        <div class="quiz-item">
+          <p><strong>Allocating in Calc</strong> — <em>Symptom:</em> glitches under load.<br/>
+          <em>Fix:</em> allocate in Init, free in Free.</p>
+        </div>
+        <div class="quiz-item">
+          <p><strong>Assuming fixed block size / stereo</strong> — <em>Symptom:</em> works in one host setting, crashes in another.<br/>
+          <em>Fix:</em> always use <code>BlockLength</code>, <code>NumInputs</code>/<code>NumOutputs</code>.</p>
+        </div>
+        <div class="quiz-item">
+          <p><strong>dB vs linear mix-up</strong> — <em>Symptom:</em> “−6 dB” barely quieter or nukes signal.<br/>
+          <em>Fix:</em> convert in SetValue/GetValue; store linear in Specific.</p>
+        </div>
+        <div class="quiz-item">
+          <p><strong>Duplicate PluginCode / stale install</strong> — <em>Symptom:</em> wrong plugin opens, or changes never appear.<br/>
+          <em>Fix:</em> unique codes; verify timestamp of installed binary.</p>
+        </div>
+        <div class="quiz-item">
+          <p><strong>Forgetting PT_NO_PARAM terminator behavior</strong> — <em>Symptom:</em> UI missing params or scanning forever/garbage.<br/>
+          <em>Fix:</em> out-of-range index clears info and sets <code>PT_NO_PARAM</code>.</p>
+        </div>
+
+        <h2 id="quiz">Part 1 knowledge check (~20 questions)</h2>
+        <div class="callout">
+          <strong class="title">Instructions</strong>
+          Answer on paper or a notes file. Do not open the answer key until you finish.
+        </div>
+
+        <div class="quiz-item"><span class="q-num">Q1.</span> What three roles do Host, Plugin, and DSP play?</div>
+        <div class="quiz-item"><span class="q-num">Q2.</span> Does AFW build VST2, VST3, or both for modules?</div>
+        <div class="quiz-item"><span class="q-num">Q3.</span> Name the factory function the host ultimately uses to create the processor.</div>
+        <div class="quiz-item"><span class="q-num">Q4.</span> What two symbols must every <code>*Plugin.h</code> provide for AFW?</div>
+        <div class="quiz-item"><span class="q-num">Q5.</span> Why is there usually no per-module C++ <code>AudioProcessor</code> subclass?</div>
+        <div class="quiz-item"><span class="q-num">Q6.</span> What C function does audio processing actually call each block?</div>
+        <div class="quiz-item"><span class="q-num">Q7.</span> Are AFW module buffers interleaved or planar?</div>
+        <div class="quiz-item"><span class="q-num">Q8.</span> Where should you allocate per-instance DSP state?</div>
+        <div class="quiz-item"><span class="q-num">Q9.</span> Name three things that are unsafe in the audio callback.</div>
+        <div class="quiz-item"><span class="q-num">Q10.</span> How does dB on a slider become a multiply in Calc?</div>
+        <div class="quiz-item"><span class="q-num">Q11.</span> What does <code>PT_NO_PARAM</code> signal?</div>
+        <div class="quiz-item"><span class="q-num">Q12.</span> Contrast <code>afwCalc</code> graph processing vs VST single-module processing.</div>
+        <div class="quiz-item"><span class="q-num">Q13.</span> Which solution file builds many VST3 plugins at once?</div>
+        <div class="quiz-item"><span class="q-num">Q14.</span> Where do Release plugins often get copied after build?</div>
+        <div class="quiz-item"><span class="q-num">Q15.</span> What is <code>setup-&gt;Specific</code> for?</div>
+        <div class="quiz-item"><span class="q-num">Q16.</span> List the main fields of <code>ParamInfo</code>.</div>
+        <div class="quiz-item"><span class="q-num">Q17.</span> Why must Calc tolerate changing block sizes?</div>
+        <div class="quiz-item"><span class="q-num">Q18.</span> Give the debugging loop in order (6 steps).</div>
+        <div class="quiz-item"><span class="q-num">Q19.</span> What official folder do you copy to start a new module?</div>
+        <div class="quiz-item"><span class="q-num">Q20.</span> Name one checklist step beyond “it builds as VST” required for full product integration.</div>
+
+        <div class="answer-key">
+          <h2>Answer key (reveal only after attempting)</h2>
+          <details><summary>Q1</summary><p>Host: discover/load/drive I/O &amp; transport. Plugin: VST contract + params/UI. DSP: sample algorithm.</p></details>
+          <details><summary>Q2</summary><p>VST3 only (<code>JucePlugin_Build_VST=0</code>).</p></details>
+          <details><summary>Q3</summary><p><code>createPluginFilter()</code> in <code>GenericProcessor.cpp</code>.</p></details>
+          <details><summary>Q4</summary><p><code>amCore</code> and <code>ioConfigs</code>.</p></details>
+          <details><summary>Q5</summary><p><code>GenericProcessor</code> is shared; module identity is the C <code>AudioModuleCore</code>.</p></details>
+          <details><summary>Q6</summary><p><code>setup-&gt;Core-&gt;Calc(setup)</code> (e.g. <code>GainCalc</code>).</p></details>
+          <details><summary>Q7</summary><p>Planar / non-interleaved: <code>Inputs[ch][sample]</code>.</p></details>
+          <details><summary>Q8</summary><p>In <code>Init</code>, stored on <code>setup-&gt;Specific</code>; free in <code>Free</code>.</p></details>
+          <details><summary>Q9</summary><p>Any of: heap alloc, mutexes, file I/O, logging, blocking syscalls, unbounded work.</p></details>
+          <details><summary>Q10</summary><p><code>linear = 10^(dB/20)</code> in SetValue; Calc multiplies by linear.</p></details>
+          <details><summary>Q11</summary><p>No more parameters — stop scanning.</p></details>
+          <details><summary>Q12</summary><p>Graph: many modules linked via afw. VST: one AudioModule owned by GenericProcessor.</p></details>
+          <details><summary>Q13</summary><p><code>Modules/VST3Plugins.sln</code>.</p></details>
+          <details><summary>Q14</summary><p>Often <code>C:\Program Files\Common Files\VST3</code> via post-build.</p></details>
+          <details><summary>Q15</summary><p>Module-private state pointer (cast to your setup struct).</p></details>
+          <details><summary>Q16</summary><p>Name, Unit, Type, Min, Max, Prec, Default.</p></details>
+          <details><summary>Q17</summary><p>Host can call prepareToPlay with new sizes; buffers/loops must follow <code>BlockLength</code>.</p></details>
+          <details><summary>Q18</summary><p>Symptom → Hypothesis → Small diagnostic → Result → Updated hypothesis → Fix (+ explain).</p></details>
+          <details><summary>Q19</summary><p><code>Modules/Template</code>.</p></details>
+          <details><summary>Q20</summary><p>e.g. register in <code>AudioLibrary.c</code>, Win64/CSL builds, installer, docs/XML/Tuning.</p></details>
+        </div>
+
+        <div class="callout ok">
+          <strong class="title">Part 1 end goal</strong>
+          You can independently explain the chain:
+          Repository → Framework → Pipeline → VST architecture → Lifecycle → Processing → Parameters → DSP → Build → Install → Test → Debug
+          — and <em>why</em> each layer exists.
+        </div>
+
+        <div class="callout stop">
+          <strong class="title">STOP before Part 2</strong>
+          Only continue when the knowledge check feels solid (roughly 16+/20 without hints).
+        </div>
+
+        <div class="pager">
+          <a href="03-first-vst.html">← First VST</a>
+          <a class="next" href="05-part2-projects.html">Next: Part 2 projects →</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

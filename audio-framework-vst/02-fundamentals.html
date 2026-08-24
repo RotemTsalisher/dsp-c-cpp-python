@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>02 · VST &amp; Audio Fundamentals — AFW VST Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="02-fundamentals">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html">01 · Repository recon</a>
+        <a href="02-fundamentals.html" class="active">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Part 1 · Phases 1–4</span>
+          <span class="badge">Theory before code</span>
+        </div>
+        <h1>VST, AFW architecture &amp; audio fundamentals</h1>
+        <p class="lead">
+          Concepts first — still no implementation. Everything below is mapped onto AudioFramework language
+          (<code>AudioModule</code>, <code>Calc</code>, <code>GenericProcessor</code>.
+        </p>
+
+        <!-- PHASE 1 -->
+        <h2 id="p1">Phase 1 — What is a VST?</h2>
+
+        <h3>1.1 Host · Plugin · DSP</h3>
+        <div class="diagram">DAW / Host          VST Plugin              DSP (your module)
+(Ableton, Reaper,    (GenericProcessor       (GainCalc / your Calc)
+ Cubase, …)           + JUCE VST3 wrapper)
+     │                      │                        │
+     │ discovers &amp; loads     │ speaks VST3 API         │ math on samples
+     │ sends audio blocks → │ copies ↔ AudioModule → │ y = f(x, params)
+     │ receives audio ←──── │                        │
+     │ owns transport,      │ owns UI / params        │ owns algorithm state
+        I/O, timeline</div>
+
+        <ul>
+          <li><strong>Host:</strong> discovers plugins, creates instances, calls prepare/process, manages buses and transport.</li>
+          <li><strong>Plugin:</strong> implements the contract (in AFW: JUCE + <code>GenericProcessor</code>).</li>
+          <li><strong>DSP:</strong> the actual signal algorithm (in AFW: C <code>Core-&gt;Calc</code>).</li>
+        </ul>
+
+        <h3>1.2 VST2 vs VST3 (what matters here)</h3>
+        <ul>
+          <li>This repo builds <strong>VST3 only</strong> (<code>JucePlugin_Build_VST=0</code>, <code>JucePlugin_Build_VST3=1</code>).</li>
+          <li>VST3 uses buses, a clearer parameter model, and a different binary packaging (<code>.vst3</code> bundle/DLL on Windows).</li>
+          <li>You do not need VST2 history for AFW work — ignore VST2 except when debugging “why isn’t my host scanning VST2 folders?”</li>
+        </ul>
+
+        <h3>1.3 Lifecycle when a DAW loads a plugin</h3>
+        <div class="diagram">DAW starts
+  ↓
+Plugin discovery / scanning   (looks in VST3 folders)
+  ↓
+Plugin binary loaded          (.vst3 DLL)
+  ↓
+Factory / entry point         createPluginFilter()
+  ↓
+Plugin instance created       new GenericProcessor(setup, ioConfig)
+  ↓
+Initialization                constructor: alloc buffers, Core->Init
+  ↓
+Sample rate configured        prepareToPlay(sr, blockSize)
+  ↓
+Block size configured         (may re-Init if size/layout changes)
+  ↓
+Processing starts
+  ↓
+Audio blocks arrive           processBlock(...)
+  ↓
+Plugin processes them         Core->Calc
+  ↓
+Processing stops
+  ↓
+Plugin destroyed              Core->Free, free buffers</div>
+
+        <p>Map each stage to AFW files as you re-read <span class="path">Framework/GenericProcessor.cpp</span>.</p>
+
+        <!-- PHASE 2 -->
+        <h2 id="p2">Phase 2 — VST architecture <em>in this repository</em></h2>
+        <p>AFW does <strong>not</strong> create a custom <code>MyPluginAudioProcessor</code> subclass per module.
+        One shared processor wraps any <code>AudioModuleCore</code>.</p>
+
+        <h3>Who creates what?</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Object</th><th>Created by</th><th>Destroyed by</th></tr></thead>
+            <tbody>
+              <tr><td><code>AudioModule*</code> setup</td><td><code>createPluginFilter()</code></td><td><code>~GenericProcessor()</code></td></tr>
+              <tr><td><code>GenericProcessor</code></td><td>factory return value; host owns</td><td>host</td></tr>
+              <tr><td>Input/Output buffers</td><td>ctor / <code>prepareToPlay</code></td><td>destructor</td></tr>
+              <tr><td><code>Specific</code> state</td><td><code>Core-&gt;Init</code></td><td><code>Core-&gt;Free</code></td></tr>
+              <tr><td><code>GenericEditor</code></td><td><code>createEditor()</code> when UI opens</td><td>host when UI closes</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>AudioModuleCore — C “vtable”</h3>
+        <pre><code>typedef struct AudioModuleCore {
+  const char* Type;
+  fpInit Init;
+  fpCalc Calc;
+  fpIdle Idle;
+  fpFree Free;
+  fpSetValue SetValue;
+  fpGetValue GetValue;
+  fpSetData SetData;
+  fpGetData GetData;
+  fpGetParamInfo GetParamInfo;
+  int DefaultFormat;
+  fpGetDebugInfo GetDebugInfo;
+} AudioModuleCore;</code></pre>
+
+        <div class="levels">
+          <div class="level">
+            <div class="lvl">Level 1 — What?</div>
+            A table of function pointers naming the module and its lifecycle APIs.
+          </div>
+          <div class="level">
+            <div class="lvl">Level 2 — How?</div>
+            <code>GenericProcessor</code> never calls <code>GainCalc</code> by name; it calls <code>m_Setup-&gt;Core-&gt;Calc(m_Setup)</code>.
+          </div>
+          <div class="level">
+            <div class="lvl">Level 3 — Why?</div>
+            Same JUCE binary glue works for 70+ modules. New DSP = new C core + tiny Plugin.h, not a new C++ processor class.
+          </div>
+        </div>
+
+        <h3>Parameters &amp; GUI</h3>
+        <ul>
+          <li>Module fills <code>ParamInfo</code> (name, unit, type, min/max/default).</li>
+          <li>Types include <code>PT_SLIDER_LIN</code>, <code>PT_COMBO_BOX</code>, <code>PT_BUTTON</code>, <code>PT_METER</code>, file dialogs, …</li>
+          <li><code>GenericEditor</code> builds controls from that metadata. Optional custom <code>DisplayComponent</code> if <code>HAS_DISPLAY_COMPONENT</code>.</li>
+          <li>Host parameter changes → <code>SetValue</code>; meters/UI reads → <code>GetValue</code>.</li>
+        </ul>
+
+        <h3>processBlock bridge (actual AFW path)</h3>
+        <pre><code>// Simplified from GenericProcessor::processBlock
+for each input channel i:
+  copy host buffer → m_Setup-&gt;Inputs[i][0..BlockLength)
+m_Setup-&gt;Core-&gt;Calc(m_Setup);
+for each output channel i:
+  copy m_Setup-&gt;Outputs[i] → host buffer</code></pre>
+        <p>There is <strong>no</strong> <code>processBlock</code> in C modules. Your job is <code>XxxCalc(AudioModule* setup)</code>.</p>
+
+        <!-- PHASE 3 -->
+        <h2 id="p3">Phase 3 — Audio processing fundamentals</h2>
+
+        <h3>Samples</h3>
+        <p>A sample is one floating-point amplitude at one time instant, typically in about <code>[-1, 1]</code> for float plugins.
+        AFW uses <code>float</code> buffers.</p>
+
+        <h3>Channels</h3>
+        <p>Independent streams (Left, Right, …). AFW: <code>setup-&gt;NumInputs</code> / <code>NumOutputs</code>,
+        and <code>Inputs[ch][sample]</code>.</p>
+
+        <h3>Buffers &amp; blocks</h3>
+        <p>Hosts process <strong>blocks</strong> (e.g. 64, 128, 256, 512 samples) for efficiency and predictability.
+        Never assume a fixed block size forever — <code>prepareToPlay</code> can change it.</p>
+        <div class="diagram">BlockLength = 128
+sample index: 0 1 2 … 127
+per channel buffer: float[128]</div>
+
+        <h3>Sample rate</h3>
+        <ul>
+          <li><strong>44.1 kHz</strong> — CD heritage</li>
+          <li><strong>48 kHz</strong> — common in pro/video; AFW constructor default often 48000</li>
+          <li><strong>96 kHz</strong> — higher bandwidth / headroom for processing</li>
+        </ul>
+        <p>Filters, delays in ms, ramps — anything time-based — must use <code>setup-&gt;SampleRate</code>.</p>
+
+        <h3>Stereo layout in AFW</h3>
+        <div class="diagram">Non-interleaved (planar) — what AFW uses:
+  Inputs[0] → L0 L1 L2 …
+  Inputs[1] → R0 R1 R2 …
+
+Interleaved (common elsewhere):
+  L0 R0 L1 R1 L2 R2 …</div>
+        <p>JUCE’s <code>AudioBuffer</code> is also planar per channel. The copy loops in <code>processBlock</code> match that.</p>
+
+        <!-- PHASE 4 -->
+        <h2 id="p4">Phase 4 — Real-time audio programming</h2>
+        <p>The audio callback (<code>processBlock</code> → <code>Calc</code>) runs on a high-priority thread with a deadline.
+        Missing the deadline = glitches / dropouts.</p>
+
+        <h3>What is generally safe in Calc?</h3>
+        <ul>
+          <li>Arithmetic on existing buffers</li>
+          <li>Reading preallocated state in <code>Specific</code></li>
+          <li>Bounded loops over <code>BlockLength</code> and channel count</li>
+          <li>Lock-free parameter reads of values already stored in module state</li>
+        </ul>
+
+        <h3>What is unsafe / problematic?</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Action</th><th>Why it hurts</th></tr></thead>
+            <tbody>
+              <tr><td>malloc / new / afwAlloc in Calc</td><td>Unpredictable time, fragmentation</td></tr>
+              <tr><td>Mutex / blocking locks</td><td>Priority inversion, stalls</td></tr>
+              <tr><td>File I/O</td><td>Disk latency</td></tr>
+              <tr><td>Heavy logging / printf</td><td>I/O + locks</td></tr>
+              <tr><td>Waiting on UI / network</td><td>Unbounded delay</td></tr>
+              <tr><td>Unbounded algorithms</td><td>Miss deadline</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout ok">
+          <strong class="title">AFW pattern</strong>
+          Allocate in <code>Init</code>, free in <code>Free</code>, only process in <code>Calc</code>.
+          Look at <code>GainInit</code> / <code>GainCalc</code> / <code>GainFree</code> as the template of that discipline.
+        </div>
+
+        <h3>C/C++ concepts you just touched</h3>
+        <ul>
+          <li><strong>Function pointers</strong> — how <code>AudioModuleCore</code> achieves polymorphism in C</li>
+          <li><strong>Opaque state</strong> — <code>void* Specific</code> cast to your struct</li>
+          <li><strong>Ownership</strong> — who allocates buffers (processor) vs algorithm state (Init)</li>
+          <li><strong>ABI / dynamic library</strong> — the .vst3 exports symbols the host finds via JUCE client code</li>
+        </ul>
+
+        <div class="callout stop">
+          <strong class="title">STOP AND WAIT</strong>
+          <p style="margin:0">
+            Explain aloud (or write) the difference between the full <code>afwCalc</code> graph and the VST single-module path.
+            Then open <a href="03-first-vst.html">03 · First VST</a> when ready to implement Gain in baby steps.
+          </p>
+        </div>
+
+        <div class="pager">
+          <a href="01-repository.html">← Repository recon</a>
+          <a class="next" href="03-first-vst.html">Next: First VST (Gain) →</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

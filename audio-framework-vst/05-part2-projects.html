@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>05 · Part 2 Projects &amp; Capstone — AFW VST Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="05-part2-projects">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AudioFramework → VST</div>
+      <div class="brand-sub">Interactive course · Cardo Systems AFW</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html">Course home</a>
+        <div class="group">Part 1</div>
+        <a href="01-repository.html">01 · Repository recon</a>
+        <a href="02-fundamentals.html">02 · VST &amp; audio fundamentals</a>
+        <a href="03-first-vst.html">03 · First VST (Gain)</a>
+        <a href="04-test-debug-quiz.html">04 · Test, debug, quiz</a>
+        <div class="group">Part 2</div>
+        <a href="05-part2-projects.html" class="active">05 · Projects &amp; capstone</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Part 2</span>
+          <span class="badge">Scaffolding decreases each project</span>
+        </div>
+        <h1>Three VST projects, capstone &amp; expert assessment</h1>
+        <p class="lead">
+          Same AFW integration pattern every time. Difficulty rises in DSP, state, and independence.
+          Study existing modules (<code>Clipper</code>, <code>Delay</code>, <code>Compressor</code>, <code>Biquad</code>) as references — do not blindly copy.
+        </p>
+
+        <div class="callout">
+          <strong class="title">Per-project workflow (always)</strong>
+          A Requirements → B DSP → C Architecture → D Repo integration → E Baby-step impl →
+          F Incremental build → G Test → H Debug → I Refactor / senior review
+        </div>
+
+        <div class="callout warn">
+          <strong class="title">Support taper</strong>
+          Project 1: detailed guidance, you write almost everything.<br/>
+          Project 2: architecture + strong guidance.<br/>
+          Project 3: requirements + architecture + hints.<br/>
+          Capstone: specification only — mentor reviews.
+        </div>
+
+        <!-- PROJECT 1 -->
+        <h2 id="proj1">VST Project 1 — Beginner+ · Soft Saturation</h2>
+        <p><strong>Why this fits AFW:</strong> Still one Calc, few params, teaches waveshaping and parameter ranges without delay lines.
+        Related in-repo: <code>Clipper</code>, <code>SoftMute</code>.</p>
+
+        <h3>A — Requirements</h3>
+        <ul>
+          <li>Stereo (and mono) in/out via <code>ioConfigs</code></li>
+          <li>Parameters: Drive (dB or linear), Mix (dry/wet 0–1), optional Output gain</li>
+          <li>Algorithm: soft saturate, e.g. <code>y = tanh(drive * x)</code>, then wet/dry</li>
+          <li>No custom GUI; GenericEditor only</li>
+          <li>Real-time safe Calc</li>
+        </ul>
+
+        <h3>B — DSP teaching stack</h3>
+        <div class="diagram">Why: tame peaks / add harmonics without hard clip bricks
+What: compresses large |x|, leaves small |x| almost linear
+Math: y = tanh(g·x)   (or soft-clip polynomial)
+Difference eq: memoryless → y[n] = f(x[n])  (no state)
+Coeffs: g from Drive param
+C++/C: per-sample in Calc
+RT: precompute g in SetValue; no alloc
+Edges: g=0 → silence-ish; huge g → approaches sign(x)
+Test: sine → look at waveform/spectrum; unity-ish at low drive</div>
+
+        <h3>C — Architecture</h3>
+        <pre><code>typedef struct {
+  float DriveLinear;
+  float Mix;
+  float OutGain;
+} SaturatorSetup;
+/* AudioModuleCore Saturator = { ... }; */</code></pre>
+
+        <h3>D — Integration</h3>
+        <p>Same as Part 1: <code>Modules/Saturator/</code> from Template, Plugin.h, vcxproj, unique PluginCode.</p>
+
+        <h3>E — Baby steps (mentor enforces STOP between)</h3>
+        <ol>
+          <li>Folder + core declaration</li>
+          <li>Init/Free state</li>
+          <li>Passthrough Calc (prove wiring)</li>
+          <li>Build + load</li>
+          <li>Add tanh drive</li>
+          <li>Add mix</li>
+          <li>ParamInfo + Set/Get</li>
+          <li>Full test list from Phase 10</li>
+        </ol>
+
+        <h3>I — Refactor prompts</h3>
+        <p>Could you share drive across channels? Should mix be equal-power? Is <code>tanhf</code> cost OK at 8 channels?</p>
+
+        <!-- PROJECT 2 -->
+        <h2 id="proj2">VST Project 2 — Intermediate · Tempo-independent Delay</h2>
+        <p><strong>Why:</strong> Introduces DSP state, circular buffers, sample-rate-dependent length, parameter smoothing.
+        Related in-repo: <code>Modules/Delay</code> — read after you design your own first pass.</p>
+
+        <h3>A — Requirements</h3>
+        <ul>
+          <li>Delay time 1–1000 ms</li>
+          <li>Feedback 0–0.95 (clamp for stability)</li>
+          <li>Mix dry/wet</li>
+          <li>Max delay buffer allocated in Init from SampleRate × maxMs</li>
+          <li>Clear buffer on reset/Init</li>
+          <li>Document latency if you report any to the host (optional advanced)</li>
+        </ul>
+
+        <h3>B — DSP</h3>
+        <div class="diagram">Intuition: echo = play past input later
+Math: y[n] = mix·x[n-D] + (1-mix)·x[n]
+      with feedback: buffer[w] = x[n] + fb·buffer[w-D]
+D = delayMs * SampleRate / 1000
+State: circular buffer + write index
+RT: fixed max buffer; changing delay may interpolate (start with integer samples)
+Edges: fb≥1 unstable; D≥max wrap bugs; SR change → re-Init</div>
+
+        <h3>C — Architecture sketch (you design details)</h3>
+        <pre><code>typedef struct {
+  float* Buffer;   /* or per-channel */
+  int Capacity;
+  int WritePos;
+  int DelaySamples;
+  float Feedback;
+  float Mix;
+} DelaySetup;</code></pre>
+
+        <h3>Support level</h3>
+        <p>Mentor helps architecture and review; you write most of Calc and index math.
+        Progressive hints only when stuck.</p>
+
+        <h3>Tests unique to delay</h3>
+        <ul>
+          <li>Impulse in → impulse out after ~D samples</li>
+          <li>Feedback decays</li>
+          <li>Change SR mid-session (re-prepare)</li>
+          <li>Zero delay ≈ dry (or 1-sample — document behavior)</li>
+        </ul>
+
+        <!-- PROJECT 3 -->
+        <h2 id="proj3">VST Project 3 — Advanced · One-band dynamics (soft-knee compressor)</h2>
+        <p><strong>Why:</strong> Combines envelope follower, attack/release (SR-dependent coeffs), nonlinear gain computer, stereo linking.
+        Related: <code>Modules/Compressor</code>, <code>Limiter</code>, <code>NoiseGate</code> — compare after your design review.</p>
+
+        <h3>A — Requirements</h3>
+        <ul>
+          <li>Params: Threshold (dB), Ratio, Attack (ms), Release (ms), Makeup (dB), optional Knee</li>
+          <li>Stereo: shared gain from max(|L|,|R|) or mid detection (document choice)</li>
+          <li>Ballistics: different attack/release time constants</li>
+          <li>Meter param for gain reduction (PT_METER) if you want GenericEditor feedback</li>
+          <li>No allocations in Calc; coefficients updated on SetValue / SR change</li>
+        </ul>
+
+        <h3>B — DSP outline</h3>
+        <div class="diagram">Level detect → envelope (AT/RT) → gain computer (threshold/ratio/knee)
+  → apply gain → makeup
+Coeffs: alpha = exp(-1/(timeSec*SR))
+State: envelope, current gain
+RT: precompute alphas when params/SR change</div>
+
+        <h3>Support level</h3>
+        <p>Mentor gives requirements, architecture checklist, and hints.
+        You design state layout, implement majority of code, own the test plan.</p>
+
+        <h3>I — Senior refactor questions</h3>
+        <ul>
+          <li>Sidechain input? (out of scope unless you extend ioConfigs carefully)</li>
+          <li>Lookahead? (adds latency — host reporting)</li>
+          <li>Match AFW Compressor parameter UX for Tuning/XML later?</li>
+        </ul>
+
+        <!-- CAPSTONE -->
+        <h2 id="capstone">Final capstone — Independent design</h2>
+        <div class="callout stop">
+          <strong class="title">No implementation provided</strong>
+          Mentor acts only as senior reviewer. You design and implement.
+        </div>
+
+        <h3>Project: “AFW Channel Strip Lite”</h3>
+        <p>Single VST module that chains internally (still one AudioModule Calc — not a multi-module afw graph unless you choose the advanced path).</p>
+
+        <h4>Functional specification</h4>
+        <ol>
+          <li>Input trim (dB)</li>
+          <li>One biquad EQ band (peak or low shelf — pick one and document)</li>
+          <li>Soft saturator (from Project 1 lessons)</li>
+          <li>Output limiter / ceiling</li>
+          <li>Bypass that truly skips processing (or use module Mode if integrating with framework modes)</li>
+        </ol>
+
+        <h4>Parameter specification</h4>
+        <p>Define names, units, types, ranges, defaults in a table before coding.
+        Include at least one combo box (e.g. EQ type) and one meter (output level or GR).</p>
+
+        <h4>DSP requirements</h4>
+        <ul>
+          <li>SR-dependent EQ coefficients recomputed when freq/Q/gain/SR change</li>
+          <li>Filter state in Specific; clear on Init</li>
+          <li>Document processing order and why</li>
+        </ul>
+
+        <h4>Performance</h4>
+        <ul>
+          <li>Stable at 8 channels if ioConfigs allow it (or explicitly support only 2 and say so)</li>
+          <li>No heap in Calc; CPU budget: no obvious per-sample pow without need</li>
+        </ul>
+
+        <h4>Testing &amp; acceptance</h4>
+        <ul>
+          <li>All Phase 10 tests plus EQ sweep sanity, limiter prevents |y|&gt;ceiling</li>
+          <li>pluginval basic pass (or documented failures)</li>
+          <li>Written one-page design note: data flow diagram with real function names</li>
+          <li>Code review with mentor: ownership, RT safety, ParamInfo correctness</li>
+        </ul>
+
+        <!-- EXPERT ASSESSMENT -->
+        <h2 id="expert">Expert readiness assessment</h2>
+        <p>Use with a mentor. Mix oral + take-home.</p>
+
+        <h3>Repository understanding</h3>
+        <ul>
+          <li>Draw Framework vs Modules vs VST3 folder responsibilities.</li>
+          <li>When must you touch <code>AudioLibrary.c</code>?</li>
+        </ul>
+
+        <h3>VST architecture &amp; lifecycle</h3>
+        <ul>
+          <li>Walk createPluginFilter → prepareToPlay → processBlock → destructor.</li>
+          <li>What happens if NumInputs changes at runtime?</li>
+        </ul>
+
+        <h3>C / C++</h3>
+        <ul>
+          <li>Explain <code>AudioModuleCore</code> function pointers vs C++ virtual methods.</li>
+          <li>Who owns <code>Inputs</code>/<code>Outputs</code> vs <code>Specific</code>?</li>
+        </ul>
+
+        <h3>Audio / DSP / RT</h3>
+        <ul>
+          <li>Implement on paper: ms → samples; dB → linear.</li>
+          <li>Why feedback delay needs a clamp; what happens if you alloc the delay line in Calc?</li>
+        </ul>
+
+        <h3>Parameters &amp; state</h3>
+        <ul>
+          <li>Given a ParamInfo array, sketch what GenericEditor will show.</li>
+          <li>Debug scenario: slider moves, audio unchanged — list hypotheses in order.</li>
+        </ul>
+
+        <h3>Build / debug / test</h3>
+        <ul>
+          <li>Linker error “unresolved Init” — causes?</li>
+          <li>Host shows old GUI — procedure?</li>
+        </ul>
+
+        <h3>Architecture problem</h3>
+        <p>Product wants a new “NoiseReductionLite” module used in firmware graph <em>and</em> as VST.
+        List exact repo touch points (from the official checklist) and what stays shared.</p>
+
+        <h3>Implementation exercise</h3>
+        <p>In 45–90 minutes: Template → module that does DC blocker (y[n] = x[n] − x[n−1] + R·y[n−1], pick R).
+        Mentor reviews without giving code first.</p>
+
+        <div class="callout ok">
+          <strong class="title">Expert bar</strong>
+          You can open AudioFramework and honestly say:
+          “I know where the VST belongs, why, how the host talks to it, how audio flows,
+          how to implement DSP, build, test, and debug it.”
+        </div>
+
+        <h2>Suggested reference modules (read-only study)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Topic</th><th>Module</th></tr></thead>
+            <tbody>
+              <tr><td>Minimal gain</td><td><code>Modules/Gain</code></td></tr>
+              <tr><td>Scaffolding</td><td><code>Modules/Template</code></td></tr>
+              <tr><td>Rich parameters</td><td><code>Modules/Volume</code></td></tr>
+              <tr><td>Clipping / waveshape</td><td><code>Modules/Clipper</code></td></tr>
+              <tr><td>Delay state</td><td><code>Modules/Delay</code></td></tr>
+              <tr><td>Filters</td><td><code>Modules/Biquad</code>, <code>FadedBiquad</code></td></tr>
+              <tr><td>Dynamics</td><td><code>Modules/Compressor</code>, <code>Limiter</code></td></tr>
+              <tr><td>Glue</td><td><code>Framework/GenericProcessor.cpp</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <a href="04-test-debug-quiz.html">← Test &amp; quiz</a>
+          <a class="next" href="index.html">Back to course home</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>
