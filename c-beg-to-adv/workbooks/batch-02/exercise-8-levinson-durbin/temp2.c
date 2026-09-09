@@ -2,95 +2,30 @@
 
 #define MAX_VEC_LEN 100
 #define MAX_ORDER   10
-#define ABS(n)      (n) < 0 ? (-(n)) : (n)
+#define ABS(n)      ((n) < 0 ? (-(n)) : (n))
 
 void prediction_error(const double *x, int length, const double a[], int p, double *e);
 void acf_biased(const double* x, int N, double* r, int p);
 void toeplitz_from_r(const double *r, int p, double *G);
+int ld_order1(const double *r, int size, double *k, double *E);
+int ld_order2(const double *r, int size, double *k, double *E, double *a_);
+int check_k(const double *K, int p);
+void ld_stage(double* a, double* E, const double* r, int m);
+void levinson_durbin(const double *r, int p, double *a, double *E_out);
 
 int main(void)
 {
-    double G[MAX_ORDER * MAX_ORDER];
+    double r[] = {1.0, 0.5, 0.2};
+    double a[3] = {1.0, 0.0, 0.0};
+    double E;
 
-    /* TEST 1 */
-    {
-        double r[] = {1.0, 0.5, 0.25};
+    levinson_durbin(r, 2, a, &E);
 
-        printf("\n=== TEST 1 ===\n");
-
-        toeplitz_from_r(r, 3, G);
-
-        for(int i = 0; i < 3; ++i) {
-            for(int j = 0; j < 3; ++j) {
-                printf("%8.3lf ", G[i + 3*j]);
-            }
-            printf("\n");
-        }
-    }
-
-    /* TEST 2 */
-    {
-        double r[] = {7.5, 5.0, 2.75, 1.0};
-
-        printf("\n=== TEST 2 ===\n");
-
-        toeplitz_from_r(r, 4, G);
-
-        for(int i = 0; i < 4; ++i) {
-            for(int j = 0; j < 4; ++j) {
-                printf("%8.3lf ", G[i + 4*j]);
-            }
-            printf("\n");
-        }
-    }
-
-    /* TEST 3 */
-    {
-        double r[] = {1.0, -0.75, 0.5, -0.25};
-
-        printf("\n=== TEST 3 ===\n");
-
-        toeplitz_from_r(r, 4, G);
-
-        for(int i = 0; i < 4; ++i) {
-            for(int j = 0; j < 4; ++j) {
-                printf("%8.3lf ", G[i + 4*j]);
-            }
-            printf("\n");
-        }
-    }
-
-    /* TEST 4 */
-    {
-        double r[] = {25.0};
-
-        printf("\n=== TEST 4 ===\n");
-
-        toeplitz_from_r(r, 1, G);
-
-        for(int i = 0; i < 1; ++i) {
-            for(int j = 0; j < 1; ++j) {
-                printf("%8.3lf ", G[i + 1*j]);
-            }
-            printf("\n");
-        }
-    }
-
-    /* TEST 5 */
-    {
-        double r[] = {10.0, 0.0, 0.0};
-
-        printf("\n=== TEST 5 ===\n");
-
-        toeplitz_from_r(r, 3, G);
-
-        for(int i = 0; i < 3; ++i) {
-            for(int j = 0; j < 3; ++j) {
-                printf("%8.3lf ", G[i + 3*j]);
-            }
-            printf("\n");
-        }
-    }
+    printf("\n=== FINAL RESULT ===\n");
+    printf("a[0] = %.6f\n", a[0]);
+    printf("a[1] = %.6f\n", a[1]);
+    printf("a[2] = %.6f\n", a[2]);
+    printf("E    = %.6f\n", E);
 
     return 0;
 }
@@ -156,4 +91,111 @@ void prediction_error(const double *x, int length,
 
         printf("e[%d] = %lf\n", n, e[n]);
     }
+}
+
+int ld_order1(const double *r, int size, double *k, double *E) {
+    
+    // size is expected to be 2 for ld order 1
+    
+    if( (2 != size) || (r[0] <= 0) || (ABS((*k)) >= 1)) {
+        return -1;
+    };
+
+    (*k) = -(r[1] / r[0]);
+    (*E) = r[0] * (1 - ((*k) * (*k)));
+    return 0;
+};
+
+int ld_order2(const double *r, int size, double *k, double *E, double *a_) {
+
+    // size is p + 1, i.e 3 for p = 2
+
+    a_[0] = 1.0;
+
+    if((size != 3) || (r[0] <= 0)) {
+        return -1;
+    }
+
+    // p = 1:
+
+    (*k) = -(r[1] / r[0]);
+    (*E) = r[0] * (1 - ((*k) * (*k)));
+
+    a_[1] = *k;
+
+    (*k) = -(r[2] + a_[1]*r[1]) / (*E);
+    a_[1] = a_[1] + (*k) * a_[1];
+    a_[2] = (*k);
+
+    (*E) = (*E) * (1 - ((*k) * (*k)));
+
+    return 0;
+}
+
+int check_k(const double *K, int p) {
+
+    for(int i = 0; i < p; ++i) {
+        if( (ABS(K[i]) >= 1) ) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+void ld_stage(double* a, double* E, const double* r, int m)
+{
+    double delta = r[m];
+    double K = 0.0;
+    double a_[100] = {0.0};
+
+    printf("\n--- ld_stage(m=%d) ---\n", m);
+
+    printf("Initial:\n");
+    printf("E = %lf\n", *E);
+
+    for(int k = 1; k < m; ++k) {
+        printf("a[%d]=%lf, r[%d]=%lf -> contribution=%lf\n",
+               k,
+               a[k],
+               m-k,
+               r[m-k],
+               a[k] * r[m-k]);
+
+        delta += a[k] * r[m-k];
+    }
+
+    printf("Delta = %lf\n", delta);
+
+    K = -delta / (*E);
+
+    printf("K = %lf\n", K);
+
+    (*E) = (*E) * (1.0 - (K * K));
+
+    for(int k = 1; k < m; ++k) {
+        a_[k] = a[k] + K * a[m - k];
+    }
+
+    for(int k = 1; k < m; ++k) {
+        a[k] = a_[k];
+    }
+
+    a[m] = K;
+
+    printf("Updated coefficients:\n");
+
+    for(int k = 0; k <= m; ++k) {
+        printf("a[%d] = %lf\n", k, a[k]);
+    }
+
+    printf("Updated E = %lf\n", *E);
+}
+
+void levinson_durbin(const double *r, int p, double *a, double *E_out) {
+
+    (*E_out) = r[0];
+    for(int i = 1; i < (p + 1); ++i) {
+        ld_stage(a, E_out, r, i);
+    };
 }
