@@ -12,20 +12,52 @@ int ld_order2(const double *r, int size, double *k, double *E, double *a_);
 int check_k(const double *K, int p);
 void ld_stage(double* a, double* E, const double* r, int m);
 void levinson_durbin(const double *r, int p, double *a, double *E_out);
+void two_by_two_inv(double **mat);
+
+static double e_array[MAX_ORDER] = {0.0};
+static int    e_idx              =  0;
 
 int main(void)
 {
-    double r[] = {1.0, 0.5, 0.2};
-    double a[3] = {1.0, 0.0, 0.0};
-    double E;
+    struct {
+        double m[2][2];
+        const char *name;
+    } tests[] =
+    {
+        { {{4.0, 7.0}, {2.0, 6.0}}, "Classic example" },
+        { {{1.0, 2.0}, {3.0, 4.0}}, "Negative determinant" },
+        { {{5.0, 0.0}, {0.0, 2.0}}, "Diagonal matrix" },
+        { {{1.0, 0.0}, {0.0, 1.0}}, "Identity matrix" },
+        { {{2.0, -1.0}, {-1.0, 2.0}}, "Symmetric matrix" }
+    };
 
-    levinson_durbin(r, 2, a, &E);
+    const int num_tests = sizeof(tests) / sizeof(tests[0]);
 
-    printf("\n=== FINAL RESULT ===\n");
-    printf("a[0] = %.6f\n", a[0]);
-    printf("a[1] = %.6f\n", a[1]);
-    printf("a[2] = %.6f\n", a[2]);
-    printf("E    = %.6f\n", E);
+    for(int t = 0; t < num_tests; ++t)
+    {
+        double row0[2];
+        double row1[2];
+        double *mat[2] = { row0, row1 };
+
+        row0[0] = tests[t].m[0][0];
+        row0[1] = tests[t].m[0][1];
+        row1[0] = tests[t].m[1][0];
+        row1[1] = tests[t].m[1][1];
+
+        printf("\n=================================\n");
+        printf("TEST %d : %s\n", t + 1, tests[t].name);
+        printf("=================================\n");
+
+        printf("Before:\n");
+        printf("[ %8.4f %8.4f ]\n", mat[0][0], mat[0][1]);
+        printf("[ %8.4f %8.4f ]\n", mat[1][0], mat[1][1]);
+
+        two_by_two_inv(mat);
+
+        printf("\nAfter:\n");
+        printf("[ %8.4f %8.4f ]\n", mat[0][0], mat[0][1]);
+        printf("[ %8.4f %8.4f ]\n", mat[1][0], mat[1][1]);
+    }
 
     return 0;
 }
@@ -172,6 +204,7 @@ void ld_stage(double* a, double* E, const double* r, int m)
     printf("K = %lf\n", K);
 
     (*E) = (*E) * (1.0 - (K * K));
+    e_array[e_idx++] = (*E);
 
     for(int k = 1; k < m; ++k) {
         a_[k] = a[k] + K * a[m - k];
@@ -195,7 +228,24 @@ void ld_stage(double* a, double* E, const double* r, int m)
 void levinson_durbin(const double *r, int p, double *a, double *E_out) {
 
     (*E_out) = r[0];
+
+    e_array[e_idx++] = (*E_out);
     for(int i = 1; i < (p + 1); ++i) {
         ld_stage(a, E_out, r, i);
     };
 }
+
+void two_by_two_inv(double **mat) {
+    double ad = mat[0][0] * mat[1][1];
+    double bc = mat[0][1] * mat[1][0];
+
+    double den    = ad - bc;
+    double factor = 1.0 / den;
+
+    double tmp = mat[0][0];
+    mat[0][0] = factor * mat[1][1];
+    mat[1][1] = factor * tmp;
+
+    mat[0][1] = -factor * mat[0][1];
+    mat[1][0] = -factor * mat[1][0];
+};
