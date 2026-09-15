@@ -107,6 +107,21 @@ Cursor is an IDE built on VS Code with **Chat**, **Inline Edit**, **Tab completi
 - Treat agent shell commands like a junior engineer: review before run on hardware scripts.
 - Keep **golden vectors** (small `.csv` / `.npy`) in-repo so the agent can regression-test DSP.
 
+## Why an AI coding worker changes everything
+Cursor isn't just autocomplete. It's a **coding worker** that:
+- Reads your entire codebase, understands context, and writes code that fits
+- Follows your project rules (`.mdc` files) consistently — never forgets, never cuts corners
+- Builds, tests, and fixes errors autonomously in Agent mode
+- Handles tedious tasks (bulk renames, Doxygen comments, const correctness) without fatigue
+- Lets you focus on **architecture, hardware decisions, and domain expertise** — the parts AI can't do
+
+## Model selection from day one
+Cursor offers multiple AI models. Key insight: **different tasks need different models**.
+- **Fastest models** → Tab completion, boilerplate, repetitive patterns
+- **Default models** → Agent tasks, feature implementation, bug fixes
+- **Strongest models** → Architecture review, subtle bug analysis, safety-critical code review
+You'll learn when to use which in Module 25.
+
 ### Key settings to locate now
 Open **Cursor Settings** and find: **Rules**, **Models**, **Features → Agent**, **MCP**, **Beta / Labs** (names shift — search settings for "rules", "agent", "mcp").
 """
@@ -1226,6 +1241,94 @@ Do one drill per day between modules. Repeat until automatic.
     ],
 }
 
+MODEL_SELECTION = {
+    "id": "25",
+    "title": "Model Selection & AI Worker Advantages",
+    "level": "Intermediate",
+    "summary": "Choose the right model for each task — maximize speed, quality, and cost. Understand why AI as your coding worker is a force multiplier.",
+    "body": md(
+        """
+## Model selection: the skill most people skip
+Not all models are equal. Cursor gives you model choice, and picking the right one **per task** is a meta-skill that separates beginners from experts.
+
+## General model tiers
+- **Fastest / cheapest models**: Tab completion, boilerplate, repetitive edits, simple refactors. Use for volume work where speed matters more than reasoning.
+- **Default / mid-tier models**: Most Agent tasks — implement a function, write tests, fix bugs, generate CMake. Good balance of quality and cost.
+- **Strongest / reasoning models**: Architecture planning, subtle bug analysis, complex refactors, ISR safety review, priority inversion analysis. When correctness > speed.
+
+## Model selection by task type for embedded DSP
+| Task | Recommended Tier | Why |
+|------|-----------------|-----|
+| Tab-complete register struct fields | Fastest | Repetitive pattern, low reasoning |
+| Generate biquad implementation | Default | Well-known algorithm, moderate complexity |
+| Debug DMA + ISR race condition | Strongest | Requires deep reasoning about concurrency |
+| Write CMakeLists.txt | Default | Standard build system pattern |
+| Review code for MISRA violations | Strongest | Subtle rule checking, false positive filtering |
+| Bulk-add Doxygen comments | Fastest | Repetitive, low reasoning |
+| Plan FPU to fixed-point migration | Strongest | Architecture-level decision with trade-offs |
+| Fix compiler warnings | Default | Pattern matching, well-understood fixes |
+
+## How to select models in Cursor
+- **Settings → Models**: enable/disable models available to you
+- **Agent/Chat model selector**: pick per-conversation
+- **Tab model**: configured separately in settings (often auto/fastest)
+- **Rules can hint**: "For ISR review, use the strongest available model"
+
+## Why AI as your coding worker is a force multiplier
+Understanding this changes how you work:
+
+### What AI workers give you (that humans can't match)
+- **Zero context-switch cost**: goes from reading your register map to writing tests to fixing build errors without "getting back up to speed"
+- **Infinite patience for tedious work**: add const to 200 pointers, Doxygen to 50 functions, rename across 30 files — no fatigue, no shortcuts
+- **Instant domain recall**: every C standard quirk, every CMSIS-DSP function signature, every gcc flag — always available
+- **Parallel attempts**: use worktrees to try two approaches simultaneously
+- **Reproducible**: same rules (`.mdc` files) produce consistent behavior across sessions
+
+### What YOU contribute (that AI can't)
+- **Domain judgment**: is this filter topology right for THIS application?
+- **Hardware truth**: does this register sequence match the actual silicon behavior?
+- **System thinking**: how does this DSP change affect power budget, latency, and EMC?
+- **Safety assessment**: is this change safe to deploy to 10,000 devices?
+
+### The optimal split
+You do the thinking. AI does the typing. Rules and tests keep the AI on track.
+"""
+    ),
+    "exercises": [
+        ex(
+            "25-1",
+            "Open Cursor Settings → Models. List every model available to you. For each, note: is it fastest/default/strongest tier? Which would you use for Tab vs Agent vs Chat?",
+            "This is your model inventory.",
+            "Model list documented with tier assignment. You know what's available and when to use each.",
+        ),
+        ex(
+            "25-2",
+            "Same coding task, two models: ask the default model AND the strongest model to 'Review src/biquad.c for potential integer overflow in Q15 operations.' Compare the depth and accuracy of each review.",
+            "Direct comparison of model quality.",
+            "Strongest model catches more subtle issues (e.g., intermediate overflow before >>15, saturation edge cases). Default model finds obvious issues. Use strongest for safety-critical review.",
+        ),
+        ex(
+            "25-3",
+            "Speed test: ask the fastest available model to add Doxygen comments to all functions in a file. Time it. Then ask the strongest model the same task. Compare speed vs quality.",
+            "Speed/quality trade-off measurement.",
+            "Fastest: done in seconds, comments are generic but correct. Strongest: slower, comments are more insightful but take longer. For bulk documentation, fastest is fine.",
+        ),
+        ex(
+            "25-4",
+            "Write a `.cursor/rules/model-hints.mdc` rule that recommends model tiers for different task types in your project. Example: 'For ISR code review, prefer the strongest model. For bulk formatting, use the fastest.'",
+            "Encode model selection wisdom in project rules.",
+            "Rule file with task→model mapping. Now your team has documented guidance, not just tribal knowledge.",
+        ),
+        ex(
+            "25-5",
+            "Document in `docs/ai-worker-playbook.md`: for each type of task in your DSP workflow, write (1) which Cursor mode to use (Tab/Ask/Agent/Plan), (2) which model tier, (3) what context to provide, (4) how to verify the result.",
+            "Your personal AI worker playbook.",
+            "Playbook covers 10+ task types with mode/model/context/verify for each. This is your operational manual for using AI effectively.",
+        ),
+    ],
+}
+
+MODULES.append(MODEL_SELECTION)
 MODULES.append(DRILLS)
 
 CSS = """

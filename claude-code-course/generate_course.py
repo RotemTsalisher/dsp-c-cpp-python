@@ -153,6 +153,22 @@ The extension is a **companion**, not a requirement. It gives you a sidebar view
 - If you use `nvm`: ensure VS Code inherits the right Node version (check `.nvmrc` or set in terminal profile).
 - On Windows: restart VS Code after the npm global install so PATH refreshes.
 
+## Why Claude Code is your ultimate coding worker
+Claude Code isn't just an assistant — it's a **terminal-native coding worker** that:
+- **Runs anywhere**: SSH, Docker, tmux, CI, cron — no GUI dependency
+- **Follows rules**: CLAUDE.md is your persistent rulebook across all sessions
+- **Self-corrects**: reads build errors, proposes fixes, rebuilds — without you copy-pasting
+- **Works autonomously**: headless mode (-p) enables scripts, CI, and automation
+- **Permission-gated**: you control every action with y/Y/n — embedded-safe by design
+- **Cost-transparent**: /cost shows real-time token usage — no surprise bills
+
+## Model selection from day one
+Claude Code supports multiple models. Key insight: **use the right model for each task**.
+- **Fastest**: bulk edits, boilerplate, documentation
+- **Default**: implementation, bug fixes, test writing
+- **Strongest**: architecture review, concurrency analysis, safety-critical code
+Use `/model` to switch. You'll master this in Module 20.
+
 ## Step 5: Create your workspace
 ```bash
 mkdir dsp-sandbox && cd dsp-sandbox
@@ -1637,6 +1653,98 @@ Implement a **3-band energy meter** (low / mid / high) for float32 audio:
                 "Ask Claude to review the entire feature branch diff for buffer overflows, missing bounds checks, and DSP accuracy issues. Fix any findings. Prepare a PR description with Summary, Test Plan, and Performance Notes.",
                 "Self-review + PR prep.",
                 "Review findings addressed. PR description ready. Clean git history on feature branch. Capstone complete.",
+            ),
+        ],
+    },
+    {
+        "id": "20",
+        "title": "Model Selection & AI Worker Advantages",
+        "level": "Advanced",
+        "summary": "Choose the right model via /model for each task. Understand why Claude Code as your coding worker is a force multiplier.",
+        "body": md("""
+## /model — choose the right brain for the job
+Claude Code lets you switch models mid-session:
+```
+> /model
+Current: claude-sonnet-4-20250514
+Available:
+  1. claude-sonnet-4-20250514 (default)
+  2. claude-opus-4-20250514 (strongest)
+  3. claude-haiku-3.5 (fastest)
+Select: _
+```
+
+## Model selection by task type for embedded DSP
+| Task | Recommended Tier | Why |
+|------|-----------------|-----|
+| Explain a register map | Default | Factual, well-documented topic |
+| Debug DMA + ISR race condition | Strongest | Deep concurrent reasoning needed |
+| Generate boilerplate C structs | Fastest | Repetitive pattern, low reasoning |
+| Review code for buffer overflows | Strongest | Subtle security analysis |
+| Write CMakeLists.txt | Default | Standard build system pattern |
+| Fix compiler warnings | Default | Pattern matching, well-understood |
+| Plan architecture refactor | Strongest | System-level reasoning |
+| Add Doxygen comments | Fastest | Bulk repetitive task |
+| Headless CI review | Default | Good balance for automation |
+| Analyze priority inversion | Strongest | RTOS concurrency subtlety |
+
+## Headless model selection
+```bash
+# Use strongest model for safety-critical review
+claude -p "Review src/isr.c for concurrency issues" --model claude-opus-4-20250514 --allowedTools Read
+
+# Use fastest for bulk tasks
+claude -p "Add header guards to all .h files" --model claude-haiku-3.5 --allowedTools Read,Edit
+```
+
+## Why Claude Code as your coding worker is a force multiplier
+### What AI workers give you (that humans can't match)
+- **Terminal-native = everywhere**: works on SSH servers, Docker, CI — no GUI needed
+- **Zero context-switch cost**: reads register map → writes code → fixes build → runs tests seamlessly
+- **Infinite patience**: add const to 200 pointers, rename across 30 files — no fatigue
+- **Instant domain recall**: every C quirk, every CMSIS function, every gcc flag
+- **Headless autonomy**: works while you sleep (CI, cron, scripts)
+- **Reproducible**: CLAUDE.md rules produce consistent behavior across sessions and team members
+
+### What YOU contribute (that AI can't)
+- **Domain judgment**: is this filter right for THIS application?
+- **Hardware truth**: does this register sequence match the silicon?
+- **System thinking**: power budget, latency, EMC implications
+- **Safety assessment**: is this safe to deploy to production devices?
+
+### The optimal split
+You do the thinking and reviewing. Claude does the implementing and testing. CLAUDE.md keeps Claude on track. Tests verify the output. This is a **managed workflow**, not pair programming.
+"""),
+        "exercises": [
+            ex(
+                "20-1",
+                "Run `/model` to see available models. Switch to the strongest model. Ask it to review a DSP function for subtle bugs. Then switch to default model and ask the same. Compare depth.",
+                "Direct model comparison.",
+                "Strongest: catches subtle issues (intermediate overflow, edge cases). Default: finds obvious issues. Cost difference visible via /cost.",
+            ),
+            ex(
+                "20-2",
+                "Run a headless command with explicit model flag: `claude -p 'Add Doxygen to all functions in src/' --model <fastest> --allowedTools Read,Edit`. Compare speed to doing it with the default model.",
+                "Model selection for automation speed.",
+                "Fastest model handles bulk documentation quickly. Default model is slower but may produce slightly better comments. For bulk tasks, fastest wins.",
+            ),
+            ex(
+                "20-3",
+                "Create a model selection guide in your CLAUDE.md: add a section 'Model Recommendations' mapping task types to models. This becomes your team's reference.",
+                "Encode model selection in project memory.",
+                "CLAUDE.md now has task→model mapping. Any team member using Claude Code in this project knows which model to use when.",
+            ),
+            ex(
+                "20-4",
+                "Write `docs/ai-worker-playbook.md`: for each task type in your DSP workflow, document (1) interactive vs headless, (2) which model, (3) what context to provide, (4) how to verify.",
+                "Your operational manual for AI-assisted development.",
+                "Playbook covers 10+ scenarios. This is your definitive guide to using Claude Code effectively in your project.",
+            ),
+            ex(
+                "20-5",
+                "Track session costs across one week using `/cost`. Log in `docs/cost-log.md`: date, task, model used, tokens, cost. Analyze: where did you overspend? Where could you use a cheaper model?",
+                "Cost optimization through data.",
+                "Week of cost data shows patterns: review tasks are expensive (use strongest), bulk tasks are cheap (use fastest). Optimize your model selection based on real data.",
             ),
         ],
     },
