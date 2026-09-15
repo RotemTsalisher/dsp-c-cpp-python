@@ -1328,7 +1328,111 @@ You do the thinking. AI does the typing. Rules and tests keep the AI on track.
     ],
 }
 
+PHONE_APP = {
+    "id": "A1",
+    "title": "Appendix: Phone App Connectivity",
+    "level": "All levels",
+    "summary": "Stay connected to your AI coding workflow from your phone — review, plan, and monitor from anywhere.",
+    "body": md(
+        """
+## Why phone connectivity matters
+Your AI coding worker doesn't stop when you leave your desk. With the right apps, you can:
+- **Review diffs and PRs** on the go (commute, waiting rooms, breaks)
+- **Chat with Claude** to plan your next coding session before you sit down
+- **Monitor CI/CD** and cloud agent results from anywhere
+- **Capture ideas** as prompts or task briefs you'll delegate later
+
+## Claude Mobile App (iOS & Android)
+The **Claude app** by Anthropic gives you direct access to Claude from your phone:
+- Download from App Store (iOS) or Google Play (Android)
+- Sign in with your Anthropic account (same one used for Claude Code)
+- Use it for: planning architecture, drafting task briefs, discussing DSP concepts, reviewing pseudocode
+
+### Workflow: Phone → Desktop
+1. **On phone (Claude app)**: "I need a DC blocker module. Help me think through the design — filter topology, state variables, block vs sample processing trade-offs."
+2. Claude discusses the design with you
+3. **At your desk (Cursor)**: take the design decisions and implement via Agent with your `.mdc` rules enforcing code standards
+
+### What works well on phone
+- Architecture discussion and trade-off analysis
+- Drafting task brief bullet points (copy to `tasks/*.md` later)
+- Reviewing Claude's explanation of a concept you'll implement tomorrow
+- Quick "how does X work in CMSIS-DSP?" questions
+
+### What to save for desktop
+- Actual code generation and file edits (need the IDE)
+- Build-test-fix loops (need the terminal)
+- Git operations and PR creation
+- Any task requiring project file access
+
+## GitHub Mobile App
+For monitoring your AI-assisted workflow:
+- **Review PRs** that cloud agents or CI created
+- **Check CI status** on branches Claude pushed
+- **Read review comments** and plan feedback for re-delegation
+- **Merge approved PRs** when everything is green
+
+## Cursor Remote Access
+If you need full Cursor from a tablet or phone browser:
+- Use **VS Code Remote** or **code-server** on your dev machine
+- SSH tunnel to your workstation for remote access
+- Cloud dev environments (GitHub Codespaces, Gitpod) give browser-based IDE access
+
+## The phone workflow for the AI-powered engineer
+```
+Morning commute (phone):
+  → Check overnight CI results (GitHub app)
+  → Review any PRs from scheduled Claude tasks
+  → Plan today's work with Claude app
+
+At your desk (Cursor):
+  → Implement and delegate using plans from phone session
+  → Run Agent tasks, review diffs, push branches
+
+Evening (phone):
+  → Quick review of what Claude's CI jobs produced
+  → Draft tomorrow's task briefs in Claude app
+  → Capture any ideas before they're forgotten
+```
+
+## Tips for effective phone usage
+- **Don't code on your phone** — plan, review, and think on phone; code at your desk
+- **Use Claude app for rubber-duck debugging** — describe the problem verbally, get hypotheses back
+- **Screenshot error messages** from hardware and paste into Claude app for quick diagnosis
+- **Bookmark your repo's PR page** in your phone browser for quick CI checks
+- **Use voice input** for long prompts to Claude — faster than typing on phone
+"""
+    ),
+    "exercises": [
+        ex(
+            "A1-1",
+            "Install the Claude mobile app (iOS/Android). Sign in with your Anthropic account. Ask Claude: 'What are the trade-offs between IIR and FIR filters for real-time audio on Cortex-M4F?' — a question you'd normally ask at your desk.",
+            "Same Claude, different device.",
+            "Claude gives the same quality answer on phone as desktop. You can now have design discussions anywhere.",
+        ),
+        ex(
+            "A1-2",
+            "On your phone, draft a task brief in the Claude app: 'Help me outline a task brief for a peak detector module. Include: deliverables, constraints for C99 embedded, and 3 acceptance test criteria.' Copy the result to your desktop later.",
+            "Phone as planning tool for desktop delegation.",
+            "Task brief outline ready. When you sit at your desk, paste it into `tasks/peak-detector.md` and delegate via Cursor Agent or Claude Code headless.",
+        ),
+        ex(
+            "A1-3",
+            "Install the GitHub mobile app. Open your repo. Check the most recent commit status. If you have any open PRs, review the diff on your phone.",
+            "Mobile CI and PR monitoring.",
+            "You can see commit status, review diffs, and even approve PRs from your phone. Overnight Claude CI jobs are reviewable from bed.",
+        ),
+        ex(
+            "A1-4",
+            "Practice the full phone→desktop workflow: (1) On phone, discuss a design with Claude app. (2) At desk, create the task brief from your phone notes. (3) Delegate via Agent. (4) On phone later, check the PR/CI result.",
+            "Complete mobile-connected workflow.",
+            "Design discussed on commute → implemented at desk → reviewed on phone. Your AI workflow isn't tied to sitting at your computer.",
+        ),
+    ],
+}
+
 MODULES.append(MODEL_SELECTION)
+MODULES.append(PHONE_APP)
 MODULES.append(DRILLS)
 
 CSS = """

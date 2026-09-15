@@ -1749,6 +1749,127 @@ You do the thinking and reviewing. Claude does the implementing and testing. CLA
         ],
     },
     # ══════════════════════════════════════════════════════════════════════
+    # APPENDIX: PHONE APP CONNECTIVITY
+    # ══════════════════════════════════════════════════════════════════════
+    {
+        "id": "A1",
+        "title": "Appendix: Phone App Connectivity",
+        "level": "All levels",
+        "summary": "Stay connected to your terminal-native AI workflow from your phone — plan, review, and monitor from anywhere.",
+        "body": md("""
+## Claude Code is terminal-native — but your THINKING isn't tied to a terminal
+Claude Code runs in your terminal. But the planning, design decisions, and review that drive your work can happen anywhere — including from your phone.
+
+## Claude Mobile App (iOS & Android)
+The **Claude app** by Anthropic gives you Claude on your phone:
+- Download from App Store (iOS) or Google Play (Android)
+- Sign in with your Anthropic account (same one used for Claude Code CLI)
+- Same models, same quality — just without file/terminal access
+
+### What the phone app is perfect for
+- **Design discussions**: "What are the trade-offs of overlap-add vs overlap-save for real-time convolution?"
+- **Drafting task briefs**: outline specs you'll turn into `tasks/*.md` files at your desk
+- **Understanding concepts**: "Explain CAN bus arbitration step by step" before you implement it
+- **Debugging hypotheses**: describe a symptom, get ranked possible causes
+- **Reviewing pseudocode**: paste or describe an algorithm, discuss correctness
+
+### What stays at the terminal
+- File reads/writes (Claude Code's terminal tools)
+- Build-test-fix agentic loops
+- Headless mode and CI/CD automation
+- Git operations
+- Anything requiring project file access
+
+## The phone → terminal workflow
+```
+On your phone (Claude app):
+  "I need to implement a 3-band crossover filter.
+   Help me think through: filter order, crossover
+   frequencies, Linkwitz-Riley vs Butterworth topology."
+
+Claude discusses design trade-offs with you.
+You note the decisions.
+
+At your terminal (Claude Code):
+  > Implement a 3-band Linkwitz-Riley crossover in src/crossover.c.
+  > Crossover frequencies: 300 Hz and 3000 Hz.
+  > 4th order (cascaded biquads). Block processing.
+  > Build and test.
+
+Claude Code implements with file access and build tools.
+```
+
+## GitHub Mobile App — Monitor your headless work
+Claude Code's headless mode and CI integration mean work happens without you. Monitor from your phone:
+- **Check CI status** on branches where headless Claude pushed fixes
+- **Review PRs** that your nightly/weekly scripts created
+- **Read review comments** and plan feedback for re-delegation
+- **Merge** when everything is green
+
+## SSH from phone (advanced)
+Terminal apps like **Termius**, **Blink Shell** (iOS), or **JuiceSSH** (Android) let you SSH into your dev machine:
+- Run `claude` interactively over SSH from your phone
+- Check headless job logs: `cat logs/nightly-*.log`
+- Run quick commands: `cd project && git log --oneline -5`
+- Emergency fix: `claude -p "Fix the build" --allowedTools Read,Edit,Bash`
+
+This is extreme but possible — Claude Code's terminal-native design means it works on ANY terminal, including a phone SSH client.
+
+## Daily rhythm for the connected engineer
+```
+Morning commute (phone - Claude app):
+  → Plan today's implementation with Claude
+  → Draft task briefs / acceptance criteria
+
+Morning commute (phone - GitHub app):
+  → Check overnight CI results
+  → Review any PRs from scheduled headless jobs
+
+At terminal (Claude Code):
+  → Implement using plans from phone session
+  → Run agentic loops, headless delegations
+  → Push branches, trigger CI
+
+Evening (phone):
+  → Review CI results from today's pushes
+  → Quick design discussion for tomorrow
+  → Capture ideas as voice-to-text prompts
+```
+
+## Tips
+- **Voice input** is fast for long prompts on phone — dictate design questions to Claude
+- **Screenshot hardware errors** (UART output, scope traces) and describe to Claude app for diagnosis
+- **Don't try to code on phone** — think, plan, and review on phone; implement at terminal
+- **Bookmark** your repo's Actions/PR page for one-tap CI checks
+"""),
+        "exercises": [
+            ex(
+                "A1-1",
+                "Install the Claude mobile app. Sign in. Ask: 'Explain the difference between y/Y/n permission responses in Claude Code CLI.' Verify it gives an accurate answer about the tool you use daily.",
+                "Claude on phone knows about Claude Code.",
+                "Claude explains: y = allow once, Y = allow pattern for session, n = deny. Same knowledge, different device.",
+            ),
+            ex(
+                "A1-2",
+                "On your phone, have a 5-minute design conversation with Claude: pick a DSP module you haven't built yet. Discuss: algorithm choice, state variables, block size handling, edge cases. Save the key decisions (screenshot or notes).",
+                "Phone as design thinking tool.",
+                "Design decisions captured on phone. Ready to turn into a terminal prompt or task brief when you're at your desk.",
+            ),
+            ex(
+                "A1-3",
+                "Install the GitHub mobile app. Navigate to your repo. Check the last commit. If you have CI workflows, check their status. Try reviewing a diff on your phone.",
+                "Mobile CI monitoring for headless workflows.",
+                "You can see commit status, diffs, and CI results from your phone. Nightly headless jobs are reviewable from anywhere.",
+            ),
+            ex(
+                "A1-4",
+                "Full cycle: (1) On phone, draft a brief outline for a new module with Claude app. (2) At your terminal, create `tasks/phone-drafted.md` from your notes, delegate headless. (3) On phone, check the result via GitHub app or SSH.",
+                "Complete phone-connected workflow.",
+                "Planned on phone → implemented at terminal → verified on phone. Your workflow extends beyond your desk.",
+            ),
+        ],
+    },
+    # ══════════════════════════════════════════════════════════════════════
     # DAILY DRILLS
     # ══════════════════════════════════════════════════════════════════════
     {

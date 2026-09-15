@@ -1777,6 +1777,141 @@ Every task brief you write is reusable. Every verification script catches more b
         ],
     },
     # ══════════════════════════════════════════════════════════════════════
+    # APPENDIX: PHONE APP CONNECTIVITY
+    # ══════════════════════════════════════════════════════════════════════
+    {
+        "id": "A1",
+        "title": "Appendix: Phone App Connectivity",
+        "level": "All levels",
+        "summary": "Manage your autonomous AI worker from your phone — plan specs, review PRs, monitor pipelines from anywhere.",
+        "body": md("""
+## The tech lead works from anywhere
+You're the manager. Claude is the worker. A good manager doesn't need to be at their desk to:
+- **Plan work** — draft task briefs and acceptance criteria
+- **Review output** — check PRs, diffs, and CI results
+- **Triage issues** — diagnose failures and write feedback
+- **Think ahead** — design architecture and spec out the next sprint
+
+Your phone is your **mobile management console**.
+
+## Claude Mobile App (iOS & Android)
+Download the **Claude app** by Anthropic (same account as Claude Code):
+
+### Delegation-specific phone workflows
+
+#### Draft task briefs on the go
+```
+You (on phone, Claude app):
+  "Help me write a task brief for a ring buffer module.
+   Deliverables: header + source + test.
+   Constraints: C99, no malloc, fixed capacity at compile time.
+   Give me 4 testable acceptance criteria."
+
+Claude drafts the brief. You refine it.
+Save to notes → paste into tasks/ring-buffer.md at your desk.
+```
+
+#### Review delegation results
+```
+You (on phone, Claude app):
+  "Here's a git diff from my last delegated task:
+   [paste or describe the changes]
+   Does this look correct for a DC blocker with alpha=0.995?"
+
+Claude reviews the diff conceptually — even without file access.
+```
+
+#### Plan verification scripts
+```
+You (on phone, Claude app):
+  "I need a verification script for an FIR filter module.
+   What should I check beyond build + test pass?
+   Think about: naming conventions, malloc usage,
+   const correctness, golden vector comparison."
+
+Claude suggests verification checks.
+You add them to scripts/verify_fir.sh at your desk.
+```
+
+## GitHub Mobile App — Your delegation dashboard
+As a tech lead managing Claude's work, GitHub Mobile is essential:
+
+- **PRs tab** → see all branches Claude pushed and PRs it opened
+- **Actions tab** → check CI status on Claude's automated fixes
+- **Review diffs** → approve or request changes on Claude's PRs
+- **Merge** → ship Claude's work right from your phone
+- **Issues** → see triage reports from overnight diagnostic scripts
+
+### One-tap workflow
+1. Wake up → open GitHub app
+2. Check: any PRs from overnight nightly jobs? CI green?
+3. Review diff → approve → merge
+4. Claude's work is shipped before you even open your laptop
+
+## The delegation manager's daily phone rhythm
+```
+Morning (phone):
+  → GitHub app: check overnight CI, review nightly PRs
+  → Claude app: plan today's task briefs
+  → Notes app: jot acceptance criteria for next delegations
+
+Commute (phone):
+  → Claude app: design discussion for complex module
+  → Claude app: draft verification script checklist
+
+At desk (terminal):
+  → Finalize task briefs from phone drafts
+  → Run delegation scripts
+  → Push branches
+
+Lunch break (phone):
+  → GitHub app: check morning delegation results
+  → Claude app: draft feedback for any failed tasks
+
+Evening (phone):
+  → GitHub app: verify scheduled jobs ran
+  → Claude app: think ahead on tomorrow's sprint
+```
+
+## Advanced: SSH from phone
+Terminal apps (Termius, Blink Shell, JuiceSSH) let you:
+- Check delegation logs: `cat logs/nightly-*.log | tail -20`
+- Run a quick delegation: `./scripts/delegate.sh hotfix-xyz`
+- Monitor a running pipeline: `tail -f logs/orchestrate.log`
+
+Claude Code's terminal-native design means your entire delegation infrastructure works from a phone SSH client.
+
+## The key insight
+**You never need to write code on your phone.** You write SPECS and REVIEWS — and those are just text. Text works perfectly on a phone. The actual coding happens on your terminal, driven by your specs, while you're doing other things.
+"""),
+        "exercises": [
+            ex(
+                "A1-1",
+                "Install the Claude mobile app. Sign in. Draft a task brief outline on your phone for any module you haven't built yet. Include: deliverables (3 files), constraints (4 rules), acceptance criteria (3 tests). Save it.",
+                "Phone as spec-writing tool.",
+                "Task brief outline drafted on phone. Ready to finalize at your desk. You just did 10 minutes of productive work without a computer.",
+            ),
+            ex(
+                "A1-2",
+                "Install the GitHub mobile app. Navigate to your repo. Find the most recent commit from your last delegation session. Review the diff on your phone. Could you approve this PR from here?",
+                "Mobile PR review for delegated work.",
+                "Diff reviewed on phone. You could approve and merge from here if it looks good. Your delegation pipeline now has a mobile review step.",
+            ),
+            ex(
+                "A1-3",
+                "On your phone (Claude app), ask: 'I have a verification script that checks build + tests + no-malloc. What other automated checks should I add for an embedded DSP project?' Use the suggestions to improve your scripts at your desk.",
+                "Phone-powered continuous improvement.",
+                "Claude suggests: const correctness check, naming convention grep, stack usage analysis, include guard verification. Add these to your scripts tomorrow.",
+            ),
+            ex(
+                "A1-4",
+                "Full delegation manager cycle from phone: (1) Draft a task brief with Claude app. (2) At desk, delegate it. (3) On phone later, review the PR via GitHub app. (4) Approve or write feedback — all without opening your laptop for step 3-4.",
+                "Complete mobile management loop.",
+                "Spec'd on phone → delegated at desk → reviewed on phone → shipped. You managed the entire feature lifecycle with minimal desk time.",
+            ),
+        ],
+    },
+    # ══════════════════════════════════════════════════════════════════════
     # DAILY DRILLS
     # ══════════════════════════════════════════════════════════════════════
     {
