@@ -113,3 +113,10 @@ void print_mat(const double **M, int r, int c) {
     };
     printf("%4.2lf]\n", M[r-1][c-1]);
 };
+
+void ld_stage(double *a, double *E, const double* r, int m) {
+    
+    double delta = 0.0;
+    double K     = 0.0;
+    
+}

@@ -1,0 +1,26 @@
+{"id": "G-01", "segment": "conceptual", "query": "why do we copy the capture buffer", "answerable": true, "expect_source": "docs/adr/ADR-017-buffer-ownership.md", "expect_contains": "copies the capture buffer", "distractor_source": "docs/adr/ADR-009-capture-buffer-sharing.md", "note": "ADR-009 is superseded and is MORE verbose on this topic - pure similarity ranks it first"}
+{"id": "G-02", "segment": "conceptual", "query": "what happens if a stage keeps a reference to its input", "answerable": true, "expect_source": "docs/adr/ADR-017-buffer-ownership.md", "expect_contains": "lookahead"}
+{"id": "G-03", "segment": "conceptual", "query": "how do we avoid pumping on speech onsets", "answerable": true, "expect_source": "modules/dsp/MODULE.md", "expect_contains": "gain floor"}
+{"id": "G-04", "segment": "conceptual", "query": "what makes a latency measurement untrustworthy", "answerable": true, "expect_source": "docs/adr/ADR-031-latency-multipath.md", "expect_contains": "peak-to-second-peak"}
+{"id": "G-05", "segment": "conceptual", "query": "why is the first measurement of a session slower", "answerable": true, "expect_source": "modules/pipeline/MODULE.md", "expect_contains": "import time"}
+{"id": "G-06", "segment": "identifier", "query": "agc_attack_ms", "answerable": true, "expect_source": "modules/dsp/MODULE.md", "expect_contains": "agc_attack_ms", "note": "bare identifier - pure vector search ranks this poorly, BM25 nails it"}
+{"id": "G-07", "segment": "identifier", "query": "AGC_ATTACK_MS_DEFAULT", "answerable": true, "expect_source": "modules/dsp/MODULE.md", "expect_contains": "agc_params.h"}
+{"id": "G-08", "segment": "identifier", "query": "ns_gain_floor_db range", "answerable": true, "expect_source": "modules/dsp/MODULE.md", "expect_contains": "ns_gain_floor_db"}
+{"id": "G-09", "segment": "identifier", "query": "tolerances.py", "answerable": true, "expect_source": "modules/metrics/MODULE.md", "expect_contains": "tolerances.py"}
+{"id": "G-10", "segment": "exact_string", "query": "ADR-031", "answerable": true, "expect_source": "docs/adr/ADR-031-latency-multipath.md", "expect_contains": "ADR-031"}
+{"id": "G-11", "segment": "exact_string", "query": "GLOSSARY#frame-alignment", "answerable": true, "expect_source": "docs/glossary.md", "expect_contains": "frame-alignment"}
+{"id": "G-12", "segment": "exact_string", "query": "passed=None", "answerable": true, "expect_source": "modules/metrics/MODULE.md", "expect_contains": "passed=None"}
+{"id": "G-13", "segment": "numeric", "query": "128 samples at 48 kHz", "answerable": true, "expect_source": "docs/glossary.md", "expect_contains": "128 samples"}
+{"id": "G-14", "segment": "numeric", "query": "what gain value should trigger the boundary assertion", "answerable": true, "expect_source": "docs/glossary.md", "expect_contains": "16.0"}
+{"id": "G-15", "segment": "numeric", "query": "attack time was raised from 12 to what", "answerable": true, "expect_source": "docs/triage/2026-03-agc-overshoot-cold.md", "expect_contains": "18"}
+{"id": "G-16", "segment": "numeric", "query": "THD+N is undefined below which input level", "answerable": true, "expect_source": "modules/metrics/MODULE.md", "expect_contains": "-60 dBFS"}
+{"id": "G-17", "segment": "multi_hop", "query": "which metric would be affected by the fixture reflection and what is its frame unit", "answerable": true, "expect_source": "docs/adr/ADR-031-latency-multipath.md", "expect_contains": "latency", "also_needs_source": "docs/glossary.md"}
+{"id": "G-18", "segment": "multi_hop", "query": "if AGC overshoot fails in the cold on DUT-7X, which parameter do I change and what is its allowed range", "answerable": true, "expect_source": "docs/triage/2026-03-agc-overshoot-cold.md", "expect_contains": "agc_attack_ms", "also_needs_source": "modules/dsp/MODULE.md"}
+{"id": "G-19", "segment": "multi_hop", "query": "why can tuning from one device family not be reused on another", "answerable": true, "expect_source": "docs/glossary.md", "expect_contains": "device family", "also_needs_source": "docs/triage/2026-03-agc-overshoot-cold.md"}
+{"id": "G-20", "segment": "conceptual", "query": "how do I re-record a baseline without biasing future comparisons", "answerable": true, "expect_source": "docs/runbooks/rerun-baseline.md", "expect_contains": "median"}
+{"id": "G-21", "segment": "conceptual", "query": "how long should the rig warm up", "answerable": true, "expect_source": "docs/runbooks/rerun-baseline.md", "expect_contains": "20 minutes"}
+{"id": "G-22", "segment": "trap", "query": "what is the default AEC tail length", "answerable": false, "note": "dsp contract explicitly says it is not documented here"}
+{"id": "G-23", "segment": "trap", "query": "what is the THD+N tolerance for DUT-9X", "answerable": false, "note": "no tolerance defined for this family"}
+{"id": "G-24", "segment": "trap", "query": "which storage table holds artifact checksums", "answerable": false, "note": "storage is not in the sample corpus"}
+{"id": "G-25", "segment": "trap", "query": "what is the sample rate of the fwbridge telemetry channel", "answerable": false, "note": "fwbridge is not in the sample corpus"}
+{"id": "G-26", "segment": "trap", "query": "how many device families are currently supported", "answerable": false, "note": "never stated; DUT-5, DUT-7X and DUT-9X are mentioned but no count is given"}

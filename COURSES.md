@@ -155,6 +155,30 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 - **Model selection for delegation & AI mastery** (Module 19)
 - Capstone: ship a feature writing ZERO implementation code
 
+### 18. 🟢 Agentic AI Systems Architecture
+**Folder:** `agentic-ai-systems-course/`
+**Status:** Available — 41 modules, 173 exercises. **Expert level.**
+
+The step beyond *using* AI tools: **designing and building** AI-powered systems.
+One running project (`acoustic-bench`, an audio measurement platform) taken from a
+naive whole-repo prompt to a production architecture.
+
+- **Part 0** — the naive baseline, the experiment harness, context budgeting
+- **Part 1** — decomposition: module contracts, generated interface surfaces,
+  dependency fitness functions, monolith split, parallel agents in worktrees
+- **Part 2** — vectorized knowledge: ingestion with provenance, structure- and
+  AST-aware chunking, embedders, a vector store from scratch, re-indexing and migrations
+- **Part 3** — RAG as GPS: hybrid search, routing, query transformation, reranking,
+  contextual retrieval, budgeted assembly with refusal, evaluation, failure lab
+- **Part 4** — encapsulated agents: runtime with budgets, tools as an API boundary,
+  module agents, orchestrator, specialists, single-vs-multi experiment, recovery
+- **Part 5** — AI features in a real product: opportunity selection, NL→structured
+  query, grounded tuning advisor, agentic triage with a human gate, integration, evals
+- **Part 6** — production: tracing, cost/latency, security, reliability, HITL,
+  prompt and knowledge-base lifecycle, capstone
+- `starter/` — runnable offline scaffold (no API key needed), 9-doc sample knowledge
+  base, 20-task eval set, 26-case retrieval golden set, 19 smoke tests
+
 ---
 
 ## Recommended Learning Order
@@ -190,7 +214,10 @@ START HERE
               │
               ├── Claude Code Zero to Hero ─ [Start here for terminal AI]
               │
-              └── Claude Code Delegator ──── [After Claude Code basics]
+              ├── Claude Code Delegator ──── [After Claude Code basics]
+              │
+              └── Agentic AI Systems ─────── [After any of the above]
+                    Architecture              USING AI tools → BUILDING AI systems
 ```
 
 ---
@@ -200,12 +227,13 @@ START HERE
 | Category | Courses | Total Exercises |
 |----------|---------|----------------|
 | AI Coding Tools | 3 | 274 |
+| AI Systems Architecture | 1 | 173 |
 | Udemy Companions | 4 | 134 |
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
 | DSP & Audio | 3 | (mixed format) |
-| **Total** | **17 courses** | **408+ exercises** |
+| **Total** | **18 courses** | **581+ exercises** |
 
 ---
 

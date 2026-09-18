@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Derived artifacts - rebuildable from source, never committed.
+# The index is a build output with a version tag (Module 12), not a database.
+kb/.index-state.json
+index/
+.cache/
+*.npz
+.agent/
+.worktrees/
+
+# Local experiment output
+harness/results.jsonl

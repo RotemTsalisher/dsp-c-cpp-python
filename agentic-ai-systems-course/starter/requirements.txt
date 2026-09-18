@@ -1,0 +1,13 @@
+# Required - everything in the course runs offline with just these.
+numpy>=1.24
+pytest>=7.4
+pyyaml>=6.0
+jsonschema>=4.19
+
+# Optional, introduced later in the course. Uncomment when you reach the module.
+# tiktoken>=0.5          # Module 02  - real token counting instead of the heuristic
+# openai>=1.40           # Module 10  - real embeddings and a real provider
+# hnswlib>=0.8           # Module 11  - ANN index, only needed above ~500k chunks
+# psycopg[binary]>=3.1   # Module 11  - pgvector, if you outgrow the numpy store
+# graphviz>=0.20         # Module 05  - rendering the dependency graph
+# opentelemetry-sdk>=1.25  # Module 34 - traces alongside your HTTP spans
