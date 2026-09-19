@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #define MAX_NOISE_SIZE 12
+#define MAX_ORDER      64 
 
 static const double w[MAX_NOISE_SIZE] = {
     0.5, -0.3, 0.8, -0.2, 0.1,
@@ -14,40 +15,52 @@ void acf(const double *x, int n_, double *r);
 void print_vector(const double *x, int l);
 void vec_to_toeplitz(const double *r, int size, double **R);
 void print_mat(const double **M, int r, int c);
+void ld_stage(double *a, double *E, const double* r, int m);
+void levinson_durbin(const double *r, int p, double *a);
 
-int main() {
+void print_result(const char *test_name,
+                  const double *a,
+                  double E,
+                  int order)
+{
+    printf("========================================\n");
+    printf("%s\n", test_name);
+    printf("========================================\n");
 
-    double r[2 * MAX_NOISE_SIZE - 1] = {0.0};
+    printf("Order: %d\n\n", order);
 
-    /* Toeplitz storage */
-    double storage[MAX_NOISE_SIZE][MAX_NOISE_SIZE];
-    double *R[MAX_NOISE_SIZE];
-
-    for(int i = 0; i < MAX_NOISE_SIZE; ++i) {
-        R[i] = storage[i];
+    for(int i = 0; i <= order; ++i)
+    {
+        printf("a[%d] = % .12f\n", i, a[i]);
     }
 
-    /* Generate AR process */
+    printf("\nE    = % .12f\n\n", E);
+}
+
+int main(void)
+{
     init_x();
 
-    printf("x:\n");
+    printf("x[n\\]:\n");
     print_vector(x, MAX_NOISE_SIZE);
 
-    /* Compute ACF */
+    double r[(2 * MAX_NOISE_SIZE) - 1] = {0.0};
+
     acf(x, MAX_NOISE_SIZE, r);
 
-    printf("\nr:\n");
-    print_vector(r, 2 * MAX_NOISE_SIZE - 1);
+    printf("\nACF:\n");
+    print_vector(r, (2 * MAX_NOISE_SIZE) - 1);
 
-    /* Build Toeplitz from ACF */
-    vec_to_toeplitz(r,
-                    2 * MAX_NOISE_SIZE - 1,
-                    R);
+    double a[5] = {0.0};
 
-    printf("\nToeplitz matrix R:\n");
-    print_mat((const double **)R,
-              MAX_NOISE_SIZE,
-              MAX_NOISE_SIZE);
+    /* p = 4, pass pointer to lag-0 element */
+    levinson_durbin(&r[MAX_NOISE_SIZE - 1], 4, a);
+
+    printf("\nLPC coefficients:\n");
+
+    for(int i = 0; i <= 4; ++i) {
+        printf("a[%d] = %.12lf\n", i, a[i]);
+    }
 
     return 0;
 }
@@ -116,7 +129,35 @@ void print_mat(const double **M, int r, int c) {
 
 void ld_stage(double *a, double *E, const double* r, int m) {
     
-    double delta = 0.0;
+    double delta = r[m];
     double K     = 0.0;
-    
+    double a_temp[MAX_ORDER + 1] = {1.0};
+
+    for(int k = 1; k < m ; ++k) {
+        delta += (a[k] * r[m - k]);
+    };
+
+    K = -delta / (*E);
+
+    for(int k = 1; k < m; ++k) {
+        a_temp[k] = a[k] + K*a[m - k];
+    };
+
+    for(int i = 0; i < m; ++i) {
+        a[i] = a_temp[i];
+    };
+
+    a[m] = K;
+
+    (*E) = (*E) * (1 - (K * K));
+};
+
+void levinson_durbin(const double *r, int p, double *a) {
+    a[0] = 1.0;
+
+    double E = r[0];
+    for(int m = 1; m < p + 1; ++m) {
+        ld_stage(a, &E, r, m);
+        printf("\nFinal E = %.12lf\n", E);
+    };
 }
