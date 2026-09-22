@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Appendix A - Computational Complexity and the Schür Algorithm</title>
+
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    max-width: 1000px;
+    margin: auto;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    color: #183153;
+}
+
+code {
+    background-color: #f3f3f3;
+    padding: 2px 4px;
+}
+
+.formula {
+    background: #f8f8f8;
+    border-left: 4px solid #4a90e2;
+    padding: 12px;
+    margin: 12px 0;
+}
+
+.note {
+    background: #fff8dc;
+    border-left: 4px solid #d39e00;
+    padding: 12px;
+    margin: 12px 0;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Appendix A - Computational Complexity and the Schür Algorithm</h1>
+
+<h2>Why Levinson-Durbin is O(p²)</h2>
+
+<p>
+The Levinson-Durbin recursion computes the LPC coefficients
+incrementally. Rather than solving a full system of equations at once,
+it builds the solution in stages.
+</p>
+
+<p>
+If the LPC order is:
+</p>
+
+<div class="formula">
+p = LPC order
+</div>
+
+<p>
+then the algorithm executes:
+</p>
+
+<div class="formula">
+m = 1, 2, 3, ..., p
+</div>
+
+<p>
+where each stage computes one additional predictor coefficient.
+</p>
+
+<hr>
+
+<h2>Cost of the Prediction Error Term (Δ)</h2>
+
+<p>
+At stage <code>m</code>, the prediction error term is:
+</p>
+
+<div class="formula">
+Δ = r[m] +
+a[1]r[m−1] +
+a[2]r[m−2] +
+...
++
+a[m−1]r[1]
+</div>
+
+<p>
+This requires roughly:
+</p>
+
+<div class="formula">
+m − 1
+</div>
+
+<p>
+multiply-accumulate operations.
+Therefore:
+</p>
+
+<div class="formula">
+Cost(Δ) = O(m)
+</div>
+
+<hr>
+
+<h2>Cost of the Coefficient Update</h2>
+
+<p>
+Once the reflection coefficient K is computed,
+the predictor coefficients must be updated:
+</p>
+
+<div class="formula">
+a'(k)
+=
+a(k)
++
+K · a(m−k)
+</div>
+
+<p>
+for:
+</p>
+
+<div class="formula">
+k = 1 ... m − 1
+</div>
+
+<p>
+Again, approximately <code>m−1</code> operations are required.
+Therefore:
+</p>
+
+<div class="formula">
+Cost(update) = O(m)
+</div>
+
+<hr>
+
+<h2>Cost of a Single Levinson-Durbin Stage</h2>
+
+<p>
+Each stage must perform:
+</p>
+
+<ul>
+<li>Prediction error computation: O(m)</li>
+<li>Coefficient update: O(m)</li>
+</ul>
+
+<p>
+Therefore:
+</p>
+
+<div class="formula">
+Cost(stage m) = O(m)
+</div>
+
+<hr>
+
+<h2>Total Cost of the Algorithm</h2>
+
+<p>
+The total work is the sum of all stages:
+</p>
+
+<div class="formula">
+O(1) + O(2) + O(3) + ... + O(p)
+</div>
+
+<p>
+which is equivalent to:
+</p>
+
+<div class="formula">
+1 + 2 + 3 + ... + p
+</div>
+
+<p>
+Using the well-known identity:
+</p>
+
+<div class="formula">
+1 + 2 + ... + p
+=
+p(p + 1)/2
+</div>
+
+<p>
+and keeping only the dominant term:
+</p>
+
+<div class="formula">
+p(p + 1)/2 ≈ p²/2
+</div>
+
+<p>
+Therefore:
+</p>
+
+<div class="formula">
+Levinson-Durbin Complexity = O(p²)
+</div>
+
+<hr>
+
+<h2>The Toeplitz Structure</h2>
+
+<p>
+The LPC normal equations can be written as:
+</p>
+
+<div class="formula">
+R · a = b
+</div>
+
+<p>
+where R is the autocorrelation matrix.
+</p>
+
+<p>
+Because the matrix is Toeplitz,
+every diagonal contains identical values:
+</p>
+
+<div class="formula">
+[r₀ r₁ r₂ r₃]
+
+[r₁ r₀ r₁ r₂]
+
+[r₂ r₁ r₀ r₁]
+
+[r₃ r₂ r₁ r₀]
+</div>
+
+<p>
+Only the autocorrelation sequence is needed
+to describe the entire matrix.
+</p>
+
+<hr>
+
+<h2>What Happens with a Generic Matrix Solver?</h2>
+
+<p>
+Suppose the Toeplitz structure is ignored and the system is treated as a
+completely arbitrary dense matrix.
+</p>
+
+<p>
+Standard techniques such as:
+</p>
+
+<ul>
+<li>Gaussian Elimination</li>
+<li>LU Decomposition</li>
+<li>Explicit Matrix Inversion</li>
+</ul>
+
+<p>
+have computational cost approximately proportional to:
+</p>
+
+<div class="formula">
+O(N³)
+</div>
+
+<p>
+where N is the matrix dimension.
+</p>
+
+<p>
+For LPC:
+</p>
+
+<div class="formula">
+N = p
+</div>
+
+<p>
+thus:
+</p>
+
+<div class="formula">
+Dense Matrix Solution = O(p³)
+</div>
+
+<p>
+Levinson-Durbin is therefore significantly more efficient because it
+exploits the Toeplitz structure directly.
+</p>
+
+<hr>
+
+<h2>Why Toeplitz Structure Reduces Complexity</h2>
+
+<p>
+A generic p × p matrix contains:
+</p>
+
+<div class="formula">
+p²
+</div>
+
+<p>
+independent values.
+</p>
+
+<p>
+A Toeplitz matrix contains only:
+</p>
+
+<div class="formula">
+2p − 1
+</div>
+
+<p>
+independent values.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class="formula">
+[a b c d]
+
+[b a b c]
+
+[c b a b]
+
+[d c b a]
+</div>
+
+<p>
+The entire matrix is determined solely by:
+</p>
+
+<div class="formula">
+a, b, c, d
+</div>
+
+<p>
+This redundancy is the property exploited by
+Levinson-Durbin and related algorithms.
+</p>
+
+<hr>
+
+<h2>The Schür Algorithm</h2>
+
+<p>
+The Schür algorithm is another recursive method
+for solving Toeplitz systems and estimating
+reflection coefficients.
+</p>
+
+<p>
+Like Levinson-Durbin, it:
+</p>
+
+<ul>
+<li>Uses the Toeplitz structure directly</li>
+<li>Avoids explicit matrix inversion</li>
+<li>Produces reflection coefficients</li>
+<li>Avoids generic O(p³) solvers</li>
+</ul>
+
+<p>
+Conceptually, both algorithms compute the same physical quantities:
+</p>
+
+<div class="formula">
+K₁, K₂, K₃, ..., Kp
+</div>
+
+<p>
+but they organize the recursion differently.
+</p>
+
+<div class="note">
+For most LPC derivations, Levinson-Durbin is the standard presentation.
+The Schür recursion is valuable to know because it provides an
+alternative Toeplitz-based solution and is often preferred in
+certain hardware-oriented and parallel implementations.
+</div>
+
+<hr>
+
+<h2>Summary</h2>
+
+<div class="formula">
+Stage m → O(m)
+<br><br>
+Total work:
+O(1)+O(2)+...+O(p)
+=
+O(p²)
+<br><br>
+Dense matrix solve:
+O(p³)
+<br><br>
+Levinson-Durbin exploits Toeplitz structure and therefore reduces the
+computational complexity from O(p³) to O(p²).
+</div>
+
+</body>
+</html>

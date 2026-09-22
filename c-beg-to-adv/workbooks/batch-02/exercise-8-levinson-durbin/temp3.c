@@ -9,8 +9,9 @@ static const double w[MAX_NOISE_SIZE] = {
     -0.7, 0.4, 0.6, -0.5, 0.2,
     0.3, -0.1
 };
-static double x[MAX_NOISE_SIZE] = {0.0};
+static double x[MAX_NOISE_SIZE] =     {0.0};
 static double k_arr[MAX_NOISE_SIZE] = {0.0};
+static int    flop_counter          =  0;
 
 void init_x();
 void acf(const double *x, int n_, double *r);
@@ -146,6 +147,35 @@ int main(void)
                unstable_count);
     }
 
+        /* =========================================================
+       CASE 3: FLOP COUNT VS ORDER
+       ========================================================= */
+
+    printf("\n\n");
+    printf("========================================\n");
+    printf("CASE 3: FLOP COUNT\n");
+    printf("========================================\n");
+
+    {
+        int orders[] = {4, 8, 11};
+        int num_orders = sizeof(orders) / sizeof(orders[0]);
+
+        for(int t = 0; t < num_orders; ++t)
+        {
+            int p = orders[t];
+
+            double a_test[MAX_ORDER + 1] = {0.0};
+
+            levinson_durbin(&r[MAX_NOISE_SIZE - 1],
+                            p,
+                            a_test);
+
+            printf("p = %2d --> flop_counter = %d\n",
+                   p,
+                   flop_counter);
+        }
+    }
+
     return 0;
 }
 
@@ -219,6 +249,7 @@ double ld_stage(double *a, double *E, const double* r, int m) {
 
     for(int k = 1; k < m ; ++k) {
         delta += (a[k] * r[m - k]);
+        flop_counter += 1;
     };
 
     K = -delta / (*E);
@@ -239,12 +270,13 @@ double ld_stage(double *a, double *E, const double* r, int m) {
 };
 
 void levinson_durbin(const double *r, int p, double *a) {
+    flop_counter = 0;
     a[0] = 1.0;
 
     double E = r[0];
     for(int m = 1; m < p + 1; ++m) {
         k_arr[m - 1] = ld_stage(a, &E, r, m);
-        printf("\nFinal E = %.12lf\n", E);
+        //printf("\nFinal E = %.12lf\n", E);
     };
 }
 
@@ -253,7 +285,7 @@ int k_stable(int m) {
     int k_stable = 0;
 
     for(int i = 0; i < m; ++i) {
-        printf("|k[%d]| = %4.2lf\n", i, ABS(k_arr[i]));
+        //printf("|k[%d]| = %4.2lf\n", i, ABS(k_arr[i]));
         k_stable += (ABS(k_arr[i]) > 1.0);
     };
 

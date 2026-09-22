@@ -155,7 +155,26 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 - **Model selection for delegation & AI mastery** (Module 19)
 - Capstone: ship a feature writing ZERO implementation code
 
-### 18. 🧪 Regression Testing — Theory & Practice
+### 18. 🐙 Git + GitHub via GitHub Desktop — Zero to Hero
+**Folder:** `git-github-desktop-course/`
+**Status:** Available — 32 modules, 160 exercises. GHD-first, CLI as escape hatch. Zero prior knowledge assumed.
+
+From "never used version control" to "confidently uses branches, PRs, CI, branch protection." GitHub Desktop is the primary tool for daily work; Git CLI is shown only for the 10% GHD cannot do (interactive rebase, reflog, `git add -p`, bisect).
+
+- **Phase 1 (Foundations)** — install GHD, sign in, what VCS is, Git's mental model (commits/branches/remotes/HEAD), GitHub the platform, full GHD UI tour
+- **Phase 2 (First repo)** — create locally & publish OR clone from GitHub, change→stage→commit cycle, writing commits that don't embarrass you later, publish/push
+- **Phase 3 (Existing repos)** — clone, fetch vs pull vs sync, reading history (log/diff/blame)
+- **Phase 4 (Branching)** — why branches, create/switch/delete in GHD, merge, conflict resolution walk-through, merge vs rebase (when each is right)
+- **Phase 5 (Collaboration)** — PRs from GHD, reviewing PRs (comment types, actionable feedback), forks & upstream (contributing to OSS), issues/labels/milestones
+- **Phase 6 (Undoing & safety)** — discard/revert/reset/amend decision tree, stashing & rewrite warnings, when to drop to CLI (the 20 commands you actually need)
+- **Phase 7 (Real workflows)** — feature branch workflow (GitHub Flow), tags/releases/semantic versioning, .gitignore/.gitattributes/Git LFS
+- **Phase 8 (GitHub platform)** — branch protection & CODEOWNERS, first CI with GitHub Actions, secrets/environments/deploy keys
+- **Phase 9 (Capstone)** — ship a real v1.0.0 through PRs + CI + branch protection with 10-item acceptance criteria
+- **Daily Drills** — 10 five-minute reps
+
+---
+
+### 19. 🧪 Regression Testing — Theory & Practice
 **Folder:** `regression-testing-course/`
 **Status:** Available — 26 modules, 104 exercises. Concepts-first, cross-language (Python / C / C++ / MATLAB).
 
@@ -172,7 +191,7 @@ Not tied to any language or framework — the concepts transfer everywhere.
 
 ---
 
-### 19. 🟢 Agentic AI Systems Architecture
+### 20. 🟢 Agentic AI Systems Architecture
 **Folder:** `agentic-ai-systems-course/`
 **Status:** Available — 41 modules, 173 exercises. **Expert level.**
 
@@ -236,8 +255,11 @@ START HERE
               ├── Agentic AI Systems ─────── [After any of the above]
               │     Architecture              USING AI tools → BUILDING AI systems
               │
-              └── Regression Testing ─────── [Take alongside ANY phase — language-agnostic]
-                    Theory & Practice          Guards everything you build
+              ├── Regression Testing ─────── [Take alongside ANY phase — language-agnostic]
+              │     Theory & Practice          Guards everything you build
+              │
+              └── Git + GitHub via GHD ────── [Take FIRST if new to version control]
+                    Zero to Hero              GitHub Desktop primary, CLI as escape hatch
 ```
 
 ---
@@ -250,11 +272,12 @@ START HERE
 | AI Systems Architecture | 1 | 173 |
 | Udemy Companions | 4 | 134 |
 | Testing & Quality | 1 | 104 |
+| Version Control & Collaboration | 1 | 160 |
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
 | DSP & Audio | 3 | (mixed format) |
-| **Total** | **19 courses** | **685+ exercises** |
+| **Total** | **20 courses** | **845+ exercises** |
 
 ---
 
