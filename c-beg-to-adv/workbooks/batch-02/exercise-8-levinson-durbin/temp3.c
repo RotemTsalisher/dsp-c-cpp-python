@@ -2,6 +2,7 @@
 
 #define MAX_NOISE_SIZE 12
 #define MAX_ORDER      64 
+#define ABS(x)         (((x) > 0) ? (x) : (-(x)))
 
 static const double w[MAX_NOISE_SIZE] = {
     0.5, -0.3, 0.8, -0.2, 0.1,
@@ -9,14 +10,16 @@ static const double w[MAX_NOISE_SIZE] = {
     0.3, -0.1
 };
 static double x[MAX_NOISE_SIZE] = {0.0};
+static double k_arr[MAX_NOISE_SIZE] = {0.0};
 
 void init_x();
 void acf(const double *x, int n_, double *r);
 void print_vector(const double *x, int l);
 void vec_to_toeplitz(const double *r, int size, double **R);
 void print_mat(const double **M, int r, int c);
-void ld_stage(double *a, double *E, const double* r, int m);
+double ld_stage(double *a, double *E, const double* r, int m);
 void levinson_durbin(const double *r, int p, double *a);
+int k_stable(int m);
 
 void print_result(const char *test_name,
                   const double *a,
@@ -53,6 +56,15 @@ int main(void)
 
     double a[5] = {0.0};
 
+    /* =========================================================
+       CASE 1: Valid ACF generated from x[n]
+       ========================================================= */
+
+    printf("\n\n");
+    printf("========================================\n");
+    printf("CASE 1: VALID ACF\n");
+    printf("========================================\n");
+
     /* p = 4, pass pointer to lag-0 element */
     levinson_durbin(&r[MAX_NOISE_SIZE - 1], 4, a);
 
@@ -60,6 +72,78 @@ int main(void)
 
     for(int i = 0; i <= 4; ++i) {
         printf("a[%d] = %.12lf\n", i, a[i]);
+    }
+
+    printf("\nReflection coefficient stability check:\n");
+
+    int unstable_count = k_stable(4);
+
+    if(unstable_count == 0) {
+        printf("All reflection coefficients are stable (|k| <= 1)\n");
+    } else {
+        printf("%d unstable reflection coefficient(s) detected "
+               "(|k| > 1)\n",
+               unstable_count);
+    }
+
+    /* =========================================================
+       CASE 2: Deliberately invalid ACF
+       ========================================================= */
+
+    printf("\n\n");
+    printf("========================================\n");
+    printf("CASE 2: FORCED INVALID ACF\n");
+    printf("========================================\n");
+
+    int center = MAX_NOISE_SIZE - 1;
+
+    /*
+     * Force:
+     *
+     *     r[1] = 1.1 * r[0]
+     *
+     * Therefore, at Levinson-Durbin stage 1:
+     *
+     *     K = -r[1] / r[0] = -1.1
+     *
+     * and:
+     *
+     *     |K| = 1.1 > 1
+     */
+
+    r[center + 1] = 1.1 * r[center];
+
+    /* Preserve ACF symmetry */
+    r[center - 1] = r[center + 1];
+
+    printf("\nForced invalid ACF:\n");
+    print_vector(r, (2 * MAX_NOISE_SIZE) - 1);
+
+    double a_bad[2] = {0.0};
+
+    /*
+     * Only order 1 is required to demonstrate the invalid
+     * reflection coefficient. Continuing after E becomes
+     * negative is unnecessary for this test.
+     */
+    levinson_durbin(&r[center], 1, a_bad);
+
+    printf("\nLPC coefficients:\n");
+
+    for(int i = 0; i <= 1; ++i) {
+        printf("a[%d] = %.12lf\n", i, a_bad[i]);
+    }
+
+    printf("\nReflection coefficient stability check:\n");
+
+    unstable_count = k_stable(1);
+
+    if(unstable_count == 0) {
+        printf("All reflection coefficients are stable (|k| <= 1)\n");
+    } else {
+        printf("%d unstable reflection coefficient(s) detected "
+               "(|k| > 1)\n",
+               unstable_count);
     }
 
     return 0;
@@ -127,7 +211,7 @@ void print_mat(const double **M, int r, int c) {
     printf("%4.2lf]\n", M[r-1][c-1]);
 };
 
-void ld_stage(double *a, double *E, const double* r, int m) {
+double ld_stage(double *a, double *E, const double* r, int m) {
     
     double delta = r[m];
     double K     = 0.0;
@@ -150,6 +234,8 @@ void ld_stage(double *a, double *E, const double* r, int m) {
     a[m] = K;
 
     (*E) = (*E) * (1 - (K * K));
+
+    return K;
 };
 
 void levinson_durbin(const double *r, int p, double *a) {
@@ -157,7 +243,19 @@ void levinson_durbin(const double *r, int p, double *a) {
 
     double E = r[0];
     for(int m = 1; m < p + 1; ++m) {
-        ld_stage(a, &E, r, m);
+        k_arr[m - 1] = ld_stage(a, &E, r, m);
         printf("\nFinal E = %.12lf\n", E);
     };
 }
+
+int k_stable(int m) {
+
+    int k_stable = 0;
+
+    for(int i = 0; i < m; ++i) {
+        printf("|k[%d]| = %4.2lf\n", i, ABS(k_arr[i]));
+        k_stable += (ABS(k_arr[i]) > 1.0);
+    };
+
+    return k_stable;
+};
