@@ -155,7 +155,24 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 - **Model selection for delegation & AI mastery** (Module 19)
 - Capstone: ship a feature writing ZERO implementation code
 
-### 18. 🟢 Agentic AI Systems Architecture
+### 18. 🧪 Regression Testing — Theory & Practice
+**Folder:** `regression-testing-course/`
+**Status:** Available — 26 modules, 104 exercises. Concepts-first, cross-language (Python / C / C++ / MATLAB).
+
+The theoretical AND practical side of guarding software behavior over time.
+Not tied to any language or framework — the concepts transfer everywhere.
+
+- **Phase 1 (Foundations)** — what a regression test IS from absolute scratch, why they exist, the vocabulary trap (assertion vs unit vs integration vs regression), the RED→GREEN lifecycle
+- **Phase 2 (Concepts)** — AAA structure, goldens & snapshots, tolerances & numerical comparisons, isolation & determinism, the 7 quality criteria
+- **Phase 3 (Practical Setup)** — pytest, C minimal harness, DSP cross-language goldens (Python reference → C impl), MATLAB unittest, C++ with doctest
+- **Phase 4 (Real Use Cases)** — bug-fix / refactor safety net / numerical (DSP) / performance / API contract regressions
+- **Phase 5 (Automation)** — GitHub Actions CI, `git bisect run`, flaky tests, suite maintenance & hygiene
+- **Phase 6 (Capstone)** — build a full regression suite (5 test types + CI + goldens + README) for a DC blocker
+- **Daily Drills** — 10 five-minute reps for muscle memory
+
+---
+
+### 19. 🟢 Agentic AI Systems Architecture
 **Folder:** `agentic-ai-systems-course/`
 **Status:** Available — 41 modules, 173 exercises. **Expert level.**
 
@@ -216,8 +233,11 @@ START HERE
               │
               ├── Claude Code Delegator ──── [After Claude Code basics]
               │
-              └── Agentic AI Systems ─────── [After any of the above]
-                    Architecture              USING AI tools → BUILDING AI systems
+              ├── Agentic AI Systems ─────── [After any of the above]
+              │     Architecture              USING AI tools → BUILDING AI systems
+              │
+              └── Regression Testing ─────── [Take alongside ANY phase — language-agnostic]
+                    Theory & Practice          Guards everything you build
 ```
 
 ---
@@ -229,11 +249,12 @@ START HERE
 | AI Coding Tools | 3 | 274 |
 | AI Systems Architecture | 1 | 173 |
 | Udemy Companions | 4 | 134 |
+| Testing & Quality | 1 | 104 |
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
 | DSP & Audio | 3 | (mixed format) |
-| **Total** | **18 courses** | **581+ exercises** |
+| **Total** | **19 courses** | **685+ exercises** |
 
 ---
 
