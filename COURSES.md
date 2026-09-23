@@ -191,7 +191,25 @@ Not tied to any language or framework — the concepts transfer everywhere.
 
 ---
 
-### 20. 🟢 Agentic AI Systems Architecture
+### 20. 🎯 Advanced AI Use in Modern Hi-Tech Projects
+**Folder:** `ai-expert-tooling-course/`
+**Status:** Available — 28 modules, 120 exercises. **Expert level.** Not for beginners.
+
+The judgment-and-routing course. Where `cursor-course` and `claude-code-course` end (mechanics), this one begins: **when do you use Plan vs Ask vs Agent mode? When is Opus-thinking-high worth it vs Composer-fast? When do you go headless vs interactive? How do you debug an AI-generated regression under pressure?**
+
+Every exercise is *"given situation X, which mode × model × context × tool would you choose and why?"* — routing as reflex, not lookup.
+
+- **Phase 0 (Foundations)** — what expert-level AI use actually means; the unified mode × model × context × tool mental model
+- **Phase 1 (Cursor Advanced, C-01 – C-10)** — mode landscape, model selection matrix, planning discipline in Plan mode, Ask-mode interrogation, methodical Agent execution, `.cursor/rules` + `AGENTS.md`, Cloud agents, debugging with thinking models, CI integration (Bugbot / PR reviewers), Composer parallelism
+- **Phase 2 (Claude Code Advanced, CC-01 – CC-10)** — mode landscape (interactive / headless / SDK), model selection + thinking budgets (`ultrathink`), `CLAUDE.md` hierarchy, plan-first workflows, execution discipline (`--allowedTools`, `--max-turns`), debugging protocol, headless mastery, SDK (TypeScript + Python), MCP servers, CI integration
+- **Phase 3 (Cross-cutting, X-01 – X-05)** — Cursor vs Claude Code decision tree, hybrid daily workflows, the routing playbook (matrix), universal debugging protocol, capstone (ship a real feature end-to-end using both tools with correct routing)
+- **Daily Drills** — 10 five-minute reps to build routing reflexes
+
+Prereq: you already use Cursor and/or Claude Code daily. Assumes access to a thinking-tier model (Opus / GPT-5-thinking / Grok-thinking) — you cannot do the deep-thinking modules with fast models alone.
+
+---
+
+### 21. 🟢 Agentic AI Systems Architecture
 **Folder:** `agentic-ai-systems-course/`
 **Status:** Available — 41 modules, 173 exercises. **Expert level.**
 
@@ -252,6 +270,9 @@ START HERE
               │
               ├── Claude Code Delegator ──── [After Claude Code basics]
               │
+              ├── Advanced AI Use (Expert) ─ [After Cursor + CC basics]
+              │     Cursor + Claude Code       Judgment / routing / mode × model
+              │
               ├── Agentic AI Systems ─────── [After any of the above]
               │     Architecture              USING AI tools → BUILDING AI systems
               │
@@ -269,6 +290,7 @@ START HERE
 | Category | Courses | Total Exercises |
 |----------|---------|----------------|
 | AI Coding Tools | 3 | 274 |
+| Advanced AI Tooling Mastery | 1 | 120 |
 | AI Systems Architecture | 1 | 173 |
 | Udemy Companions | 4 | 134 |
 | Testing & Quality | 1 | 104 |
@@ -277,7 +299,7 @@ START HERE
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
 | DSP & Audio | 3 | (mixed format) |
-| **Total** | **20 courses** | **845+ exercises** |
+| **Total** | **21 courses** | **965+ exercises** |
 
 ---
 
