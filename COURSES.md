@@ -106,6 +106,12 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 - 5-part HTML course: repository setup → fundamentals → first VST → testing → projects
 - `index.html` — interactive course browser
 
+### 12b. 📘 GoPro NXP HiFi4 apprenticeship
+**Folder:** `C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\GoPro Project Study` (outside this repo)
+**Status:** Published. 96 one-idea lessons, Levels 0–17. Firmware trees are read-only.
+
+- `index.html` — open in a browser and go at your own pace. Each page is one idea. Reveal holds the checkpoint.
+
 ### 13. 🔲 DSP Interview Prep — Level 1
 **Folder:** `DSP_AI_Prep_1/`
 **Status:** Available.
