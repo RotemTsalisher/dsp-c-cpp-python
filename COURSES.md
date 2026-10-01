@@ -241,6 +241,26 @@ naive whole-repo prompt to a production architecture.
 
 ---
 
+## Phase 5: Linux Programming
+
+### 22. 🐧 Linux Programming — From Zero to a Running TV Station
+**Folder:** `C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\linux project` (outside this repo)
+**Repo:** https://github.com/RotemTsalisher/linux-home-project
+**Status:** Available — 87 modules, 568 exercises (226 build, 122 diagnose, 117 hands-on, 103 think). spa-course generated from `content/*.md`; `labs/` holds the broken programs for Diagnose exercises.
+
+Linux **programming**, not administration, taught through one real system built on a physical Ubuntu 24.04 machine: **hometv**, a 24/7 personal TV channel (media scanner → SQLite → playlists → pure scheduler → FFmpeg HLS controller → Now Playing API → XMLTV EPG → control API + web page), deployed as a sandboxed systemd service with watchdog, timers and reload.
+
+- **Parts 0–2** — Linux by hand (shell, filesystem, permissions, processes, env/PATH, packages, networking) and the Windows → VS Code Remote-SSH → Linux → Git/GitHub workflow
+- **Part 3** — Bash: fundamentals, a broken-scripts lab, six tools (sysinfo, diskwatch, netcheck, procwatch, mediascan, backup + cron)
+- **Parts 4–5** — Python on Linux (venv/PEP 668, packaging, exceptions, pathlib, argparse, logging, subprocess, config, pytest, pdb) and three /proc tools (lsys, sysmon, pinspect)
+- **Parts 6–9** — hometv projects 4–10: SQLite, scheduler with DST-safe integer-ms arithmetic, FFmpeg controller (pipes, process groups, stall detection, back-off), sockets, HTTP from scratch, threads, asyncio, APIs, EPG
+- **Part 10** — systemd, sd_notify/watchdog, sandboxing, deployment, live debugging (journalctl, strace, lsof, tcpdump)
+- **Part 11** — C internals after the fact: linking, Make, gdb/ASan/valgrind, fds and syscalls, fork/exec, pipes/dup2, signals, sockets, pthreads, C++/CMake inotify segment watcher
+- **Part 12** — CI, releases, reproducibility, capstone acceptance criteria, failure drills, hardening, final assessment; plus 15 daily drills
+- Diagnose exercises lock the solution until you write a diagnosis; all solutions were run on Ubuntu 24.04 (WSL) with real FFmpeg and systemd
+
+---
+
 ## Recommended Learning Order
 
 ```
@@ -267,6 +287,9 @@ START HERE
     │                   └── Audio Framework & VST
     │
     ├─── Python Basics ──────────────────── [✅ Done]
+    │         │
+    │         └── Linux Programming (hometv) [After C + Python basics]
+    │               Bash → Python → systemd → C internals, one real TV-channel system
     │
     └─── AI Courses (take alongside ANY phase above)
               │
@@ -301,11 +324,12 @@ START HERE
 | Udemy Companions | 4 | 134 |
 | Testing & Quality | 1 | 104 |
 | Version Control & Collaboration | 1 | 160 |
+| Linux Programming | 1 | 568 |
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
 | DSP & Audio | 3 | (mixed format) |
-| **Total** | **21 courses** | **965+ exercises** |
+| **Total** | **22 courses** | **1533+ exercises** |
 
 ---
 

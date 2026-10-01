@@ -1,0 +1,348 @@
+===== MyVector.h =====
+#ifndef __MYVECTOR__H
+#define __MYVECTOR__H
+
+#include <iostream>
+#include <cmath>
+
+class MyMatrix;
+
+static constexpr size_t MAX_VEC_SIZE = 4096;
+static constexpr double NA           = -1000000.0;
+
+class MyVector {
+
+    friend class MyMatrix;
+    private:
+        double v[MAX_VEC_SIZE];
+        std::size_t l;
+    
+    public:
+        MyVector() = default;
+        MyVector(const double *v_, std::size_t l_);
+        MyVector(const MyVector& other);
+
+        MyVector& set_val(double val, std::size_t index);
+        const double get_val(std::size_t index) const;
+
+        friend std::ostream& operator<<(std::ostream& os, const MyVector& vec);
+
+        /* vector math */
+        /* vector on lhs */
+        MyVector& operator=(const double *v_);
+        MyVector& operator=(const MyVector& other);
+
+        MyVector& operator+=(const double x);
+        MyVector operator+(const double x) const;
+
+        MyVector operator-(const double x) const;
+        MyVector& operator-=(const double x);
+
+        MyVector& operator+=(const MyVector& other);
+        MyVector operator+(const MyVector& other) const;
+
+        MyVector& operator-=(const MyVector& other);
+        MyVector operator-(const MyVector& other) const;
+
+        MyVector& operator*=(const double x);
+        MyVector operator*(const double x) const;
+
+        MyVector& operator*=(const MyVector& other); /* element wise */
+        MyVector operator*(const MyVector& other) const; /* element wise */
+
+        MyVector operator/(const MyVector& other) const;
+        MyVector& operator/=(const MyVector& other);
+
+        MyVector operator/(const double x) const;
+        MyVector& operator/=(const double x);
+
+        MyVector operator-() const;
+
+        /* vector on rhs */
+        friend MyVector operator+(const double x, const MyVector& other);
+        friend MyVector operator-(const double x, const MyVector& other);
+        friend MyVector operator*(const double x, const MyVector& other);
+        friend MyVector operator/(const double x, const MyVector& other);
+
+
+        double norm2() const;
+        double magnitude() const;
+        double sum() const;
+        double mean() const;
+        double dot_product(const MyVector& other) const;
+
+        double max() const;
+        double min() const;
+
+        MyVector normalized() const; /* return a new vector */
+        void normalize(); /* in place */
+};
+
+#endif
+
+===== MyVector.cpp =====
+#include "MyVector.h"
+
+
+MyVector& MyVector::operator=(const double *v_) {
+    
+    for(size_t i = 0; i < this->l; ++i) {
+        this->v[i] = v_[i];
+    };
+
+    return *this;
+};
+
+MyVector& MyVector::operator=(const MyVector& other) {
+    this->l = other.l;
+    (*this) = other.v;
+
+    return *this;
+}
+
+MyVector::MyVector(const double *v_, std::size_t l_) : l(l_) {
+    (*this) = v_;
+};
+
+MyVector::MyVector(const MyVector& other) : l(other.l) {
+    (*this) = other.v;
+};
+
+MyVector& MyVector::set_val(double val, std::size_t index) {
+    this->v[index] = val;
+    return *this;
+}
+
+const double MyVector::get_val(std::size_t index) const {
+    if((index < 0) || (index >= this->l)) {
+        return NA;
+    };
+    return this->v[index];
+}
+
+std::ostream& operator<<(std::ostream& os, const MyVector& vec) {
+    std::cout << "<";
+    for(std::size_t i = 0; i < vec.l - 1; ++i) {
+        std::cout << vec.v[i] << ", ";
+    };
+    std::cout << vec.v[vec.l - 1] << ">" << std::endl;
+
+    return os;
+};
+
+MyVector& MyVector::operator+=(const double x) {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] += x;
+    };
+
+    return *this;
+}
+
+MyVector MyVector::operator+(const double x) const {
+    MyVector res = *this;
+    res += x;
+
+    return res;
+}
+
+MyVector& MyVector::operator-=(const double x) {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] -= x;
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator-(const double x) const {
+    MyVector res = *this;
+
+    res -= x;
+    return res;
+};
+
+MyVector& MyVector::operator+=(const MyVector& other) {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] += other.v[i];
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator+(const MyVector& other) const {
+
+    MyVector res = *this;
+    res += other;
+
+    return res;
+};
+
+MyVector& MyVector::operator*=(const double x) {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] *= x;
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator*(const double x) const {
+
+    MyVector res = *this;
+    res *= x;
+    return res;
+};
+
+MyVector& MyVector::operator*=(const MyVector& other) {
+
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] *= other.v[i];
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator*(const MyVector& other) const {
+
+    MyVector res = *this;
+    res *= other;
+
+    return res;
+};
+
+MyVector& MyVector::operator/=(const MyVector& other) {
+
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] /= other.v[i];
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator/(const MyVector& other) const {
+
+    MyVector res = *this;
+    res /= other;
+
+    return res;
+};
+
+MyVector& MyVector::operator/=(const double x) {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        this->v[i] /= x;
+    };
+
+    return *this;
+};
+
+MyVector MyVector::operator/(const double x) const {
+
+    MyVector res = *this;
+    res /= x;
+
+    return res;
+};
+
+MyVector operator+(const double x, const MyVector& other) {
+    return (other + x);
+};
+
+MyVector operator-(const double x, const MyVector& other) {
+    return (other - x);
+}
+
+MyVector operator*(const double x, const MyVector& other) {
+    return (other * x);
+};
+
+MyVector operator/(const double x, const MyVector& other) {
+    return (other / x);
+};
+
+MyVector MyVector::operator-() const {
+    
+    MyVector res = *this;
+    return (-1.0 * res);
+
+};
+
+MyVector& MyVector::operator-=(const MyVector& other) {
+
+    return ((*this) += (-other));
+};
+
+MyVector MyVector::operator-(const MyVector& other) const {
+    
+    MyVector res = *this;
+
+}
+
+double MyVector::max() const {
+    double max = this->v[0];
+    bool alpha = 0;
+
+    for(std::size_t i = 1; i < this->l; ++i) {
+        alpha = (this->v[i] > max);
+        max = (alpha)*this->v[i] + (1 - alpha)*max;
+    };
+
+    return max;
+}
+
+double MyVector::min() const {
+    double min = this->v[0];
+    bool alpha = 0;
+
+    for(std::size_t i = 1; i < this->l; ++i) {
+        alpha = (this->v[i] < min);
+        min = (alpha)*this->v[i] + (1 - alpha)*min;
+    };
+
+    return min;
+}
+
+double MyVector::sum() const {
+    double sum = 0.0;
+
+    for(std::size_t i = 0; i < this->l; ++i) {
+        sum += (this->v[i]);
+    };
+
+    return sum;
+};
+
+double MyVector::mean() const {
+    double sum = this->sum();
+    return sum / (this->l);
+};
+
+double MyVector::norm2() const {
+    MyVector tmp = (*this) * (*this);
+    double norm2_ = tmp.sum();
+
+    return norm2_;
+};
+
+double MyVector::magnitude() const {
+    return std::sqrt(this->norm2());
+}
+
+double MyVector::dot_product(const MyVector& other) const {
+    double res = 0.0;
+
+    for(std::size_t i = 0; i < this->l; ++i) {
+        res += (this->v[i] * other.v[i]);
+    };
+
+    return res;
+};
+
+MyVector MyVector::normalized() const {
+    MyVector res = *this;
+    res /= res.magnitude();
+
+    return res;
+};
+
+void MyVector::normalize() {
+    (*this) /= (*this).magnitude();
+};
+
