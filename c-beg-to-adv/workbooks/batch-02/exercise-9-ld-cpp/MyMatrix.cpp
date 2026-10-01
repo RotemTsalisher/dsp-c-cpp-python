@@ -72,3 +72,74 @@ MyMatrix& MyMatrix::operator=(double x) {
 
     return *this;
 }
+
+/* matrix + scalar */
+MyMatrix& MyMatrix::operator+=(double x) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        this->mat[i] += x;
+    };
+
+    return *this;
+};
+MyMatrix MyMatrix::operator+(double x) const {
+    MyMatrix res = *this;
+    res += x;
+    return res;
+};
+
+/* matrix - scalar */
+MyMatrix& MyMatrix::operator-=(double x) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        this->mat[i] -= x;
+    };
+
+    return *this;
+};
+
+MyMatrix MyMatrix::operator-(double x) const {
+    MyMatrix res = *this;
+
+    res -= x;
+    return res;
+};
+
+/* matrix * scalar */
+MyMatrix& MyMatrix::operator*=(double x) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        this->mat[i] *= x;
+    };
+
+    return *this;
+};
+
+MyMatrix MyMatrix::operator*(double x) const {
+    MyMatrix res = *this;
+
+    res *= x;
+    return res;
+};
+
+/* unary */
+MyMatrix MyMatrix::operator-() const {
+    return (*this) * (-1.0);
+};
+
+/* matrix / scalar */
+MyMatrix& MyMatrix::operator/=(double x) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        this->mat[i] /= x;
+    };
+
+    return *this;
+};
+
+MyMatrix MyMatrix::operator/(double x) const {
+    MyMatrix res = *this;
+
+    res /= x;
+    return res;
+};
+
+
+
+
