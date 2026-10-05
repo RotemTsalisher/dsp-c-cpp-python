@@ -82,7 +82,8 @@ class MyVector {
 
         MyVector cross_corr(const MyVector& other) const;
         MyVector auto_corr() const;
-        static MyVector ones(std::size_t l);
+        static MyVector ones(std::size_t l_);
+        static MyVector zeros(std::size_t l_);
 };
 
 #endif

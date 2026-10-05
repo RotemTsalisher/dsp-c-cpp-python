@@ -303,3 +303,14 @@ MyVector MyVector::ones(std::size_t l_) {
 
     return res;
 };
+
+MyVector MyVector::zeros(std::size_t l_) {
+    MyVector res;
+    res.l = l_;
+
+    for(std::size_t i = 0; i < res.l; ++i) {
+        res[i] = 0.0;
+    };
+
+    return res;
+}

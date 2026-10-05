@@ -140,6 +140,155 @@ MyMatrix MyMatrix::operator/(double x) const {
     return res;
 };
 
+/* scalar + matrix */
+MyMatrix operator+(double x, const MyMatrix& A) {
+    return (A + x);
+};
+
+/* scalar - matrix */
+MyMatrix operator-(double x, const MyMatrix& A) {
+    return (-A) + x;
+};
+
+/* scalar * matrix */
+MyMatrix operator*(double x, const MyMatrix& A) {
+    return (A * x);
+};
+
+/* scalar / matrix */
+MyMatrix operator/(double x, const MyMatrix& A) {
+    MyMatrix res = A;
+    for(std::size_t i = 0; i < res.r; ++i) {
+        res[i] = x / res[i];
+    };
+
+    return res;
+};
+
+/* elemnt wise matrx operations */
+
+/* addition */
+MyMatrix& MyMatrix::operator+=(const MyMatrix& B){
+    for(std::size_t i = 0; i < this->r; ++i) {
+        (*this)[i] += B[i];
+    };
+
+    return *this;
+};
+MyMatrix MyMatrix::operator+(const MyMatrix& B) const {
+    MyMatrix res = *this;
+
+    res += B;
+    return res;
+}
+
+/* subtraction */
+MyMatrix& MyMatrix::operator-=(const MyMatrix& B) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        (*this)[i] -= B[i];
+    };
+
+    return *this;
+};
+MyMatrix MyMatrix::operator-(const MyMatrix& B) const {
+    MyMatrix res = *this;
+
+    res -= B;
+    return res;
+};
+
+/* multiplication */
+MyMatrix& MyMatrix::operator*=(const MyMatrix& B) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        (*this)[i] *= B[i];
+    };
+
+    return*this;
+};
+
+MyMatrix MyMatrix::operator*(const MyMatrix& B) const {
+    MyMatrix res = *this;
+
+    res *= B;
+    return res;
+};
+
+/* division */
+MyMatrix& MyMatrix::operator/=(const MyMatrix& B) {
+    for(std::size_t i = 0; i < this->r; ++i) {
+        (*this)[i] /= B[i];
+    };
+
+    return *this;
+};
+
+MyMatrix MyMatrix::operator/(const MyMatrix& B) const {
+    MyMatrix res = *this;
+
+    res /= B;
+    return res;
+};
+
+/* linear algebra */
+MyVector MyMatrix::operator*(const MyVector& v) const {
+    MyVector res;
+    res.l = this->r;
+
+    for(std::size_t i = 0; i < res.l; ++i) {
+        res[i] = (*this)[i].dot_product(v);
+    };
+
+    return res;
+};
+
+MyVector operator*(const MyVector& v, const MyMatrix& M) {
+    MyVector res = MyVector::zeros(M.c);
+
+    for(std::size_t i = 0; i < M.r; ++i) {
+        for(std::size_t j = 0; j < M.c; ++j) {
+            res[j] += (v[i] * M(i, j));
+        };
+    };
+
+    return res;
+};
+
+/* matrix mult */
+/* helper to matrix mult: column to vector */
+
+MyVector MyMatrix::column_to_vector(std::size_t j) const {
+    MyVector res;
+
+    res.l = this->r;
+    for(std::size_t i =0; i < res.l; ++i) {
+        res[i] = (*this)(i,j);
+    }
+
+    return res;
+};
+
+MyMatrix MyMatrix::mat_mult(const MyMatrix& M) const {
+
+    MyMatrix res;
+    MyVector column_;
+
+    res.r = this->r;
+    res.c = M.c;
+    column_.l = M.r; 
+
+    double tmp = 0.0;
+    for(std::size_t j = 0; j < res.c; ++j) {
+        column_ = M.column_to_vector(j);
+
+        for(std::size_t i = 0; i < res.r; ++i) {
+            tmp = (*this)[i].dot_product(column_);
+            res(i,j) = tmp;
+            
+        };
+    };
+
+    return res;
+};
 
 
 

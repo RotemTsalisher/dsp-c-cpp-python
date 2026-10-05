@@ -58,10 +58,6 @@ class MyMatrix {
         MyMatrix operator/(const double x) const;
 
         /* scalar matrix arithmetics */
-        friend MyMatrix operator+=(const double x, const MyMatrix& A);
-        friend MyMatrix operator-=(const double x, const MyMatrix& A);
-        friend MyMatrix operator*=(const double x, const MyMatrix& A);
-        friend MyMatrix operator/=(const double x, const MyMatrix& A);
 
         friend MyMatrix operator+(const double x, const MyMatrix& A);
         friend MyMatrix operator-(const double x, const MyMatrix& A);
