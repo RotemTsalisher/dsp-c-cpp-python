@@ -112,6 +112,15 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 
 - `index.html` — open in a browser and go at your own pace. Each page is one idea. Reveal holds the checkpoint.
 
+### 12c. 📘 Apollo NXP handover (HiFi4 + Cortex-M33)
+**Folder:** `nxp-apollo-course/`
+**Status:** Available — 18 modules (17 + drills), 93 exercises. Firmware tree is read-only.
+
+The seat you take over from the senior NXP owner: RT685 boot, shared memory, the two release builds, XOS threads, rpmsg, the AFW product graphs (Flow, GoPro, Kido, PT3 Pro), Opus / G.723.1, FEC, and enough of the M33 mesh that a DSP change does not miss a radio slot.
+
+- `index.html` — open in a browser. Answers go in a notebook. Reveal holds the solution.
+- Regenerate with `python generate_course.py` after editing `course_modules.py` / `course_modules_rest.py`.
+
 ### 13. 🔲 DSP Interview Prep — Level 1
 **Folder:** `DSP_AI_Prep_1/`
 **Status:** Available.
@@ -278,7 +287,7 @@ START HERE
     │         │       │       │
     │         │       │       └── DSP Interview Prep 1 → Prep 2
     │         │       │
-    │         │       └── Topics in DSP / PSD-to-LPC
+    │         │       └── Topics in DSP / PSD-to-LPC / Apollo NXP handover
     │         │
     │         └── C++ Beginner to Advanced ─ [✅ Done / In Progress]
     │                   │
@@ -328,9 +337,9 @@ START HERE
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
 | Embedded | 1 | (workbook-based) |
-| DSP & Audio | 3 | (mixed format) |
-| **Total** | **22 courses** | **1533+ exercises** |
+| DSP & Audio | 4 | (mixed format, includes Apollo NXP handover) |
+| **Total** | **23 courses** | **1626+ exercises** |
 
 ---
 
-*Last updated: September 2026*
+*Last updated: October 2026*
