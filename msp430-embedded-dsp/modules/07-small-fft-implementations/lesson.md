@@ -71,3 +71,35 @@
 
         ## Hardware constraints (always)
         512 B RAM, 10-bit ADC, no FPU. Keep FFT sizes and buffers realistic (often N≤64). External DAC only when a lab explicitly requires analog output.
+
+### Deep dive: Small FFT implementations
+
+Study the official manual chapter that matches this topic on your board.
+For **512 B RAM — prefer Q15 and small N**, map each signal to a pin before writing drivers.
+
+### Key ideas
+- Configure clocks before baud rates, ADC sample time, or PWM frequency.
+- Keep interrupt service routines short; defer work to the main loop or task.
+- Document assumptions (voltage, sample rate, buffer depth) in module README.
+
+### Register / API map (fill while reading docs)
+| Function | Register / API | Your notes |
+|----------|----------------|------------|
+| Enable clock to peripheral | | |
+| Configure pins | | |
+| Start operation | | |
+| Status / flags | | |
+
+## Lab steps
+1. Clone module branch `module-07`.
+2. Open `code/starter/` — complete TODOs for **Small FFT implementations**.
+3. Build and flash; capture serial log or scope trace.
+4. Compare against `code/solution/` only after tests fail and you have hypotheses.
+5. Write expected vs actual in `lab_checklist.md`.
+
+### Test procedure — Small FFT implementations
+| Case | Input / action | Expected |
+|------|----------------|----------|
+| T1 nominal | Typical operating point | Stable output, no fault flags |
+| T2 boundary | Min/max allowed value | Saturate or reject safely |
+| T3 fault | Disconnect sensor / noise | Detectable error, no lock-up |

@@ -1,5 +1,6 @@
-"""Starter POC — Graph representations and algorithms. Fill in algorithm; run pytest."""
+"""Starter — Graph representations and algorithms."""
 
+# TODO: BFS on adjacency list
 
 def solve(*args, **kwargs):
     raise NotImplementedError

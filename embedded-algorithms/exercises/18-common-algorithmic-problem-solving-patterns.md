@@ -2,52 +2,38 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/18-common-algorithmic-problem-solving-patterns/code/starter/`
+
 Use the 10-step methodology from the lesson (problem → Python → complexity → MSP430 C → report).
 
 ## Exercise A (core)
 
-Implement the module topic **Common algorithmic problem-solving patterns** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Python POC: Sliding window max of size k
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Common algorithmic problem-solving patterns** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Handle empty/max-size inputs for Common algorithmic problem-solving patterns.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Common algorithmic problem-solving patterns** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Document O(n) with a timing table.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Common algorithmic problem-solving patterns** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Integrated report + C port for Common algorithmic problem-solving patterns.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

@@ -1,5 +1,6 @@
-"""Starter POC — Hash tables, heaps, and priority queues. Fill in algorithm; run pytest."""
+"""Starter — Hash tables, heaps, and priority queues."""
 
+# TODO: Hash table with linear probing (small)
 
 def solve(*args, **kwargs):
     raise NotImplementedError

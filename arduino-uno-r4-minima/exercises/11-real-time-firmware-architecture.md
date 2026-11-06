@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/11-real-time-firmware-architecture/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Real-time firmware architecture** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Complete starter code for Real-time firmware architecture.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Real-time firmware architecture** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Demonstrate boundary case for Real-time firmware architecture.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Real-time firmware architecture** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Profile Real-time firmware architecture (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Real-time firmware architecture** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Mini-project integrating Real-time firmware architecture with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

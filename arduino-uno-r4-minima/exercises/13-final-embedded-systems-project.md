@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/13-final-embedded-systems-project/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Final embedded systems project** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Complete starter code for Final embedded systems project.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Final embedded systems project** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Demonstrate boundary case for Final embedded systems project.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Final embedded systems project** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Profile Final embedded systems project (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Final embedded systems project** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Mini-project integrating Final embedded systems project with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

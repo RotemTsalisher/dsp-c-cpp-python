@@ -2,52 +2,38 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/22-optimization-for-embedded-targets/code/starter/`
+
 Use the 10-step methodology from the lesson (problem → Python → complexity → MSP430 C → report).
 
 ## Exercise A (core)
 
-Implement the module topic **Optimization for embedded targets** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Python POC: Profile two sort variants; pick for n=16 on MCU
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Optimization for embedded targets** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Handle empty/max-size inputs for Optimization for embedded targets.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Optimization for embedded targets** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Document Compare constants with a timing table.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Optimization for embedded targets** for **MSP-EXP430G2 LaunchPad (MSP430G2553); host PC for Python/C++ exercises**.
+Integrated report + C port for Optimization for embedded targets.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

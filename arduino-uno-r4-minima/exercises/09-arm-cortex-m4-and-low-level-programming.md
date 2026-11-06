@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/09-arm-cortex-m4-and-low-level-programming/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **ARM Cortex-M4 and low-level programming** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Complete starter code for ARM Cortex-M4 and low-level programming.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **ARM Cortex-M4 and low-level programming** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Demonstrate boundary case for ARM Cortex-M4 and low-level programming.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **ARM Cortex-M4 and low-level programming** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Profile ARM Cortex-M4 and low-level programming (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **ARM Cortex-M4 and low-level programming** for **Arduino UNO R4 Minima (Renesas RA4M1, Cortex-M4 + FPU)**.
+Mini-project integrating ARM Cortex-M4 and low-level programming with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

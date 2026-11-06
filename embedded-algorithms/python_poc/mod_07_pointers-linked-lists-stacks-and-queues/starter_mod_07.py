@@ -1,5 +1,6 @@
-"""Starter POC — Pointers, linked lists, stacks, and queues. Fill in algorithm; run pytest."""
+"""Starter — Pointers, linked lists, stacks, and queues."""
 
+# TODO: Stack/queue on fixed arrays
 
 def solve(*args, **kwargs):
     raise NotImplementedError

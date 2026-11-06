@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/02-toolchain-and-debugging-workflow/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Toolchain and debugging workflow** for **TI MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Complete starter code for Toolchain and debugging workflow.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Toolchain and debugging workflow** for **TI MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Demonstrate boundary case for Toolchain and debugging workflow.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Toolchain and debugging workflow** for **TI MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Profile Toolchain and debugging workflow (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Toolchain and debugging workflow** for **TI MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Mini-project integrating Toolchain and debugging workflow with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

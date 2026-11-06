@@ -1,5 +1,6 @@
-"""Starter POC — Strings and character processing. Fill in algorithm; run pytest."""
+"""Starter — Strings and character processing."""
 
+# TODO: C-string length/compare/copy bounded
 
 def solve(*args, **kwargs):
     raise NotImplementedError

@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/13-final-embedded-dsp-project/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Final embedded DSP project** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Complete starter code for Final embedded DSP project.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Final embedded DSP project** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Demonstrate boundary case for Final embedded DSP project.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Final embedded DSP project** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Profile Final embedded DSP project (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Final embedded DSP project** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Mini-project integrating Final embedded DSP project with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

@@ -85,3 +85,35 @@ fixed- vs floating-point profiling, real-time buffering and latency measurement,
 
 ### I2S on UNO R4 Minima
 Teach I2S framing and investigate RA4M1 SSIE in documentation; hands-on I2S only after pin/toolchain verification.
+
+### Deep dive: Final embedded systems project
+
+Study the official manual chapter that matches this topic on your board.
+For **Arduino core + optional FSP register peek**, map each signal to a pin before writing drivers.
+
+### Key ideas
+- Configure clocks before baud rates, ADC sample time, or PWM frequency.
+- Keep interrupt service routines short; defer work to the main loop or task.
+- Document assumptions (voltage, sample rate, buffer depth) in module README.
+
+### Register / API map (fill while reading docs)
+| Function | Register / API | Your notes |
+|----------|----------------|------------|
+| Enable clock to peripheral | | |
+| Configure pins | | |
+| Start operation | | |
+| Status / flags | | |
+
+## Lab steps
+1. Clone module branch `module-13`.
+2. Open `code/starter/` — complete TODOs for **Final embedded systems project**.
+3. Build and flash; capture serial log or scope trace.
+4. Compare against `code/solution/` only after tests fail and you have hypotheses.
+5. Write expected vs actual in `lab_checklist.md`.
+
+### Test procedure — Final embedded systems project
+| Case | Input / action | Expected |
+|------|----------------|----------|
+| T1 nominal | Typical operating point | Stable output, no fault flags |
+| T2 boundary | Min/max allowed value | Saturate or reject safely |
+| T3 fault | Disconnect sensor / noise | Detectable error, no lock-up |

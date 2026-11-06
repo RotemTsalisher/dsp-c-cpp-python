@@ -67,3 +67,28 @@
 
         ## Hardware constraints (always)
         512 B RAM, 16 KB Flash, no FPU. Every major exercise follows: problem → design → Python POC → complexity analysis → embedded C → differential validation → measurement → engineering report.
+
+### Module focus
+Optimization for embedded targets
+
+### Problem statement
+Profile two sort variants; pick for n=16 on MCU
+
+### Complexity target
+Compare constants
+
+### Pseudocode discipline
+Write pseudocode with named loops, pre/postconditions, and explicit capacity `MAX_N`
+before opening an editor.
+
+### Differential testing
+Export vectors from Python (`tools/vector_export.py`) and compare UART-printed C results.
+
+## Lab steps
+1. Implement and pytest the Python module in `python_poc/`.
+2. Write embedded C with fixed arrays (`uint16_t buf[MAX_N]`).
+3. Flash MSP430; print results over UART at 9600 baud.
+4. Fill `benchmarks/mod-NN-report.md` with map-file sizes and optional cycle count.
+
+- Python: `pytest python_poc/mod_22_*/test_mod_22.py -q`
+- C: compare three UART lines to golden file `python_poc/mod_22_*/vectors.json`

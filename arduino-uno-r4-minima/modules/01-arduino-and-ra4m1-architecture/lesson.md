@@ -71,3 +71,35 @@
 
         ## Hardware constraints (always)
         RA4M1: 48 MHz, 256 KB Flash, 32 KB SRAM, 12-bit ADC, 12-bit DAC. Not an audio codec board — external mic preamp, conditioning, and output stage required for audio labs. Verify I2S pin routing before promising hands-on SSIE labs.
+
+### Deep dive: Arduino and RA4M1 architecture
+
+Study the official manual chapter that matches this topic on your board.
+For **Arduino core + optional FSP register peek**, map each signal to a pin before writing drivers.
+
+### Key ideas
+- Configure clocks before baud rates, ADC sample time, or PWM frequency.
+- Keep interrupt service routines short; defer work to the main loop or task.
+- Document assumptions (voltage, sample rate, buffer depth) in module README.
+
+### Register / API map (fill while reading docs)
+| Function | Register / API | Your notes |
+|----------|----------------|------------|
+| Enable clock to peripheral | | |
+| Configure pins | | |
+| Start operation | | |
+| Status / flags | | |
+
+## Lab steps
+1. Clone module branch `module-01`.
+2. Open `code/starter/` — complete TODOs for **Arduino and RA4M1 architecture**.
+3. Build and flash; capture serial log or scope trace.
+4. Compare against `code/solution/` only after tests fail and you have hypotheses.
+5. Write expected vs actual in `lab_checklist.md`.
+
+### Test procedure — Arduino and RA4M1 architecture
+| Case | Input / action | Expected |
+|------|----------------|----------|
+| T1 nominal | Typical operating point | Stable output, no fault flags |
+| T2 boundary | Min/max allowed value | Saturate or reject safely |
+| T3 fault | Disconnect sensor / noise | Detectable error, no lock-up |

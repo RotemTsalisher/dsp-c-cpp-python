@@ -1,5 +1,6 @@
-"""Starter POC — Recursion and backtracking. Fill in algorithm; run pytest."""
+"""Starter — Recursion and backtracking."""
 
+# TODO: Fibonacci: recursion vs memo vs tabulation
 
 def solve(*args, **kwargs):
     raise NotImplementedError

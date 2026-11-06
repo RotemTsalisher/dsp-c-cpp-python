@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/07-uart-spi-and-i2c/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **UART, SPI, and I2C** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Complete starter code for UART, SPI, and I2C.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **UART, SPI, and I2C** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Demonstrate boundary case for UART, SPI, and I2C.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **UART, SPI, and I2C** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Profile UART, SPI, and I2C (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **UART, SPI, and I2C** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Mini-project integrating UART, SPI, and I2C with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

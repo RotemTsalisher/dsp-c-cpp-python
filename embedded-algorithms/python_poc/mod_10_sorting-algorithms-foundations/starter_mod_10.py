@@ -1,5 +1,6 @@
-"""Starter POC — Sorting algorithms: foundations. Fill in algorithm; run pytest."""
+"""Starter — Sorting algorithms: foundations."""
 
+# TODO: Bubble/insertion sort + counters
 
 def solve(*args, **kwargs):
     raise NotImplementedError

@@ -1,5 +1,6 @@
-"""Starter POC — Fixed-point arithmetic and numerical algorithms. Fill in algorithm; run pytest."""
+"""Starter — Fixed-point arithmetic and numerical algorithms."""
 
+# TODO: Q15 multiply emulation
 
 def solve(*args, **kwargs):
     raise NotImplementedError

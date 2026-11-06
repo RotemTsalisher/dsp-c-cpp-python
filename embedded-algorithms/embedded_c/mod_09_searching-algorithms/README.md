@@ -1,3 +1,3 @@
-# MSP430 C — module 09
+# Module 09 embedded port
 
-Port the validated Python behavior using fixed `MAX_N` constants.
+Build with CCS target MSP430G2553.

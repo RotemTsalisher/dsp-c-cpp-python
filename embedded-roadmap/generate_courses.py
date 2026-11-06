@@ -7,6 +7,7 @@ import textwrap
 from pathlib import Path
 
 from course_data import COURSES
+from originate import get_origin
 from spa_builder import build_index, md
 
 HOME = Path(__file__).resolve().parent.parent
@@ -162,7 +163,18 @@ def lesson_body(course: dict, idx: int, title: str) -> str:
             """
         )
 
-    return topic
+    origin = get_origin(slug, n, title)
+    return topic + "\n\n" + origin.theory + "\n\n## Lab steps\n" + origin.lab_steps + "\n\n" + origin.test_procedure
+
+
+def ex_from_spec(mod_id: str, num: int, spec) -> dict:
+    return {
+        "id": f"{mod_id}-{num}",
+        "prompt": spec.prompt,
+        "hints": spec.hint,
+        "solution": spec.solution,
+        "stretch": spec.stretch or "",
+    }
 
 
 def ex(course: dict, mod_id: str, num: int, kind: str, title: str) -> dict:
@@ -209,12 +221,14 @@ def exercises_for_module(course: dict, mod_id: str, title: str) -> list[dict]:
     ]
 
 
-def write_exercises_md(path: Path, course: dict, mod_num: int, title: str) -> None:
+def write_exercises_md(path: Path, course: dict, mod_num: int, title: str, origin) -> None:
     algo = course.get("algorithm_course")
     lines = [
         f"# Module {mod_num:02d}: {title}",
         "",
         "Learner-facing exercises only — solutions are in `../solutions/`.",
+        "",
+        f"Starter code: `../modules/{mod_num:02d}-{slugify(title)}/code/starter/`",
         "",
     ]
     if algo:
@@ -222,55 +236,41 @@ def write_exercises_md(path: Path, course: dict, mod_num: int, title: str) -> No
             "Use the 10-step methodology from the lesson (problem → Python → complexity → MSP430 C → report).",
             "",
         ]
-    for label, letter in [
-        ("Exercise A (core)", "a"),
-        ("Exercise B (boundaries)", "b"),
-        ("Exercise C (optimize / measure)", "c"),
-        ("Independent assignment", "assignment"),
-    ]:
-        lines += [
-            f"## {label}",
-            "",
-            f"Implement the module topic **{title}** for **{course['hardware']}**.",
-            "",
-            "### Deliverables",
-            "- Buildable project or clearly named source files",
-            "- Test procedure with expected results",
-            "- Short note on resources used (RAM/Flash/time) where applicable",
-            "",
-            "### Pass criteria",
-            f"- Reproducible behavior across reset; documented edge case `{letter}-edge` handled safely",
-            "",
-        ]
+    labels = ["Exercise A (core)", "Exercise B (boundaries)", "Exercise C (optimize / measure)", "Independent assignment"]
+    for label, spec in zip(labels, origin.exercises):
+        lines += [f"## {label}", "", spec.prompt, "", "### Deliverables", "- Buildable project or passing pytest/UART vectors", "- Test procedure with expected results", ""]
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def write_solutions_md(path: Path, mod_num: int, title: str) -> None:
-    path.write_text(
-        textwrap.dedent(
-            f"""
-            # Module {mod_num:02d} solutions — {title}
+def write_solutions_md(path: Path, mod_num: int, title: str, origin, folder: str) -> None:
+    parts = [
+        f"# Module {mod_num:02d} solutions — {title}",
+        "",
+        "> Reference only — attempt exercises first.",
+        "",
+        f"Code tree: `modules/{folder}/code/solution/`",
+        "",
+    ]
+    for i, spec in enumerate(origin.exercises, start=1):
+        parts += [f"## Exercise {i}", "", spec.solution, ""]
+    for rel, content in origin.solution_files.items():
+        parts += [f"### File `{rel}`", "", "```", content.strip(), "```", ""]
+    path.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
-            > Keep this folder out of your daily workflow until you have a serious attempt.
 
-            ## Exercise A
-            Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-            and in `modules/{mod_num:02d}-*/code/` when starter/solution trees are added per lab.
-
-            ### Why
-            - Separates learner prompts from answers (syllabus requirement).
-
-            ## Exercise B–C and assignment
-            See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-            before algorithm tuning.
-
-            ## Common mistakes addressed
-            - ISR overload, missing volatile, incorrect clock tree, buffer overrun.
-            """
-        ).strip()
-        + "\n",
-        encoding="utf-8",
-    )
+def write_module_files(mod_path: Path, origin) -> None:
+    for rel, content in origin.files.items():
+        p = mod_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
+    for rel, content in origin.solution_files.items():
+        p = mod_path / rel if rel.startswith("code/") else mod_path / "code" / "solution" / rel
+        if rel.startswith("code/"):
+            p = mod_path / rel
+        else:
+            p = mod_path / "code" / "solution" / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
 
 
 def write_readme(course_dir: Path, course: dict) -> None:
@@ -375,18 +375,22 @@ def write_projects(course_dir: Path, course: dict) -> None:
 
 def write_tools(course_dir: Path, course: dict) -> None:
     slug = course["slug"]
-    course_dir.joinpath("tools").mkdir(parents=True, exist_ok=True)
+    tools = course_dir.joinpath("tools")
+    tools.mkdir(parents=True, exist_ok=True)
+    vec_src = HOME / "embedded-roadmap" / "tools" / "vector_export.py"
+    if vec_src.is_file():
+        (tools / "vector_export.py").write_text(vec_src.read_text(encoding="utf-8"), encoding="utf-8")
+    (tools / "serial_monitor.md").write_text(
+        "# Serial monitor\n\nUse PuTTY / `idf.py monitor` / CCS UART at documented baud.\n",
+        encoding="utf-8",
+    )
     course_dir.joinpath("tools", "README.md").write_text(
         textwrap.dedent(
             f"""
             # Tools — {course["slug"]}
 
-            - `../../embedded-roadmap/generate_courses.py` — regenerates `index.html` and module tree.
-            - Add per-course scripts here (flash helpers, serial plotters, Python golden-vector generators).
-
-            Suggested next additions:
-            - `{slug}_serial_plot.py` — live UART CSV for scope-free bring-up
-            - `{slug}_golden_vectors.py` — export test vectors for differential C/Python tests
+            - `../../embedded-roadmap/generate_courses.py` — regenerates all course artifacts.
+            - `vector_export.py` — JSON vectors for differential tests (algorithms course).
             """
         ).strip()
         + "\n",
@@ -394,24 +398,25 @@ def write_tools(course_dir: Path, course: dict) -> None:
     )
 
 
-def write_algorithm_extras(course_dir: Path, mod_num: int, title: str) -> None:
+def write_algorithm_extras(course_dir: Path, mod_num: int, title: str, origin) -> None:
     slug = slugify(title)
     poc = course_dir / "python_poc" / f"mod_{mod_num:02d}_{slug}"
     emb = course_dir / "embedded_c" / f"mod_{mod_num:02d}_{slug}"
     poc.mkdir(parents=True, exist_ok=True)
     emb.mkdir(parents=True, exist_ok=True)
     (poc / "README.md").write_text(
-        f"# Python POC — module {mod_num:02d}\n\nStarter: implement `{title}` with tests in `test_mod_{mod_num:02d}.py`.\n",
+        f"# Python POC — module {mod_num:02d}\n\n`pytest test_mod_{mod_num:02d}.py -q`\n",
         encoding="utf-8",
     )
-    (poc / f"starter_mod_{mod_num:02d}.py").write_text(
-        f'"""Starter POC — {title}. Fill in algorithm; run pytest."""\n\n\ndef solve(*args, **kwargs):\n    raise NotImplementedError\n',
-        encoding="utf-8",
-    )
-    (emb / "README.md").write_text(
-        f"# MSP430 C — module {mod_num:02d}\n\nPort the validated Python behavior using fixed `MAX_N` constants.\n",
-        encoding="utf-8",
-    )
+    for name, content in origin.files.items():
+        (poc / name).write_text(content, encoding="utf-8")
+    for name, content in origin.solution_files.items():
+        if name.endswith(".py"):
+            (poc / name).write_text(content, encoding="utf-8")
+        elif name == "main.c":
+            (emb / name).write_text(content, encoding="utf-8")
+        else:
+            (emb / name).write_text(content, encoding="utf-8")
 
 
 def generate_course(course: dict) -> tuple[int, int]:
@@ -428,8 +433,11 @@ def generate_course(course: dict) -> tuple[int, int]:
         mod_path = course_dir / "modules" / folder
         mod_path.mkdir(parents=True, exist_ok=True)
 
+        origin = get_origin(course["slug"], mod_num, title)
         lesson = lesson_body(course, idx, title)
-        (mod_path / "lesson.md").write_text(lesson + "\n", encoding="utf-8")
+        (mod_path / "lesson.md").write_text(textwrap.dedent(lesson).strip() + "\n", encoding="utf-8")
+        if not course.get("algorithm_course"):
+            write_module_files(mod_path, origin)
         (mod_path / "lab_checklist.md").write_text(
             textwrap.dedent(
                 """
@@ -447,16 +455,18 @@ def generate_course(course: dict) -> tuple[int, int]:
 
         ex_path = course_dir / "exercises" / f"{folder}.md"
         ex_path.parent.mkdir(parents=True, exist_ok=True)
-        write_exercises_md(ex_path, course, mod_num, title)
+        write_exercises_md(ex_path, course, mod_num, title, origin)
 
         sol_path = course_dir / "solutions" / f"{folder}.md"
         sol_path.parent.mkdir(parents=True, exist_ok=True)
-        write_solutions_md(sol_path, mod_num, title)
+        write_solutions_md(sol_path, mod_num, title, origin, folder)
 
         if course.get("algorithm_course"):
-            write_algorithm_extras(course_dir, mod_num, title)
+            write_algorithm_extras(course_dir, mod_num, title, origin)
 
-        exercises = exercises_for_module(course, mod_id, title)
+        exercises = [
+            ex_from_spec(mod_id, i, spec) for i, spec in enumerate(origin.exercises, start=1)
+        ] if origin.exercises else exercises_for_module(course, mod_id, title)
         total_ex += len(exercises)
         spa_modules.append(
             {

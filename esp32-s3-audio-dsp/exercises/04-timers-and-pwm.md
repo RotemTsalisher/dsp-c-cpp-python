@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/04-timers-and-pwm/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Timers and PWM** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Complete starter code for Timers and PWM.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Timers and PWM** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Demonstrate boundary case for Timers and PWM.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Timers and PWM** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Profile Timers and PWM (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Timers and PWM** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Mini-project integrating Timers and PWM with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

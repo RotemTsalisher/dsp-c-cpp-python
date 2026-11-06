@@ -1,5 +1,6 @@
-"""Starter POC — Final engineering project: embedded algorithm library. Fill in algorithm; run pytest."""
+"""Starter — Final engineering project: embedded algorithm library."""
 
+# TODO: Capstone: library API surface
 
 def solve(*args, **kwargs):
     raise NotImplementedError

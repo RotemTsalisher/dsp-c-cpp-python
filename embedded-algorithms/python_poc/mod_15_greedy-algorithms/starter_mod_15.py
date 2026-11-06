@@ -1,5 +1,6 @@
-"""Starter POC — Greedy algorithms. Fill in algorithm; run pytest."""
+"""Starter — Greedy algorithms."""
 
+# TODO: Activity selection greedy
 
 def solve(*args, **kwargs):
     raise NotImplementedError

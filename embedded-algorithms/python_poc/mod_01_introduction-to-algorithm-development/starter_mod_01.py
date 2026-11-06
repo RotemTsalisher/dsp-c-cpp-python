@@ -1,5 +1,6 @@
-"""Starter POC — Introduction to algorithm development. Fill in algorithm; run pytest."""
+"""Starter — Introduction to algorithm development."""
 
+# TODO: Array max/min/mean/count
 
 def solve(*args, **kwargs):
     raise NotImplementedError

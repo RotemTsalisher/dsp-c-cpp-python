@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/10-practical-embedded-dsp-algorithms/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **Practical embedded DSP algorithms** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Complete starter code for Practical embedded DSP algorithms.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **Practical embedded DSP algorithms** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Demonstrate boundary case for Practical embedded DSP algorithms.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **Practical embedded DSP algorithms** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Profile Practical embedded DSP algorithms (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **Practical embedded DSP algorithms** for **MSP-EXP430G2 LaunchPad (MSP430G2553)**.
+Mini-project integrating Practical embedded DSP algorithms with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

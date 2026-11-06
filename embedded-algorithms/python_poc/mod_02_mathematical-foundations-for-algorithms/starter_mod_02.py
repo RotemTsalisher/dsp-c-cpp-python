@@ -1,5 +1,6 @@
-"""Starter POC — Mathematical foundations for algorithms. Fill in algorithm; run pytest."""
+"""Starter — Mathematical foundations for algorithms."""
 
+# TODO: GCD/LCM/safe mod ops
 
 def solve(*args, **kwargs):
     raise NotImplementedError

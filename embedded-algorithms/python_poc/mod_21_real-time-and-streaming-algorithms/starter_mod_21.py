@@ -1,5 +1,6 @@
-"""Starter POC — Real-time and streaming algorithms. Fill in algorithm; run pytest."""
+"""Starter — Real-time and streaming algorithms."""
 
+# TODO: Running RMS on stream chunks
 
 def solve(*args, **kwargs):
     raise NotImplementedError

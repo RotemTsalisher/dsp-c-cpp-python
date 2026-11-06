@@ -1,17 +1,76 @@
 # Module 23 solutions — Testing, verification, and engineering quality
 
-> Keep this folder out of your daily workflow until you have a serious attempt.
+> Reference only — attempt exercises first.
 
-## Exercise A
-Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-and in `modules/23-*/code/` when starter/solution trees are added per lab.
+Code tree: `modules/23-testing-verification-and-engineering-quality/code/solution/`
 
-### Why
-- Separates learner prompts from answers (syllabus requirement).
+## Exercise 1
 
-## Exercise B–C and assignment
-See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-before algorithm tuning.
+def rev(a):
+    a=list(a); a.reverse(); return a
 
-## Common mistakes addressed
-- ISR overload, missing volatile, incorrect clock tree, buffer overrun.
+/* embedded_c/mod_23_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Testing, verification, and engineering quality with fixed storage only */
+
+## Exercise 2
+
+def rev(a):
+    a=list(a); a.reverse(); return a
+
+/* embedded_c/mod_23_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Testing, verification, and engineering quality with fixed storage only */
+
+Boundary: document edge case handling in comments.
+
+## Exercise 3
+
+def rev(a):
+    a=list(a); a.reverse(); return a
+
+/* embedded_c/mod_23_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Testing, verification, and engineering quality with fixed storage only */
+
+Optimization: note trade-off vs baseline measurement.
+
+## Exercise 4
+
+def rev(a):
+    a=list(a); a.reverse(); return a
+
+/* embedded_c/mod_23_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Testing, verification, and engineering quality with fixed storage only */
+
+Assignment: integrate with prior module driver where applicable.
+
+### File `solution_mod_23.py`
+
+```
+def rev(a):
+    a=list(a); a.reverse(); return a
+```
+
+### File `main.c`
+
+```
+/* embedded_c/mod_23_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Testing, verification, and engineering quality with fixed storage only */
+```
+
+### File `README.md`
+
+```
+# Module 23 embedded port
+
+Build with CCS target MSP430G2553.
+```
+

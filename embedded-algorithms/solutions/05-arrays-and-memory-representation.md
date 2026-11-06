@@ -1,17 +1,91 @@
 # Module 05 solutions — Arrays and memory representation
 
-> Keep this folder out of your daily workflow until you have a serious attempt.
+> Reference only — attempt exercises first.
 
-## Exercise A
-Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-and in `modules/05-*/code/` when starter/solution trees are added per lab.
+Code tree: `modules/05-arrays-and-memory-representation/code/solution/`
 
-### Why
-- Separates learner prompts from answers (syllabus requirement).
+## Exercise 1
 
-## Exercise B–C and assignment
-See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-before algorithm tuning.
+def insert_at(a,n,x,i):
+    if n>=len(a): raise ValueError
+    for j in range(n,i,-1): a[j]=a[j-1]
+    a[i]=x
+    return n+1
 
-## Common mistakes addressed
-- ISR overload, missing volatile, incorrect clock tree, buffer overrun.
+/* embedded_c/mod_05_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Arrays and memory representation with fixed storage only */
+
+## Exercise 2
+
+def insert_at(a,n,x,i):
+    if n>=len(a): raise ValueError
+    for j in range(n,i,-1): a[j]=a[j-1]
+    a[i]=x
+    return n+1
+
+/* embedded_c/mod_05_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Arrays and memory representation with fixed storage only */
+
+Boundary: document edge case handling in comments.
+
+## Exercise 3
+
+def insert_at(a,n,x,i):
+    if n>=len(a): raise ValueError
+    for j in range(n,i,-1): a[j]=a[j-1]
+    a[i]=x
+    return n+1
+
+/* embedded_c/mod_05_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Arrays and memory representation with fixed storage only */
+
+Optimization: note trade-off vs baseline measurement.
+
+## Exercise 4
+
+def insert_at(a,n,x,i):
+    if n>=len(a): raise ValueError
+    for j in range(n,i,-1): a[j]=a[j-1]
+    a[i]=x
+    return n+1
+
+/* embedded_c/mod_05_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Arrays and memory representation with fixed storage only */
+
+Assignment: integrate with prior module driver where applicable.
+
+### File `solution_mod_05.py`
+
+```
+def insert_at(a,n,x,i):
+    if n>=len(a): raise ValueError
+    for j in range(n,i,-1): a[j]=a[j-1]
+    a[i]=x
+    return n+1
+```
+
+### File `main.c`
+
+```
+/* embedded_c/mod_05_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Arrays and memory representation with fixed storage only */
+```
+
+### File `README.md`
+
+```
+# Module 05 embedded port
+
+Build with CCS target MSP430G2553.
+```
+

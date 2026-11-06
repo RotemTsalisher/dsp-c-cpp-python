@@ -1,17 +1,54 @@
 # Module 11 solutions — Memory, watchdog, and reliability
 
-> Keep this folder out of your daily workflow until you have a serious attempt.
+> Reference only — attempt exercises first.
 
-## Exercise A
-Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-and in `modules/11-*/code/` when starter/solution trees are added per lab.
+Code tree: `modules/11-memory-watchdog-and-reliability/code/solution/`
 
-### Why
-- Separates learner prompts from answers (syllabus requirement).
+## Exercise 1
 
-## Exercise B–C and assignment
-See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-before algorithm tuning.
+See `modules/11-*/code/solution/` and embedded snippets in solutions markdown.
 
-## Common mistakes addressed
-- ISR overload, missing volatile, incorrect clock tree, buffer overrun.
+## Exercise 2
+
+See `modules/11-*/code/solution/` and embedded snippets in solutions markdown.
+
+Boundary: document edge case handling in comments.
+
+## Exercise 3
+
+See `modules/11-*/code/solution/` and embedded snippets in solutions markdown.
+
+Optimization: note trade-off vs baseline measurement.
+
+## Exercise 4
+
+See `modules/11-*/code/solution/` and embedded snippets in solutions markdown.
+
+Assignment: integrate with prior module driver where applicable.
+
+### File `code/solution/README.md`
+
+```
+Reference wiring for Memory, watchdog, and reliability. Diff against starter.
+```
+
+### File `code/solution/main.c`
+
+```
+/*
+ * REFERENCE SOLUTION — Memory, watchdog, and reliability
+ * Adjust pin defines to your board wiring.
+ */
+#include <stdint.h>
+
+static void board_init(void) { /* clock + pins */ }
+static void module_init(void) { /* Memory, watchdog, and reliability */ }
+
+int main(void) {
+    board_init();
+    module_init();
+    for (;;) { /* demo behavior */ }
+    return 0;
+}
+```
+

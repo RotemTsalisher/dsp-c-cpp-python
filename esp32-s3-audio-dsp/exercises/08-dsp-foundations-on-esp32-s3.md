@@ -2,50 +2,36 @@
 
 Learner-facing exercises only — solutions are in `../solutions/`.
 
+Starter code: `../modules/08-dsp-foundations-on-esp32-s3/code/starter/`
+
 ## Exercise A (core)
 
-Implement the module topic **DSP foundations on ESP32-S3** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Complete starter code for DSP foundations on ESP32-S3.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `a-edge` handled safely
 
 ## Exercise B (boundaries)
 
-Implement the module topic **DSP foundations on ESP32-S3** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Demonstrate boundary case for DSP foundations on ESP32-S3.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `b-edge` handled safely
 
 ## Exercise C (optimize / measure)
 
-Implement the module topic **DSP foundations on ESP32-S3** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Profile DSP foundations on ESP32-S3 (time/RAM/Flash).
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `c-edge` handled safely
 
 ## Independent assignment
 
-Implement the module topic **DSP foundations on ESP32-S3** for **ESP32-S3-DevKitC-1 (or documented equivalent; note PSRAM variant)**.
+Mini-project integrating DSP foundations on ESP32-S3 with documentation.
 
 ### Deliverables
-- Buildable project or clearly named source files
+- Buildable project or passing pytest/UART vectors
 - Test procedure with expected results
-- Short note on resources used (RAM/Flash/time) where applicable
-
-### Pass criteria
-- Reproducible behavior across reset; documented edge case `assignment-edge` handled safely

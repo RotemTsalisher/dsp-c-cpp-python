@@ -71,3 +71,35 @@
 
         ## Hardware constraints (always)
         MSP430G2553: 16-bit MCU, up to 16 MHz, 16 KB Flash, 512 B RAM, 10-bit ADC, Timer_A and USCI. No hardware FPU, no onboard DAC. Do not assume newer MSP430 features.
+
+### Deep dive: Clock system and low-power modes
+
+Study the official manual chapter that matches this topic on your board.
+For **MSP430G2553 register access (SLAU144)**, map each signal to a pin before writing drivers.
+
+### Key ideas
+- Configure clocks before baud rates, ADC sample time, or PWM frequency.
+- Keep interrupt service routines short; defer work to the main loop or task.
+- Document assumptions (voltage, sample rate, buffer depth) in module README.
+
+### Register / API map (fill while reading docs)
+| Function | Register / API | Your notes |
+|----------|----------------|------------|
+| Enable clock to peripheral | | |
+| Configure pins | | |
+| Start operation | | |
+| Status / flags | | |
+
+## Lab steps
+1. Clone module branch `module-04`.
+2. Open `code/starter/` — complete TODOs for **Clock system and low-power modes**.
+3. Build and flash; capture serial log or scope trace.
+4. Compare against `code/solution/` only after tests fail and you have hypotheses.
+5. Write expected vs actual in `lab_checklist.md`.
+
+### Test procedure — Clock system and low-power modes
+| Case | Input / action | Expected |
+|------|----------------|----------|
+| T1 nominal | Typical operating point | Stable output, no fault flags |
+| T2 boundary | Min/max allowed value | Saturate or reject safely |
+| T3 fault | Disconnect sensor / noise | Detectable error, no lock-up |

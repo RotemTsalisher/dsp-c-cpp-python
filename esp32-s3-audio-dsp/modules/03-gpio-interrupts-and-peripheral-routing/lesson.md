@@ -71,3 +71,35 @@
 
         ## Hardware constraints (always)
         Dual-core Xtensa LX7, I2S + DMA. No general-purpose onboard DAC like original ESP32 — use INMP441 (I2S mic) and MAX98357A (I2S amp) or external codec. Verify board pins before wiring.
+
+### Deep dive: GPIO, interrupts, and peripheral routing
+
+Study the official manual chapter that matches this topic on your board.
+For **ESP-IDF v5.x, `idf.py build flash monitor`**, map each signal to a pin before writing drivers.
+
+### Key ideas
+- Configure clocks before baud rates, ADC sample time, or PWM frequency.
+- Keep interrupt service routines short; defer work to the main loop or task.
+- Document assumptions (voltage, sample rate, buffer depth) in module README.
+
+### Register / API map (fill while reading docs)
+| Function | Register / API | Your notes |
+|----------|----------------|------------|
+| Enable clock to peripheral | | |
+| Configure pins | | |
+| Start operation | | |
+| Status / flags | | |
+
+## Lab steps
+1. Clone module branch `module-03`.
+2. Open `code/starter/` — complete TODOs for **GPIO, interrupts, and peripheral routing**.
+3. Build and flash; capture serial log or scope trace.
+4. Compare against `code/solution/` only after tests fail and you have hypotheses.
+5. Write expected vs actual in `lab_checklist.md`.
+
+### Test procedure — GPIO, interrupts, and peripheral routing
+| Case | Input / action | Expected |
+|------|----------------|----------|
+| T1 nominal | Typical operating point | Stable output, no fault flags |
+| T2 boundary | Min/max allowed value | Saturate or reject safely |
+| T3 fault | Disconnect sensor / noise | Detectable error, no lock-up |

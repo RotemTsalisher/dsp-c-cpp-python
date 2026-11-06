@@ -1,17 +1,96 @@
 # Module 10 solutions — Sorting algorithms: foundations
 
-> Keep this folder out of your daily workflow until you have a serious attempt.
+> Reference only — attempt exercises first.
 
-## Exercise A
-Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-and in `modules/10-*/code/` when starter/solution trees are added per lab.
+Code tree: `modules/10-sorting-algorithms-foundations/code/solution/`
 
-### Why
-- Separates learner prompts from answers (syllabus requirement).
+## Exercise 1
 
-## Exercise B–C and assignment
-See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-before algorithm tuning.
+def insertion_sort(a):
+    for i in range(1,len(a)):
+        k=a[i]; j=i-1
+        while j>=0 and a[j]>k: a[j+1]=a[j]; j-=1
+        a[j+1]=k
+    return a
 
-## Common mistakes addressed
-- ISR overload, missing volatile, incorrect clock tree, buffer overrun.
+/* embedded_c/mod_10_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Sorting algorithms: foundations with fixed storage only */
+
+## Exercise 2
+
+def insertion_sort(a):
+    for i in range(1,len(a)):
+        k=a[i]; j=i-1
+        while j>=0 and a[j]>k: a[j+1]=a[j]; j-=1
+        a[j+1]=k
+    return a
+
+/* embedded_c/mod_10_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Sorting algorithms: foundations with fixed storage only */
+
+Boundary: document edge case handling in comments.
+
+## Exercise 3
+
+def insertion_sort(a):
+    for i in range(1,len(a)):
+        k=a[i]; j=i-1
+        while j>=0 and a[j]>k: a[j+1]=a[j]; j-=1
+        a[j+1]=k
+    return a
+
+/* embedded_c/mod_10_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Sorting algorithms: foundations with fixed storage only */
+
+Optimization: note trade-off vs baseline measurement.
+
+## Exercise 4
+
+def insertion_sort(a):
+    for i in range(1,len(a)):
+        k=a[i]; j=i-1
+        while j>=0 and a[j]>k: a[j+1]=a[j]; j-=1
+        a[j+1]=k
+    return a
+
+/* embedded_c/mod_10_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Sorting algorithms: foundations with fixed storage only */
+
+Assignment: integrate with prior module driver where applicable.
+
+### File `solution_mod_10.py`
+
+```
+def insertion_sort(a):
+    for i in range(1,len(a)):
+        k=a[i]; j=i-1
+        while j>=0 and a[j]>k: a[j+1]=a[j]; j-=1
+        a[j+1]=k
+    return a
+```
+
+### File `main.c`
+
+```
+/* embedded_c/mod_10_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Sorting algorithms: foundations with fixed storage only */
+```
+
+### File `README.md`
+
+```
+# Module 10 embedded port
+
+Build with CCS target MSP430G2553.
+```
+

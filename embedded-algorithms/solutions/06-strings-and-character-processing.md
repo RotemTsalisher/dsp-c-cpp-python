@@ -1,17 +1,86 @@
 # Module 06 solutions — Strings and character processing
 
-> Keep this folder out of your daily workflow until you have a serious attempt.
+> Reference only — attempt exercises first.
 
-## Exercise A
-Full reference implementation lives in the browser course (`index.html` → Reveal solution)
-and in `modules/06-*/code/` when starter/solution trees are added per lab.
+Code tree: `modules/06-strings-and-character-processing/code/solution/`
 
-### Why
-- Separates learner prompts from answers (syllabus requirement).
+## Exercise 1
 
-## Exercise B–C and assignment
-See module lesson for measurement procedure; solutions emphasize **correct peripheral setup**
-before algorithm tuning.
+def c_strlen(s,maxlen):
+    n=0
+    while n<maxlen and s[n]: n+=1
+    return n
 
-## Common mistakes addressed
-- ISR overload, missing volatile, incorrect clock tree, buffer overrun.
+/* embedded_c/mod_06_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Strings and character processing with fixed storage only */
+
+## Exercise 2
+
+def c_strlen(s,maxlen):
+    n=0
+    while n<maxlen and s[n]: n+=1
+    return n
+
+/* embedded_c/mod_06_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Strings and character processing with fixed storage only */
+
+Boundary: document edge case handling in comments.
+
+## Exercise 3
+
+def c_strlen(s,maxlen):
+    n=0
+    while n<maxlen and s[n]: n+=1
+    return n
+
+/* embedded_c/mod_06_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Strings and character processing with fixed storage only */
+
+Optimization: note trade-off vs baseline measurement.
+
+## Exercise 4
+
+def c_strlen(s,maxlen):
+    n=0
+    while n<maxlen and s[n]: n+=1
+    return n
+
+/* embedded_c/mod_06_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Strings and character processing with fixed storage only */
+
+Assignment: integrate with prior module driver where applicable.
+
+### File `solution_mod_06.py`
+
+```
+def c_strlen(s,maxlen):
+    n=0
+    while n<maxlen and s[n]: n+=1
+    return n
+```
+
+### File `main.c`
+
+```
+/* embedded_c/mod_06_*/main.c — port validated Python behavior */
+#include <stdint.h>
+#define MAX_N 32
+/* Implement Strings and character processing with fixed storage only */
+```
+
+### File `README.md`
+
+```
+# Module 06 embedded port
+
+Build with CCS target MSP430G2553.
+```
+

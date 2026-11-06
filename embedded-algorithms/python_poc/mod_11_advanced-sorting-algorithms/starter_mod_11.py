@@ -1,5 +1,6 @@
-"""Starter POC — Advanced sorting algorithms. Fill in algorithm; run pytest."""
+"""Starter — Advanced sorting algorithms."""
 
+# TODO: Merge sort (stable) on small arrays
 
 def solve(*args, **kwargs):
     raise NotImplementedError
