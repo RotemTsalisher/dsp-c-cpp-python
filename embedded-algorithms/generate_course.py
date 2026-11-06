@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+"""Regenerate index.html for embedded-algorithms."""
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent / "embedded-roadmap"
+subprocess.check_call([sys.executable, str(ROOT / "generate_courses.py"), "embedded-algorithms"])

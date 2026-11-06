@@ -80,6 +80,22 @@ Parallel to Udemy "Mastering RTOS: Hands on FreeRTOS and STM32Fx with Debugging"
 
 - Tasks, queues, semaphores, mutexes, software timers, memory management, debugging
 
+### 9b. 🔲 Embedded Systems & DSP Roadmap (five hardware courses)
+**Generator:** `embedded-roadmap/` · master syllabus: `embedded-roadmap/embedded_systems_dsp_course_syllabuses_updated.md`
+**Status:** Available — **76 modules**, **304** browser-tracked exercises (4 per module). Git layout: `modules/`, `exercises/`, `solutions/`, `projects/`, `references/`.
+
+Recommended order: MSP430 C → MSP430 DSP → UNO R4 Minima → ESP32-S3 → Algorithms (algorithms can start after module 4 in parallel).
+
+| # | Folder | Hardware | Modules | Open |
+|---|--------|----------|---------|------|
+| 1 | `msp430-embedded-c/` | MSP-EXP430G2 (G2553) | 13 | `index.html` |
+| 2 | `msp430-embedded-dsp/` | MSP430G2553 | 13 | `index.html` |
+| 3 | `arduino-uno-r4-minima/` | UNO R4 Minima (RA4M1) | 13 | `index.html` |
+| 4 | `esp32-s3-audio-dsp/` | ESP32-S3 DevKitC-1 | 13 | `index.html` |
+| 5 | `embedded-algorithms/` | MSP430 + Python/C++ host | 24 | `index.html` (+ `python_poc/`, `embedded_c/`) |
+
+Regenerate all: `python embedded-roadmap/generate_courses.py`
+
 ---
 
 ## Phase 3: DSP & Audio
@@ -323,6 +339,16 @@ START HERE
 
 ---
 
+## Offline reference
+
+### PowerShell formula sheet
+**Folder:** `powershell-sheet/`
+**Open:** `powershell-sheet/index.html` (double-click, no network)
+
+Keyboard-only terminal sheet: navigation, make / copy / move / delete, search, pipes, compile-and-run.
+
+---
+
 ## Quick Stats
 
 | Category | Courses | Total Exercises |
@@ -336,10 +362,20 @@ START HERE
 | Linux Programming | 1 | 568 |
 | DSP Interview Prep | 2 | (HTML courses) |
 | Language Foundations | 4 | (workbook-based) |
-| Embedded | 1 | (workbook-based) |
+| Embedded | 6 | 304+ (roadmap + workbooks) |
 | DSP & Audio | 4 | (mixed format, includes Apollo NXP handover) |
-| **Total** | **23 courses** | **1626+ exercises** |
+| **Total** | **28 courses** | **1930+ exercises** |
 
 ---
 
-*Last updated: October 2026*
+*Last updated: November 2026*
+
+---
+
+## Outside this DSP folder
+
+### Stock trading, beginner to a tested process
+**Folder:** `C:\Users\rotemt\OneDrive - Cardo Systems LTD\Desktop\trading\beginner-course`
+**Status:** Exercises for all 15 modules, plus an offline practice simulator. Open `simulator/index.html`.
+
+Not part of the DSP path. Education only. Not a claim of trading profits.
