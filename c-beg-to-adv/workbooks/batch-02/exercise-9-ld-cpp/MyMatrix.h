@@ -80,7 +80,9 @@ class MyMatrix {
         MyVector operator*(const MyVector& v) const;
         friend MyVector operator*(const MyVector& v, const MyMatrix& M);
         
-        MyMatrix& inplace_mat_mult(const MyMatrix& M);
+        //MyMatrix& inplace_mat_mult(const MyMatrix& M);
+        /* helper to mat_mult: column to vector */
+        MyVector column_to_vector(std::size_t j) const;
         MyMatrix mat_mult(const MyMatrix& M) const;
 
         /* comparisons */

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AFW → headset — Course home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/course.css" />
+</head>
+<body data-page="index">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">AFW → headset</div>
+      <div class="brand-sub">Expansion of the VST course · Cardo Apollo</div>
+      <nav>
+        <div class="group">Start</div>
+        <a href="index.html" class="active">Course home</a>
+        <div class="group">The path</div>
+        <a href="01-five-compiles.html">01 · Five compiles</a>
+        <a href="02-change-a-block.html">02 · Change a block</a>
+        <a href="03-vst-and-bidule.html">03 · VST and Bidule</a>
+        <div class="group">Libraries — slow down</div>
+        <a href="04-library-map.html">04 · What the .a is</a>
+        <a href="05-compile-the-archive.html">05 · Compile the archive</a>
+        <a href="06-copy-and-gate.html">06 · Copy and gate</a>
+        <div class="group">Firmware</div>
+        <a href="07-dsp-arm-boot.html">07 · DSP, ARM, boot image</a>
+        <a href="08-qcc-flash-test.html">08 · QCC, flash, listen</a>
+        <a href="09-failures-and-check.html">09 · Failures and check</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <article>
+        <div class="meta">
+          <span class="badge accent">Expansion of audio-framework-vst</span>
+          <span class="badge">Worked example: GoPro I2S tap, Oct 2026</span>
+          <span class="badge ok">You run every command</span>
+        </div>
+
+        <h1>From a block change to a flashed headset</h1>
+        <p class="lead">
+          The VST course stops when Bidule can load your plugin. This course starts there and walks the
+          rest of the path that actually ships audio on Apollo: the same C module, compiled again for
+          HiFi4, linked into the DSP image, packed with the Cortex-M33 image, stored in the QCC
+          filesystem, and flashed.
+        </p>
+
+        <div class="progress-bar" style="--pct:0%"><span></span></div>
+        <p class="pct-label" style="font-size:0.85rem;color:var(--muted)">Progress tracked in this browser</p>
+
+        <div class="he">
+          <h3>עברית</h3>
+          <p>
+            זה ההמשך של קורס ה-VST. שם בונים מודול וטוענים אותו ב-Bidule. כאן הולכים עד האוזנייה:
+            שינוי בלוק, קומפילציית VST, ספריית Xtensa (החלק שדורש צעדים קטנים), אימג' DSP ואז ARM,
+            אימג' QCC, וצריבה. הדוגמה החיה היא יציאת I2S שקטה על GoPro: מיקסר וראוטר מ-8×8 ל-12×12,
+            בלי לשנות את מה שהרמקול מנגן. קומפילציה ירוקה של VST לא אומרת שהאוזנייה קיבלה את השינוי.
+          </p>
+        </div>
+
+        <div class="callout stop">
+          <strong class="title">How to use this course</strong>
+          <p style="margin:0">
+            One step, then you do it, then you stop and check the checkpoint. Pages 05 and 06 are the
+            slow pages on purpose. A mentor can sit beside you; the commands below are the ones that
+            match this tree, not a generic embedded tutorial.
+          </p>
+        </div>
+
+        <h2>Prerequisite</h2>
+        <p>
+          Finish <span class="path">audio-framework-vst/</span> first. You should already know
+          <code>AudioModuleCore</code>, <code>GenericProcessor</code>, <code>ioConfigs</code>, and how a
+          <code>.vst3</code> is built from <span class="path">Modules/VST3Plugins.sln</span>.
+          This course does not reteach Gain.
+        </p>
+
+        <h2>The two trees</h2>
+        <ul>
+          <li><span class="path">c:\repo\AudioFramework</span> — modules, VST projects, Bidule graphs, the Xtensa library project <span class="path">Builds\CSL_AFW</span>.</li>
+          <li><span class="path">c:\repo\Cardo_Products_Apollo\Cardo_Products</span> — the headset. DSP, ARM, QCC, and the copy of the library the firmware links.</li>
+        </ul>
+        <p>Branch products from <code>develop_apollo</code>. Branch Audio Framework from <code>main</code>. The CRM <code>main</code> checkout of products is a different line.</p>
+
+        <h2>What you will be able to do</h2>
+        <div class="diagram">Change a block (C + pin list, not the JUCE wrapper)
+        ↓
+VST3 Release x64  →  Bidule listens on the PC
+        ↓
+Graph header (GoPro48.h) is a separate file from the library header
+        ↓
+xt-xcc builds CSL_AFW.a twice (with Sensory, and without)
+        ↓
+copy_libs.bat renames them — the names are not what the folders suggest
+        ↓
+Only CSL_AFW_SNSR.a + CSL_AFW.h move into nxp\libs\CSL_AFW
+        ↓
+DSP image (HiFi4), then ARM image, then nxp_boot_image.bin
+        ↓
+QCC headset image packs that bin and is what you flash</div>
+
+        <h2>Worked example used on every page</h2>
+        <p>
+          A silent stereo tap on GoPro only. Mixer and router grow from 8×8 to 12×12 and stay square.
+          Mixer outputs 1 and 2 still feed NDVC, EQ, and the existing limiter, then the speaker.
+          Mixer outputs 9 and 10, at gain 0, go through a second limiter (the existing 2×2 layout)
+          into router inputs 9 and 10, and those leave on router outputs 7 and 8, which
+          <code>process_afw</code> already copies to I2S0. Flow, Kido, PT3 Pro, and GoPro 16 kHz stay
+          as they are. The method is the same the next time the block is a different one.
+        </p>
+
+        <h2>Course map</h2>
+        <div class="card-grid">
+          <a class="nav-card" href="01-five-compiles.html">
+            <div class="num">01</div>
+            <h3>Five compiles</h3>
+            <p>Which artifact each build produces, and who is allowed to consume it.</p>
+          </a>
+          <a class="nav-card" href="02-change-a-block.html">
+            <div class="num">02</div>
+            <h3>Change a block</h3>
+            <p>Pin lists, square growth, mute values, and the files you do not open.</p>
+          </a>
+          <a class="nav-card" href="03-vst-and-bidule.html">
+            <div class="num">03</div>
+            <h3>VST and Bidule</h3>
+            <p>Release x64, install, listen, then export the graph header.</p>
+          </a>
+          <a class="nav-card" href="04-library-map.html">
+            <div class="num">04</div>
+            <h3>What the .a is</h3>
+            <p>Two archives, one amalgam, a version pair, and the rename trap.</p>
+          </a>
+          <a class="nav-card" href="05-compile-the-archive.html">
+            <div class="num">05 · slow</div>
+            <h3>Compile the archive</h3>
+            <p>One object, then the amalgam, then <code>xt-ar</code>. Stop after each.</p>
+          </a>
+          <a class="nav-card" href="06-copy-and-gate.html">
+            <div class="num">06 · slow</div>
+            <h3>Copy and gate</h3>
+            <p>Second config, <code>copy_libs.bat</code>, symbols, then the products tree.</p>
+          </a>
+          <a class="nav-card" href="07-dsp-arm-boot.html">
+            <div class="num">07</div>
+            <h3>DSP, ARM, boot image</h3>
+            <p>HiFi4 first, Cortex-M33 second, one bin per language.</p>
+          </a>
+          <a class="nav-card" href="08-qcc-flash-test.html">
+            <div class="num">08</div>
+            <h3>QCC, flash, listen</h3>
+            <p>The headset project packs the NXP image. Flash that. Then listen.</p>
+          </a>
+          <a class="nav-card" href="09-failures-and-check.html">
+            <div class="num">09</div>
+            <h3>Failures and check</h3>
+            <p>The mistakes from the real job, then a closed-book check.</p>
+          </a>
+        </div>
+
+        <div class="callout info">
+          <strong class="title">This folder does not build firmware</strong>
+          <p style="margin:0">
+            Open <span class="path">index.html</span> in a browser. The commands run in the two repos above.
+            Sibling courses: <span class="path">../audio-framework-vst/</span> (the plugin) and
+            <span class="path">../nxp-apollo-course/</span> (what the DSP and M33 do after the image exists).
+          </p>
+        </div>
+
+        <div class="pager">
+          <span></span>
+          <a class="next" href="01-five-compiles.html">Start → Five compiles</a>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="assets/course.js"></script>
+</body>
+</html>

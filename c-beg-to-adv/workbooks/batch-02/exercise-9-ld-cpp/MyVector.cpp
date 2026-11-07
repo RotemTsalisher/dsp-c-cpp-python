@@ -314,3 +314,14 @@ MyVector MyVector::zeros(std::size_t l_) {
 
     return res;
 }
+
+/* comparisons */
+bool MyVector::operator==(const MyVector& other) const {
+    for(std::size_t i = 0; i < this->l; ++i) {
+        if((*this)[i] != other[i]) {
+            return false;
+        };
+    };
+
+    return true;
+};

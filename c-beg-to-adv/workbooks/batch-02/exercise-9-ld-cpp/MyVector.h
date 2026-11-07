@@ -6,7 +6,7 @@
 
 class MyMatrix;
 
-static constexpr size_t MAX_VEC_SIZE = 4096;
+static constexpr size_t MAX_VEC_SIZE = 10000;
 static constexpr double NA           = -1000000.0;
 
 class MyVector {
@@ -66,6 +66,9 @@ class MyVector {
         friend MyVector operator-(const double x, const MyVector& other);
         friend MyVector operator*(const double x, const MyVector& other);
         friend MyVector operator/(const double x, const MyVector& other);
+
+        /* comparisons */
+        bool operator==(const MyVector& other) const;
 
 
         double norm2() const;

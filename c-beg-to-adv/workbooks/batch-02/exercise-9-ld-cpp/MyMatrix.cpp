@@ -283,12 +283,52 @@ MyMatrix MyMatrix::mat_mult(const MyMatrix& M) const {
         for(std::size_t i = 0; i < res.r; ++i) {
             tmp = (*this)[i].dot_product(column_);
             res(i,j) = tmp;
-            
         };
     };
 
     return res;
 };
 
+bool MyMatrix::operator==(const MyMatrix& M) const {
 
+    for(std::size_t i = 0; i < this->r; ++i) {
+        if(!((*this)[i] == M[i])) {
+            return false;
+        };
+    };
+
+    return true;
+};
+
+bool MyMatrix::operator!=(const MyMatrix& M) const {
+
+    return !((*this) == M); 
+};
+
+/* matrix transformations */
+void MyMatrix::transpose() {
+    
+    MyMatrix res;
+    res.r = this->c;
+    res.c = this->r;
+
+    for(std::size_t i = 0; i < res.r; ++i) {
+        for(std::size_t j = 0; j < res.c; ++j) {
+            res(i,j) = (*this)(j,i);
+        };
+    };
+
+    (*this) = res;
+};
+
+MyMatrix MyMatrix::transposed() const {
+    MyMatrix res = *this;
+    res.transpose();
+    return res;
+};
+
+/* matrix properties */
+double MyMatrix::det() const {
+
+}
 

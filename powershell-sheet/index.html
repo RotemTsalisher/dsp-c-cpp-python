@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PowerShell formula sheet</title>
+<style>
+  :root {
+    --bg: #f3f0e8;
+    --card: #fffcf7;
+    --ink: #1c1915;
+    --muted: #5e584e;
+    --line: #e3dccf;
+    --cmd: #0d3b66;
+    --ex: #1a1a1a;
+    --danger: #8d1d1d;
+    --danger-bg: #fdecec;
+    --ps7: #6a4b16;
+    --ps7-bg: #fbf3dc;
+    --accent: #9a4318;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.35 "Segoe UI", Calibri, sans-serif;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #1c1915;
+    color: #f3f0e8;
+    padding: 0.55rem 1rem 0.45rem;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+  }
+  header p { margin: 0.15rem 0 0.35rem; color: #c8c0b2; font-size: 0.78rem; }
+  header code { color: #f0d7a8; }
+  nav { display: flex; flex-wrap: wrap; gap: 0.35rem 0.7rem; }
+  nav a { color: #f0d7a8; text-decoration: none; font-size: 0.75rem; }
+  nav a:hover { text-decoration: underline; }
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+    gap: 0.65rem;
+    padding: 0.7rem;
+    align-items: start;
+  }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.45rem 0.6rem 0.35rem;
+    break-inside: avoid;
+  }
+  section.wide { grid-column: 1 / -1; }
+  h2 {
+    margin: 0 0 0.35rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  p.note, p.lead {
+    margin: 0 0 0.4rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.18rem 0.35rem 0.18rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.8rem;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  tr:last-child td { border-bottom: 0; }
+  code, .k {
+    font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+    font-size: 0.78rem;
+  }
+  td:first-child code { color: var(--cmd); font-weight: 650; }
+  td.does { color: #3a342c; }
+  .danger td { background: var(--danger-bg); }
+  .danger td:first-child code { color: var(--danger); }
+  .ps7 td:first-child code { color: var(--ps7); }
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0 0.25rem;
+    border-radius: 3px;
+    vertical-align: 1px;
+  }
+  .tag.danger { background: var(--danger-bg); color: var(--danger); }
+  .tag.ps7 { background: var(--ps7-bg); color: var(--ps7); }
+  kbd {
+    font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 0.75rem;
+    background: #efeae0;
+    border: 1px solid #d5cec2;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 0 0.28rem;
+    white-space: nowrap;
+  }
+  ul.tight { margin: 0.2rem 0 0.35rem; padding-left: 1.1rem; }
+  ul.tight li { margin: 0.12rem 0; font-size: 0.8rem; }
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; padding: 0.45rem; }
+    td:first-child code { white-space: normal; }
+  }
+  @media print {
+    header { position: static; background: white; color: black; }
+    header p, nav a { color: black; }
+    body { background: white; }
+    section { break-inside: avoid; }
+    nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>PowerShell formula sheet</h1>
+  <p>Keyboard-only. Works offline in Windows PowerShell 5.1 and PowerShell 7. Type <code>$PSVersionTable.PSVersion</code> if a row says PS 7.</p>
+  <nav>
+    <a href="#keys">Keys</a>
+    <a href="#cursor">Cursor</a>
+    <a href="#go">Go</a>
+    <a href="#look">Look</a>
+    <a href="#make">Make</a>
+    <a href="#write">Write</a>
+    <a href="#copy">Copy / move</a>
+    <a href="#del">Delete</a>
+    <a href="#find">Find</a>
+    <a href="#pipes">Pipes</a>
+    <a href="#run">Run</a>
+    <a href="#git">Git</a>
+    <a href="#traps">Traps</a>
+  </nav>
+</header>
+<main>
+
+<section id="loop">
+  <h2>Flight loop — new tiny program</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>mkdir scratch; cd scratch</code></td><td class="does">folder + enter it</td></tr>
+      <tr><td><code>ni main.cpp</code></td><td class="does">empty file</td></tr>
+      <tr><td><code>cursor main.cpp</code></td><td class="does">open it, if <code>cursor</code> is on PATH</td></tr>
+      <tr><td><code>g++ -std=c++20 -Wall -Wextra -o program.exe main.cpp</code></td><td class="does">compile</td></tr>
+      <tr><td><code>.\program.exe</code></td><td class="does">run. The <code>.\</code> is required</td></tr>
+      <tr><td><code>echo $LASTEXITCODE</code></td><td class="does"><code>0</code> means the exe succeeded</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="keys">
+  <h2>Keys at the prompt</h2>
+  <p class="note">These are PSReadLine defaults (Windows edit mode).</p>
+  <table>
+    <thead><tr><th>Key</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td><td class="does">complete forward / back. Paths, commands, names</td></tr>
+      <tr><td><kbd>Ctrl+Space</kbd></td><td class="does">completion menu</td></tr>
+      <tr><td><kbd>Up</kbd> / <kbd>Down</kbd></td><td class="does">previous / next command</td></tr>
+      <tr><td><kbd>F8</kbd></td><td class="does">type a prefix, then F8 cycles matches</td></tr>
+      <tr><td><kbd>Ctrl+R</kbd></td><td class="does">reverse history search. <kbd>Ctrl+R</kbd> again, <kbd>Enter</kbd> accept, <kbd>Esc</kbd> cancel</td></tr>
+      <tr><td><kbd>Ctrl+Left</kbd> / <kbd>Ctrl+Right</kbd></td><td class="does">jump by word</td></tr>
+      <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td class="does">start / end of line</td></tr>
+      <tr><td><kbd>Shift+arrows</kbd></td><td class="does">select. <kbd>Ctrl+C</kbd> copies the selection</td></tr>
+      <tr><td><kbd>Ctrl+Backspace</kbd></td><td class="does">delete word left</td></tr>
+      <tr><td><kbd>Ctrl+Delete</kbd></td><td class="does">delete word right</td></tr>
+      <tr><td><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd></td><td class="does">undo / redo what you typed</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td class="does">restore the line you were editing</td></tr>
+      <tr><td><kbd>Ctrl+C</kbd></td><td class="does">cancel the line, or kill the running program</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td class="does">run</td></tr>
+      <tr><td><kbd>Shift+Enter</kbd></td><td class="does">insert a newline (PSReadLine 2). Or end the line with a backtick</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="cursor">
+  <h2>Cursor terminal</h2>
+  <table>
+    <thead><tr><th>Key / command</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Ctrl+`</kbd></td><td class="does">show or hide the terminal</td></tr>
+      <tr><td><kbd>Ctrl+Shift+`</kbd></td><td class="does">new terminal</td></tr>
+      <tr><td><kbd>Ctrl+Shift+5</kbd></td><td class="does">split the terminal</td></tr>
+      <tr><td><code>cls</code></td><td class="does">clear the screen. Always works</td></tr>
+      <tr><td><code>exit</code></td><td class="does">close this shell</td></tr>
+    </tbody>
+  </table>
+  <h2 style="margin-top:0.7rem">Help, still offline</h2>
+  <table>
+    <tbody>
+      <tr><td><code>Get-Help Copy-Item -Examples</code></td><td class="does">local examples. Swap in any cmdlet</td></tr>
+      <tr><td><code>Get-Command g++</code></td><td class="does">is it installed, and where</td></tr>
+      <tr><td><code>Get-Alias ls, cp, mv, rm, cat</code></td><td class="does">short name → real cmdlet</td></tr>
+      <tr><td><code>h</code></td><td class="does">numbered history</td></tr>
+      <tr><td><code>r 12</code></td><td class="does">run history item 12</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="go">
+  <h2>Go</h2>
+  <p class="note"><code>cd</code> is <code>Set-Location</code>. <code>pwd</code> is <code>Get-Location</code>. Quote paths that contain spaces.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>pwd</code></td><td class="does">where you are</td><td><code>pwd</code></td></tr>
+      <tr><td><code>cd folder</code></td><td class="does">enter</td><td><code>cd src</code></td></tr>
+      <tr><td><code>cd ..</code></td><td class="does">parent</td><td><code>cd ..\..</code></td></tr>
+      <tr><td><code>cd \</code></td><td class="does">root of this drive</td><td><code>cd \</code></td></tr>
+      <tr><td><code>cd ~</code></td><td class="does">your home folder</td><td><code>cd ~\Desktop</code></td></tr>
+      <tr><td><code>cd D:\data</code></td><td class="does">other drive and folder</td><td><code>cd D:\builds</code></td></tr>
+      <tr class="ps7"><td><code>cd -</code> <span class="tag ps7">PS 7</span></td><td class="does">previous folder</td><td><code>cd -</code></td></tr>
+      <tr><td><code>pushd path</code></td><td class="does">bookmark here, then go</td><td><code>pushd C:\src\dsp</code></td></tr>
+      <tr><td><code>popd</code></td><td class="does">return from pushd</td><td><code>popd</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="look">
+  <h2>Look</h2>
+  <p class="note"><code>ls</code>, <code>dir</code>, and <code>gci</code> are <code>Get-ChildItem</code>.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>ls</code></td><td class="does">names here</td></tr>
+      <tr><td><code>ls *.cpp</code></td><td class="does">only these</td></tr>
+      <tr><td><code>ls -File</code></td><td class="does">files, skip folders</td></tr>
+      <tr><td><code>ls -Directory</code></td><td class="does">folders only</td></tr>
+      <tr><td><code>ls -Force</code></td><td class="does">include hidden</td></tr>
+      <tr><td><code>ls -Name</code></td><td class="does">names only, one per line</td></tr>
+      <tr><td><code>ls -Recurse -Filter *.h</code></td><td class="does">all headers under here</td></tr>
+      <tr><td><code>tree /F</code></td><td class="does">folder tree. <code>/F</code> includes files</td></tr>
+      <tr><td><code>Test-Path .\build</code></td><td class="does"><code>True</code> / <code>False</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="make">
+  <h2>Make files and folders</h2>
+  <p class="note"><code>ni</code> is <code>New-Item</code>. <code>mkdir</code> creates parents for you: <code>mkdir a\b\c</code>.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>mkdir src</code></td><td class="does">one folder</td></tr>
+      <tr><td><code>mkdir src, include, build</code></td><td class="does">three folders</td></tr>
+      <tr><td><code>mkdir src\dsp\filters</code></td><td class="does">nested, parents included</td></tr>
+      <tr><td><code>ni main.cpp</code></td><td class="does">empty file</td></tr>
+      <tr><td><code>ni a.cpp, b.h, README.md</code></td><td class="does">several empty files</td></tr>
+      <tr><td><code>ni -ItemType Directory out</code></td><td class="does">folder via New-Item</td></tr>
+      <tr><td><code>ni notes.txt -Value "built ok"</code></td><td class="does">file that already has text</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="write">
+  <h2>Read and write text</h2>
+  <p class="note"><code>cat</code>, <code>gc</code>, and <code>type</code> are <code>Get-Content</code>. Prefer <code>Set-Content -Encoding utf8</code> so the file stays UTF-8.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>cat main.cpp</code></td><td class="does">print the file</td></tr>
+      <tr><td><code>cat main.cpp -TotalCount 20</code></td><td class="does">first 20 lines</td></tr>
+      <tr><td><code>cat main.cpp -Tail 20</code></td><td class="does">last 20 lines</td></tr>
+      <tr><td><code>(cat main.cpp).Count</code></td><td class="does">line count</td></tr>
+      <tr><td><code>Set-Content -Encoding utf8 main.cpp -Value 'int main(){return 0;}'</code></td><td class="does">overwrite with one line</td></tr>
+      <tr><td><code>Add-Content -Encoding utf8 log.txt "pass"</code></td><td class="does">append one line</td></tr>
+      <tr><td><code>cat main.cpp | Set-Clipboard</code></td><td class="does">file → clipboard</td></tr>
+      <tr><td><code>Get-Clipboard</code></td><td class="does">print clipboard</td></tr>
+      <tr><td><code>ii main.cpp</code></td><td class="does">open with the default app</td></tr>
+      <tr><td><code>ii .</code></td><td class="does">open this folder in Explorer</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Multi-line write. The closing <code>'@</code> must sit at column 1.</p>
+  <table>
+    <tbody>
+      <tr><td><code>@'<br>int main() { return 0; }<br>'@ | Set-Content -Encoding utf8 main.cpp</code></td><td class="does">here-string → file. Single quotes mean no expansion</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="copy">
+  <h2>Copy, move, rename</h2>
+  <p class="note"><code>cp</code> = <code>Copy-Item</code>. <code>mv</code> = <code>Move-Item</code>. <code>ren</code> = <code>Rename-Item</code>. Existing destination files are overwritten.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>cp main.cpp main.bak.cpp</code></td><td class="does">copy a file</td></tr>
+      <tr><td><code>cp *.h include\</code></td><td class="does">many files into a folder</td></tr>
+      <tr><td><code>cp -Recurse src backup\src</code></td><td class="does">copy a folder tree</td></tr>
+      <tr><td><code>mv old.cpp src\old.cpp</code></td><td class="does">move into a folder</td></tr>
+      <tr><td><code>mv *.o build\</code></td><td class="does">move matches. <code>build</code> must exist</td></tr>
+      <tr><td><code>mv old.cpp new.cpp</code></td><td class="does">rename, same folder</td></tr>
+      <tr><td><code>ren program.exe demo.exe</code></td><td class="does">rename only</td></tr>
+      <tr><td><code>cp "C:\My Notes\a.cpp" .</code></td><td class="does">quoted path with spaces, into here</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="del">
+  <h2>Delete</h2>
+  <p class="note"><code>rm</code>, <code>del</code>, and <code>ri</code> are <code>Remove-Item</code>. Add <code>-WhatIf</code> to preview. It prints the plan and deletes nothing.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>rm notes.txt</code></td><td class="does">one file</td></tr>
+      <tr><td><code>rm *.obj, *.exe</code></td><td class="does">matches in this folder. <code>ls</code> them first</td></tr>
+      <tr><td><code>rmdir empty</code></td><td class="does">folder only if it is empty</td></tr>
+      <tr><td><code>rm -Recurse build</code></td><td class="does">folder and everything inside</td></tr>
+      <tr class="danger"><td><code>rm -Recurse -Force build</code> <span class="tag danger">no prompt</span></td><td class="does">also hidden and read-only. No recycle bin</td></tr>
+      <tr><td><code>rm -Recurse build -WhatIf</code></td><td class="does">preview that delete</td></tr>
+      <tr><td><code>ls *.exe | rm -WhatIf</code></td><td class="does">preview a piped delete</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="find">
+  <h2>Find text and files</h2>
+  <p class="note"><code>sls</code> is <code>Select-String</code>. This form works in 5.1 and 7.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>sls -Path .\main.cpp -Pattern "int main"</code></td><td class="does">lines that match, one file</td></tr>
+      <tr><td><code>sls -Path .\*.cpp,.\*.h -Pattern TODO</code></td><td class="does">this folder only</td></tr>
+      <tr><td><code>ls -Recurse -Include *.cpp,*.h | sls TODO</code></td><td class="does">whole tree</td></tr>
+      <tr><td><code>ls -Recurse -Filter main.cpp</code></td><td class="does">find a filename</td></tr>
+      <tr><td><code>sls -Path .\*.cpp -Pattern "gain" -SimpleMatch</code></td><td class="does">literal text, not a regex</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pipes">
+  <h2>Chain, redirect, variables</h2>
+  <p class="note"><code>;</code> always means “then”. <code>&amp;&amp;</code> is PowerShell 7 only.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>ls *.cpp | sort Name</code></td><td class="does">pipe into the next command</td></tr>
+      <tr><td><code>ls | select -First 15 Name, Length</code></td><td class="does">first 15, two columns</td></tr>
+      <tr><td><code>cmd &gt; out.txt</code></td><td class="does">stdout to a file. See traps: encoding</td></tr>
+      <tr><td><code>cmd &gt;&gt; out.txt</code></td><td class="does">append</td></tr>
+      <tr><td><code>cmd 2&gt; err.txt</code></td><td class="does">errors only</td></tr>
+      <tr><td><code>cmd *&gt; all.txt</code></td><td class="does">stdout and stderr</td></tr>
+      <tr><td><code>cmd | Set-Content -Encoding utf8 out.txt</code></td><td class="does">UTF-8 on purpose</td></tr>
+      <tr><td><code>$name = "main"; ni "$name.cpp"</code></td><td class="does"><code>"..."</code> expands variables. <code>'...'</code> does not</td></tr>
+      <tr><td><code>cd src; ls</code></td><td class="does">two commands, always both</td></tr>
+      <tr class="ps7"><td><code>g++ main.cpp -o program.exe &amp;&amp; .\program.exe</code> <span class="tag ps7">PS 7</span></td><td class="does">run the exe only if compile returned 0</td></tr>
+      <tr><td><code>g++ main.cpp -o program.exe; if ($LASTEXITCODE -eq 0) { .\program.exe }</code></td><td class="does">same idea in Windows PowerShell 5.1</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="run">
+  <h2>Run tools</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>.\program.exe</code></td><td class="does">run an exe in this folder</td></tr>
+      <tr><td><code>gcc -std=c11 -Wall -Wextra -o program.exe main.c</code></td><td class="does">C compile</td></tr>
+      <tr><td><code>g++ -std=c++20 -Wall -Wextra -o program.exe main.cpp</code></td><td class="does">C++ compile</td></tr>
+      <tr><td><code>python .\main.py</code></td><td class="does">script. <code>py -3 .\main.py</code> if <code>python</code> is missing</td></tr>
+      <tr><td><code>Measure-Command { .\program.exe }</code></td><td class="does">how long it took</td></tr>
+      <tr><td><code>$env:PATH -split ';'</code></td><td class="does">each PATH entry on its own line</td></tr>
+      <tr><td><code>where.exe g++</code></td><td class="does">which binary. Do not type bare <code>where</code></td></tr>
+      <tr><td><code>Get-Process</code></td><td class="does">running processes. Alias <code>ps</code></td></tr>
+      <tr><td><code>Stop-Process -Name notepad</code></td><td class="does">end that process. Same command: <code>kill -Name notepad</code></td></tr>
+    </tbody>
+  </table>
+  <p class="note">A <code>.ps1</code> script in this window only, no permanent policy change:</p>
+  <table>
+    <tbody>
+      <tr><td><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></td><td class="does">then <code>.\script.ps1</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="git">
+  <h2>Git, still in this window</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td><code>git status</code></td><td class="does">what changed</td></tr>
+      <tr><td><code>git diff</code></td><td class="does">unstaged patch. <kbd>q</kbd> quits the pager</td></tr>
+      <tr><td><code>git add -A</code></td><td class="does">stage everything here</td></tr>
+      <tr><td><code>git commit -m "why this change"</code></td><td class="does">local commit. Works offline</td></tr>
+      <tr><td><code>git log -8 --oneline</code></td><td class="does">recent commits</td></tr>
+      <tr><td><code>git restore main.cpp</code></td><td class="does">throw away unstaged edits in that file</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="wide" id="traps">
+  <h2>Traps that waste a flight</h2>
+  <ul class="tight">
+    <li><b>Encoding.</b> In Windows PowerShell 5.1, <code>&gt;</code> and <code>Out-File</code> write UTF-16. Compilers and git then show garbage. Use <code>Set-Content -Encoding utf8</code> or pipe to it.</li>
+    <li><b><code>where</code></b> is <code>Where-Object</code>, not “which”. Use <code>where.exe g++</code> or <code>Get-Command g++</code>.</li>
+    <li><b><code>curl</code></b> in 5.1 is <code>Invoke-WebRequest</code>. PowerShell 7 leaves <code>curl</code> alone.</li>
+    <li><b><code>&amp;&amp;</code> and <code>||</code></b> exist in PowerShell 7. In 5.1 they are a syntax error. Use <code>;</code> and <code>$LASTEXITCODE</code>.</li>
+    <li><b>Backtick</b> <code>`</code> is the escape and the line-continue character. A trailing <code>\</code> does not continue the line.</li>
+    <li><b>Quotes.</b> Double quotes expand <code>$variables</code>. Single quotes are literal. Paths with spaces always get quotes: <code>cd "C:\Program Files"</code>.</li>
+    <li><b>Copy into an existing folder.</b> <code>cp -Recurse src backup</code> when <code>backup</code> already exists creates <code>backup\src</code>, a nested copy.</li>
+    <li><b>Delete is final.</b> <code>rm</code> does not use the recycle bin. <code>ls</code> the wildcard, then <code>rm ... -WhatIf</code>, then delete.</li>
+    <li><b>Run a local exe</b> as <code>.\program.exe</code>. A bare <code>program.exe</code> is searched on PATH and can miss the file you just built.</li>
+    <li><b>Clear the screen</b> with <code>cls</code>. <kbd>Ctrl+L</kbd> is the Emacs-mode binding and often does nothing in the default Windows mode.</li>
+  </ul>
+</section>
+
+</main>
+</body>
+</html>
