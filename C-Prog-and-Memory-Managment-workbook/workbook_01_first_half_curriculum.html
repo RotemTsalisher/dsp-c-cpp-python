@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Programming & Memory Management — Curriculum Workbook 01</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #bf4b00; padding-bottom: 12px; margin-bottom: 8px; font-size: 1.8rem; color: #1f2328; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; font-weight: 500; }
+    .scope { background: #fff1e5; border-left: 4px solid #bf4b00; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; color: #3c2415; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 14px; font-size: 1.25rem; color: #bf4b00; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .exercise { background: #ffffff; border: 1px solid #d8dee4; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; color: #0550ae; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; color: #fff; }
+    .medium { background: #bf8700; }
+    .hard { background: #bc4c00; }
+    .interview { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; color: #1f2328; }
+    .prompt { font-size: 0.95rem; color: #24292f; margin-bottom: 12px; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #bf4b00; color: #fff; transition: background 0.2s ease; }
+    button.reveal-btn:hover { background: #9e3e00; }
+    .solution { display: none; margin-top: 14px; border-top: 1px dashed #d0d7de; padding-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 12px 14px; margin-top: 12px; font-size: 0.9rem; color: #4d3800; line-height: 1.5; }
+    .why strong { color: #2e2200; }
+  </style>
+</head>
+<body>
+  <h1>C Programming & Memory Management — Curriculum Workbook 01</h1>
+  <div class="subtitle">Subjects 1 to 5 | Professional Audio DSP & EE Domain Exercises</div>
+  <div class="scope"><strong>Curriculum Scope:</strong> Subjects 1–5 from <code>course-subjects.txt</code>. Contains exactly 2 exercises per subject (ordered strictly as Medium then Hard). Solutions stay hidden behind interactive reveal buttons with no spoiler hints in visible exercise prompts.</div>
+  <div class="section">
+    <h2>Subject 1: C Fundamentals & Compilation Model</h2>
+    
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 1.1 — ADC Fixed-Point Raw Sample Normalization</div>
+      <div class="prompt">
+        An Audio Front End (AFE) hardware analog-to-digital converter returns raw 16-bit signed integer PCM samples in the range <code>[-32768, 32767]</code>. Write an ANSI C function <code>float normalize_sample(int16_t raw_adc)</code> that explicitly converts raw ADC counts into a normalized floating-point audio sample in the range <code>[-1.0f, 1.0f]</code>. Ensure full precision during division and avoid implicit lossy casting.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol1_1')">Reveal code</button>
+      <div id="sol1_1" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+
+float normalize_sample(int16_t raw_adc) {
+    if (raw_adc &lt; 0) {
+        return (float)raw_adc / 32768.0f;
+    } else {
+        return (float)raw_adc / 32767.0f;
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses explicit casting <code>(float)raw_adc</code> before division to prevent integer truncation. Assures floating-point literal division (<code>32768.0f</code>) so the compiler emits single-precision floating-point instructions rather than double-precision overhead.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 1.2 — Immutability Bounds in Static Audio Filter Coefficients</div>
+      <div class="prompt">
+        Design a C interface for an Audio DSP FIR Filter module where coefficient tables stored in flash memory must be strictly protected against accidental runtime alteration by application code. Declare the initialization signature and function body <code>void fir_init(const float* const coeffs, uint32_t num_taps)</code> that assigns the pointer to a module-scoped static structure while enforcing pointer address immutability and target data read-only protection.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol1_2')">Reveal code</button>
+      <div id="sol1_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+
+typedef struct {
+    const float* coeff_ptr;
+    uint32_t tap_count;
+} FirHandle_t;
+
+static FirHandle_t g_fir_instance;
+
+void fir_init(const float* const coeffs, uint32_t num_taps) {
+    if (coeffs == NULL || num_taps == 0) return;
+    g_fir_instance.coeff_ptr = coeffs;
+    g_fir_instance.tap_count = num_taps;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Demonstrates dual <code>const</code> qualifier usage: <code>const float* const coeffs</code> specifies that neither the array elements nor the pointer variable itself can be mutated within the compilation unit, placing constant tables into the read-only data segment (<code>.rodata</code>).
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 2: Control Flow, Operator Execution, and Preprocessor Directives</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 2.1 — Safe Multi-Statement Preprocessor Macro for Gain Scaling</div>
+      <div class="prompt">
+        Write a preprocessor macro <code>SCALE_AFE_CHANNEL(channel_ptr, gain_factor, clip_limit)</code> that multiplies the audio channel sample by <code>gain_factor</code> and clamps it to <code>clip_limit</code> if exceeded. Construct the macro such that it safely executes in any control-flow structure (including unbracketed <code>if-else</code> branches) without introducing dangling <code>else</code> syntax bugs or scope leakage.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol2_1')">Reveal code</button>
+      <div id="sol2_1" class="solution">
+<pre><code>#define SCALE_AFE_CHANNEL(channel_ptr, gain_factor, clip_limit) \
+    do { \
+        *(channel_ptr) = *(channel_ptr) * (gain_factor); \
+        if (*(channel_ptr) > (clip_limit)) { \
+            *(channel_ptr) = (clip_limit); \
+        } \
+    } while (0)
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Encapsulates multi-statement macro logic using the standard <code>do { ... } while(0)</code> idiom. This forces trailing semicolons to bind properly without breaking single-statement conditional execution blocks in nested control flow.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 2.2 — Multi-Header Inclusion Guard Architecture</div>
+      <div class="prompt">
+        Write the boilerplate structure for an audio DSP pipeline header file named <code>dsp_biquad.h</code>. The file must combine classic <code>#ifndef / #define / #endif</code> preprocessor guards with modern <code>#pragma once</code> directives, declare an explicit <code>void</code> parameter function for resetting filter states, and prevent symbol redefinition when included across multiple translation units.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol2_2')">Reveal code</button>
+      <div id="sol2_2" class="solution">
+<pre><code>#pragma once
+#ifndef DSP_BIQUAD_H
+#define DSP_BIQUAD_H
+
+#include &lt;stdint.h&gt;
+
+typedef struct {
+    float b0, b1, b2, a1, a2;
+    float z1, z2;
+} BiquadState_t;
+
+void dsp_biquad_reset(void);
+void dsp_biquad_process_frame(BiquadState_t* filter, const float* in_frame, float* out_frame, uint32_t frame_len);
+
+#endif /* DSP_BIQUAD_H */
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Employs dual guard defense to maximize compiler speed and ISO compliance. Uses explicit <code>(void)</code> parameters in function prototypes to strictly enforce zero-argument calls under C standard rules.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 3: Data Aggregation, Memory Layout, and CPU Struct Alignment</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 3.1 — Audio Packet Header Layout & Field Padding Analysis</div>
+      <div class="prompt">
+        Define a structure <code>AudioFrameHeader_t</code> representing a binary network audio frame containing: <code>uint8_t sync_byte</code>, <code>uint64_t timestamp_ns</code>, <code>uint16_t sample_rate_hz</code>, <code>uint8_t channel_count</code>, and <code>uint32_t frame_index</code>. Calculate the unpadded total size vs actual memory consumed on a 64-bit architecture, and write a function to return the total byte padding inserted by compiler alignment rules.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_1')">Reveal code</button>
+      <div id="sol3_1" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+
+typedef struct {
+    uint8_t  sync_byte;       /* 1 byte + 7 padding bytes to align uint64_t */
+    uint64_t timestamp_ns;    /* 8 bytes */
+    uint16_t sample_rate_hz;  /* 2 bytes */
+    uint8_t  channel_count;   /* 1 byte + 1 padding byte to align uint32_t */
+    uint32_t frame_index;     /* 4 bytes */
+} AudioFrameHeader_t;
+
+size_t get_struct_padding(void) {
+    size_t net_data_bytes = sizeof(uint8_t) + sizeof(uint64_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint32_t);
+    size_t actual_struct_size = sizeof(AudioFrameHeader_t);
+    return actual_struct_size - net_data_bytes;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Demonstrates CPU memory alignment where fields are aligned to multi-byte word boundaries matching their type sizes. Shows how <code>sizeof</code> includes compiler-inserted padding bytes to ensure arrays of structs align correctly.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 3.2 — Struct Field Reordering for Memory Footprint Optimization</div>
+      <div class="prompt">
+        Reorder the fields of <code>UnoptimizedBufferMeta_t</code> to form <code>OptimizedBufferMeta_t</code>, minimizing memory padding. The structure contains: <code>uint8_t valid</code>, <code>double max_amplitude</code>, <code>uint16_t num_channels</code>, <code>float peak_frequency</code>, <code>uint8_t muted</code>, and <code>uint64_t frame_id</code>. Write a compile-time assertion check confirming the size reduction.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_2')">Reveal code</button>
+      <div id="sol3_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;assert.h&gt;
+
+/* Reordered by decreasing size alignment: 8-byte, 4-byte, 2-byte, 1-byte */
+typedef struct {
+    double   max_amplitude;   /* 8 bytes */
+    uint64_t frame_id;        /* 8 bytes */
+    float    peak_frequency;  /* 4 bytes */
+    uint16_t num_channels;    /* 2 bytes */
+    uint8_t  valid;           /* 1 byte  */
+    uint8_t  muted;           /* 1 byte  */
+} OptimizedBufferMeta_t;      /* Total: 24 bytes (0 padding bytes) */
+
+static_assert(sizeof(OptimizedBufferMeta_t) == 24, "Packing failed!");
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Grouping structure members by decreasing natural alignment constraints (8-byte primitives down to 1-byte flags) eliminates internal alignment gaps, compressing the structure footprint without relying on compiler-specific <code>#pragma pack</code> macros.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 4: Pointers, Memory Addressing, and Virtual Memory Mapping</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 4.1 — Parameter Mutation & Indirect Register Field Update</div>
+      <div class="prompt">
+        An audio gain controller hardware block is managed via a C configuration struct <code>AfeGainConfig_t</code> containing <code>float pre_gain_db</code> and <code>float post_gain_db</code>. Write a function <code>void update_afe_gains(AfeGainConfig_t* cfg, float delta_db)</code> that mutates both internal fields via arrow pointer dereferencing while checking for <code>NULL</code> pointer inputs.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol4_1')">Reveal code</button>
+      <div id="sol4_1" class="solution">
+<pre><code>#include &lt;stddef.h&gt;
+
+typedef struct {
+    float pre_gain_db;
+    float post_gain_db;
+} AfeGainConfig_t;
+
+void update_afe_gains(AfeGainConfig_t* cfg, float delta_db) {
+    if (cfg == NULL) return;
+    cfg->pre_gain_db += delta_db;
+    cfg->post_gain_db += delta_db;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Leverages pass-by-pointer to mutate calling scope state directly in memory. Syntactic arrow notation <code>cfg->pre_gain_db</code> dereferences the base pointer and computes field offset in process address space.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 4.2 — Virtual Memory Process Address Layout Inspector</div>
+      <div class="prompt">
+        Write a C function <code>void inspect_process_memory_layout(void)</code> that prints the virtual memory address locations of: a static global audio buffer, a local stack frame variable inside the function, a dynamic heap memory block, and a code segment function address. Classify which segment (Data, Stack, Heap, Text) each address belongs to based on relative layout ordering.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol4_2')">Reveal code</button>
+      <div id="sol4_2" class="solution">
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdint.h&gt;
+
+static float g_global_audio_buffer[1024];
+
+void inspect_process_memory_layout(void) {
+    int local_stack_var = 42;
+    float* heap_buffer = (float*)malloc(256 * sizeof(float));
+
+    printf("Text Segment (Code):   %p\n", (void*)&inspect_process_memory_layout);
+    printf("Global Data Segment:   %p\n", (void*)g_global_audio_buffer);
+    printf("Heap Memory Segment:   %p\n", (void*)heap_buffer);
+    printf("Stack Frame Segment:  %p\n", (void*)&local_stack_var);
+
+    free(heap_buffer);
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Demonstrates process virtual address space partitioning. Code (Text) resides at low virtual addresses, globals sit in Data/BSS, the Heap grows upward from lower memory, and Stack frames grow downward from high memory boundaries.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 5: Arrays, Pointer Arithmetic, and String Buffer Safety</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 5.1 — Interleaved Stereo PCM Frame Unpacking via Pointer Arithmetic</div>
+      <div class="prompt">
+        An audio stream contains interleaved stereo samples <code>[L0, R0, L1, R1, L2, R2...]</code> stored in a contiguous float array. Write a function <code>void deinterleave_pcm(const float* src, float* left_ch, float* right_ch, uint32_t num_frames)</code> using raw pointer arithmetic (without bracket <code>[]</code> indexing) to extract left and right channels into separate buffers.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol5_1')">Reveal code</button>
+      <div id="sol5_1" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+
+void deinterleave_pcm(const float* src, float* left_ch, float* right_ch, uint32_t num_frames) {
+    if (!src || !left_ch || !right_ch) return;
+    
+    for (uint32_t i = 0; i &lt; num_frames; i++) {
+        *(left_ch + i)  = *(src + (2 * i));
+        *(right_ch + i) = *(src + (2 * i + 1));
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Pointer arithmetic <code>*(src + offset)</code> automatically scales byte offsets by <code>sizeof(float)</code> (4 bytes). Demonstrates equivalence between pointer arithmetic and array indexing while traversing multi-channel memory blocks.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 5.2 — Safe Telemetry Log Buffer Formatting without Overflow</div>
+      <div class="prompt">
+        Implement a string formatting function <code>size_t format_dsp_telemetry(char* dest_buf, size_t buf_capacity, uint32_t sample_rate, float snr_db)</code> that safely appends telemetry key-value pairs without risking buffer overflows or missing null-terminators. Return the exact number of characters written or truncated.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol5_2')">Reveal code</button>
+      <div id="sol5_2" class="solution">
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stddef.h&gt;
+#include &lt;stdint.h&gt;
+
+size_t format_dsp_telemetry(char* dest_buf, size_t buf_capacity, uint32_t sample_rate, float snr_db) {
+    if (dest_buf == NULL || buf_capacity == 0) return 0;
+    
+    int written = snprintf(dest_buf, buf_capacity, "SR=%uHz;SNR=%.2fdB;", sample_rate, snr_db);
+    
+    if (written &lt; 0) return 0;
+    if ((size_t)written >= buf_capacity) {
+        return buf_capacity - 1; /* Truncated, but null-terminated */
+    }
+    return (size_t)written;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses <code>snprintf</code> bounds checking instead of hazardous <code>sprintf</code> or manual string copies. Ensures guaranteed null-termination (<code>\0</code>) even when the formatted payload exceeds destination buffer capacity.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

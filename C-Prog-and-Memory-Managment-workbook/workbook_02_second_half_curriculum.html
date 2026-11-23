@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Programming & Memory Management — Curriculum Workbook 02</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #bf4b00; padding-bottom: 12px; margin-bottom: 8px; font-size: 1.8rem; color: #1f2328; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; font-weight: 500; }
+    .scope { background: #fff1e5; border-left: 4px solid #bf4b00; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; color: #3c2415; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 14px; font-size: 1.25rem; color: #bf4b00; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .exercise { background: #ffffff; border: 1px solid #d8dee4; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; color: #0550ae; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; color: #fff; }
+    .medium { background: #bf8700; }
+    .hard { background: #bc4c00; }
+    .interview { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; color: #1f2328; }
+    .prompt { font-size: 0.95rem; color: #24292f; margin-bottom: 12px; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #bf4b00; color: #fff; transition: background 0.2s ease; }
+    button.reveal-btn:hover { background: #9e3e00; }
+    .solution { display: none; margin-top: 14px; border-top: 1px dashed #d0d7de; padding-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 12px 14px; margin-top: 12px; font-size: 0.9rem; color: #4d3800; line-height: 1.5; }
+    .why strong { color: #2e2200; }
+  </style>
+</head>
+<body>
+  <h1>C Programming & Memory Management — Curriculum Workbook 02</h1>
+  <div class="subtitle">Subjects 6 to 10 | Advanced Systems & Garbage Collection Architecture</div>
+  <div class="scope"><strong>Curriculum Scope:</strong> Subjects 6–10 from <code>course-subjects.txt</code>. Contains exactly 2 exercises per subject (ordered strictly as Medium then Hard). Features complete runnable C solutions with reveal toggles and zero hint spoilers in visible text.</div>
+  <div class="section">
+    <h2>Subject 6: Enumerations, Memory Unions, and Binary Protocol Design</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 6.1 — DSP Execution State Machine Control Flow</div>
+      <div class="prompt">
+        Define an enumeration <code>DspState_t</code> with states: <code>DSP_STATE_INIT</code>, <code>DSP_STATE_RUNNING</code>, <code>DSP_STATE_PAUSED</code>, and <code>DSP_STATE_ERROR</code>. Write a function <code>const char* get_dsp_state_name(DspState_t state)</code> utilizing a exhaustive <code>switch-case</code> jump table to return string descriptors while handling unknown enum values safely.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol6_1')">Reveal code</button>
+      <div id="sol6_1" class="solution">
+<pre><code>typedef enum {
+    DSP_STATE_INIT = 0,
+    DSP_STATE_RUNNING,
+    DSP_STATE_PAUSED,
+    DSP_STATE_ERROR
+} DspState_t;
+
+const char* get_dsp_state_name(DspState_t state) {
+    switch (state) {
+        case DSP_STATE_INIT:    return "INITIALIZING";
+        case DSP_STATE_RUNNING: return "RUNNING";
+        case DSP_STATE_PAUSED:  return "PAUSED";
+        case DSP_STATE_ERROR:   return "ERROR";
+        default:                return "UNKNOWN_STATE";
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses explicit C enums for finite state machine indexing. The switch statement enables compiler branch optimization, and returning string literals avoids heap allocation while guaranteeing static storage lifetime.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 6.2 — Hardware Type Punning for IEEE-754 Float Network Serialization</div>
+      <div class="prompt">
+        Construct a C union <code>FloatPacket_t</code> that overlays a 32-bit float audio sample <code>float value</code> with an array <code>uint8_t raw_bytes[4]</code> and a 32-bit unsigned integer <code>uint32_t raw_bits</code>. Write a function that inspects the raw bit pattern and sign bit of a IEEE-754 single-precision audio float without using void pointer typecasting.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol6_2')">Reveal code</button>
+      <div id="sol6_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stdbool.h&gt;
+
+typedef union {
+    float    value;
+    uint32_t raw_bits;
+    uint8_t  raw_bytes[4];
+} FloatPacket_t;
+
+bool is_sample_negative(float sample, uint32_t* out_bits) {
+    FloatPacket_t pkt;
+    pkt.value = sample;
+    if (out_bits) *out_bits = pkt.raw_bits;
+    return (pkt.raw_bits & 0x80000000U) != 0;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses C <code>union</code> memory overlay for type punning. All union members share the exact same starting memory address, permitting raw bitwise extraction (e.g., bit 31 sign extraction) without strict aliasing violations.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 7: Memory Architecture: Hardware Stack vs. Dynamic Heap</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 7.1 — Dynamic Delay Line Heap Allocation & Deallocation</div>
+      <div class="prompt">
+        Write functions <code>float* create_delay_line(size_t length_samples)</code> and <code>void destroy_delay_line(float** delay_line_ptr)</code>. The allocation function must allocate heap memory using <code>calloc</code> to guarantee zero-initialized state, while the destruction function must free the block and set the caller's pointer to <code>NULL</code> to prevent dangling pointer bugs.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol7_1')">Reveal code</button>
+      <div id="sol7_1" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+
+float* create_delay_line(size_t length_samples) {
+    if (length_samples == 0) return NULL;
+    float* buffer = (float*)calloc(length_samples, sizeof(float));
+    return buffer; /* NULL if allocation failed */
+}
+
+void destroy_delay_line(float** delay_line_ptr) {
+    if (delay_line_ptr != NULL && *delay_line_ptr != NULL) {
+        free(*delay_line_ptr);
+        *delay_line_ptr = NULL;
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> <code>calloc</code> allocates contiguous heap space while initializing all bytes to zero (essential for clean digital audio delay lines). Double pointer pass-by-reference allows zeroing out the caller's pointer variable after <code>free()</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 7.2 — Multi-Byte Endianness Swap for Binary Audio File Headers</div>
+      <div class="prompt">
+        Audio hardware communicates across big-endian network buses and little-endian host processors. Write a C function <code>uint32_t swap_endian32(uint32_t val)</code> and a runtime detection function <code>bool is_system_little_endian(void)</code> that determines CPU architecture byte ordering using raw pointer byte inspection.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol7_2')">Reveal code</button>
+      <div id="sol7_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stdbool.h&gt;
+
+uint32_t swap_endian32(uint32_t val) {
+    return ((val >> 24) & 0x000000FF) |
+           ((val >> 8)  & 0x0000FF00) |
+           ((val << 8)  & 0x00FF0000) |
+           ((val << 24) & 0xFF000000);
+}
+
+bool is_system_little_endian(void) {
+    uint16_t test_word = 0x0100;
+    uint8_t* byte_ptr = (uint8_t*)&test_word;
+    return (byte_ptr[0] == 0x00);
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Inspects low-address byte representations of multi-byte primitive values. In little-endian platforms, the least significant byte is stored at the lowest memory address offset.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 8: Multi-Level Indirection, Generic Pointers, and Raw Memory Operations</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 8.1 — Multi-Track Audio Buffer Matrix Allocation via Pointer-to-Pointer</div>
+      <div class="prompt">
+        Implement dynamic dynamic matrix allocation for multi-channel audio recording: <code>float** allocate_track_matrix(size_t num_tracks, size_t num_samples)</code>. The function must allocate an array of float pointers, then allocate each track buffer independently. Handle dynamic allocation failure mid-loop by unwinding previously allocated tracks without leaking heap memory.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol8_1')">Reveal code</button>
+      <div id="sol8_1" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+
+float** allocate_track_matrix(size_t num_tracks, size_t num_samples) {
+    if (num_tracks == 0 || num_samples == 0) return NULL;
+    
+    float** matrix = (float**)malloc(num_tracks * sizeof(float*));
+    if (!matrix) return NULL;
+    
+    for (size_t i = 0; i &lt; num_tracks; i++) {
+        matrix[i] = (float*)calloc(num_samples, sizeof(float));
+        if (!matrix[i]) {
+            /* Cleanup already allocated tracks on failure */
+            for (size_t j = 0; j &lt; i; j++) {
+                free(matrix[j]);
+            }
+            free(matrix);
+            return NULL;
+        }
+    }
+    return matrix;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Employs double-indirection (<code>float**</code>) to manage two-dimensional dynamic data grids. Demonstrates robust error handling by unwinding partial heap allocations when allocation fails mid-loop.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 8.2 — Generic Raw Memory Buffer Swapping Function</div>
+      <div class="prompt">
+        Write a type-agnostic memory block swapping function <code>void mem_swap(void* a, void* b, size_t byte_size)</code> using untyped generic pointers (<code>void*</code>) and temporary byte-by-byte buffer swapping without assuming data primitive types.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol8_2')">Reveal code</button>
+      <div id="sol8_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+#include &lt;stdlib.h&gt;
+
+void mem_swap(void* a, void* b, size_t byte_size) {
+    if (!a || !b || byte_size == 0 || a == b) return;
+    
+    uint8_t* ptr_a = (uint8_t*)a;
+    uint8_t* ptr_b = (uint8_t*)b;
+    
+    for (size_t i = 0; i &lt; byte_size; i++) {
+        uint8_t temp = ptr_a[i];
+        ptr_a[i] = ptr_b[i];
+        ptr_b[i] = temp;
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Casts generic <code>void*</code> parameters to byte-addressable <code>uint8_t*</code> pointers, enabling polymorphic raw memory manipulations regardless of underlying structure or primitive types.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 9: Dynamic Data Structures and Polymorphic Tagged Objects</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 9.1 — Dynamic Resizable Audio Ring Buffer Expansion</div>
+      <div class="prompt">
+        Implement a dynamic array structure <code>AudioRingBuf_t</code> containing <code>float* data</code>, <code>size_t capacity</code>, and <code>size_t count</code>. Write a function <code>bool ring_buf_push(AudioRingBuf_t* buf, float sample)</code> that doubles buffer capacity using <code>realloc</code> when full while preserving existing sample sequence.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol9_1')">Reveal code</button>
+      <div id="sol9_1" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+
+typedef struct {
+    float* data;
+    size_t capacity;
+    size_t count;
+} AudioRingBuf_t;
+
+bool ring_buf_push(AudioRingBuf_t* buf, float sample) {
+    if (!buf) return false;
+    
+    if (buf->count >= buf->capacity) {
+        size_t new_cap = (buf->capacity == 0) ? 128 : buf->capacity * 2;
+        float* new_data = (float*)realloc(buf->data, new_cap * sizeof(float));
+        if (!new_data) return false;
+        
+        buf->data = new_data;
+        buf->capacity = new_cap;
+    }
+    
+    buf->data[buf->count++] = sample;
+    return true;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses <code>realloc</code> for dynamic heap array expansion. Assigns reallocated memory to a temporary pointer prior to updating the struct to prevent heap pointer loss if allocation fails.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 9.2 — Polymorphic Tagged Union Runtime Audio Object System</div>
+      <div class="prompt">
+        Design a runtime polymorphic audio parameter system using a tagged union. Define an enum <code>ParamType_t</code> (<code>PARAM_INT</code>, <code>PARAM_FLOAT</code>, <code>PARAM_VECTOR</code>) and a struct <code>AudioParam_t</code> storing the tag type and corresponding union payload. Write an accessor function that extracts float values safely while asserting type tag match.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol9_2')">Reveal code</button>
+      <div id="sol9_2" class="solution">
+<pre><code>#include &lt;stdbool.h&gt;
+#include &lt;stdint.h&gt;
+
+typedef enum {
+    PARAM_INT,
+    PARAM_FLOAT,
+    PARAM_VECTOR
+} ParamType_t;
+
+typedef struct {
+    ParamType_t type;
+    union {
+        int32_t val_int;
+        float   val_float;
+        struct {
+            float* vec_data;
+            uint32_t vec_len;
+        } val_vec;
+    } payload;
+} AudioParam_t;
+
+bool get_param_float(const AudioParam_t* param, float* out_val) {
+    if (!param || !out_val || param->type != PARAM_FLOAT) {
+        return false;
+    }
+    *out_val = param->payload.val_float;
+    return true;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Combines enums and unions to implement safe type-tagged runtime objects in pure C. Explicit tag checking prevents invalid union payload interpretation.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Subject 10: Automatic Memory Management & Custom Garbage Collector Design</h2>
+
+    <div class="exercise">
+      <div><span class="diff medium">Medium</span></div>
+      <div class="ex-title">Exercise 10.1 — Reference-Counting Memory Tracker for Shared Audio Buffers</div>
+      <div class="prompt">
+        Implement a reference-counted audio buffer container: <code>RefBuffer_t</code> containing <code>float* data</code>, <code>uint32_t ref_count</code>, and <code>size_t size</code>. Write functions <code>RefBuffer_t* ref_buf_retain(RefBuffer_t* buf)</code> and <code>void ref_buf_release(RefBuffer_t* buf)</code> that increment and decrement counts, freeing heap resources when <code>ref_count</code> hits zero.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol10_1')">Reveal code</button>
+      <div id="sol10_1" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdint.h&gt;
+
+typedef struct {
+    float* data;
+    size_t size;
+    uint32_t ref_count;
+} RefBuffer_t;
+
+RefBuffer_t* ref_buf_retain(RefBuffer_t* buf) {
+    if (buf) {
+        buf->ref_count++;
+    }
+    return buf;
+}
+
+void ref_buf_release(RefBuffer_t* buf) {
+    if (!buf) return;
+    if (--buf->ref_count == 0) {
+        free(buf->data);
+        free(buf);
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Implements deterministic reference counting memory management. Ensures shared heap buffers are automatically freed as soon as the active consumer count drops to zero.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff hard">Hard</span></div>
+      <div class="ex-title">Exercise 10.2 — Two-Phase Mark-and-Sweep Garbage Collector VM State Machine</div>
+      <div class="prompt">
+        Construct a mini Garbage Collector VM for dynamic audio graph nodes. Define <code>GcObject_t</code> with a <code>bool is_marked</code> flag and pointer links. Write a function <code>void gc_sweep(GcObject_t** head_ref)</code> that traverses the heap allocation list, unlinking and freeing all unreferenced nodes (<code>is_marked == false</code>) while resetting remaining flags for the next collection cycle.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol10_2')">Reveal code</button>
+      <div id="sol10_2" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+
+typedef struct GcObject {
+    bool is_marked;
+    struct GcObject* next;
+    float audio_payload[64];
+} GcObject_t;
+
+void gc_sweep(GcObject_t** head_ref) {
+    if (!head_ref || !*head_ref) return;
+    
+    GcObject_t** current = head_ref;
+    while (*current != NULL) {
+        GcObject_t* entry = *current;
+        if (!entry->is_marked) {
+            /* Unlink unreachable node */
+            *current = entry->next;
+            free(entry);
+        } else {
+            /* Reset mark flag for next collection cycle */
+            entry->is_marked = false;
+            current = &entry->next;
+        }
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Implements the sweep phase of a classic Mark-and-Sweep garbage collector using double pointer list traversal (<code>GcObject_t** current</code>) to smoothly unlink dead nodes from the virtual machine heap linked-list without breakages.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

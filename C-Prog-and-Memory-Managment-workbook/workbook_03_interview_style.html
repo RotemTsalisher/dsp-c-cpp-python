@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C Programming & Memory Management — Interview Style Workbook 03</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.55; color: #2c3e50; max-width: 980px; margin: 0 auto; padding: 36px 24px 48px; background: #f4f6f8; }
+    h1 { text-align: center; border-bottom: 3px solid #bf4b00; padding-bottom: 12px; margin-bottom: 8px; font-size: 1.8rem; color: #1f2328; }
+    .subtitle { text-align: center; color: #57606a; font-size: 0.95rem; margin-bottom: 20px; font-weight: 500; }
+    .scope { background: #fff1e5; border-left: 4px solid #bf4b00; padding: 14px 16px; margin: 16px 0 28px; border-radius: 0 6px 6px 0; font-size: 0.93rem; color: #3c2415; }
+    .section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px 22px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(31,35,40,0.06); }
+    .section h2 { margin: 0 0 14px; font-size: 1.25rem; color: #bf4b00; border-bottom: 2px solid #eaeef2; padding-bottom: 8px; }
+    .exercise { background: #ffffff; border: 1px solid #d8dee4; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
+    code { font-family: Consolas, 'Courier New', monospace; background: #f6f8fa; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; color: #0550ae; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; line-height: 1.45; }
+    pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+    .diff { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; margin-bottom: 10px; color: #fff; }
+    .medium { background: #bf8700; }
+    .hard { background: #bc4c00; }
+    .interview { background: #212830; }
+    .ex-title { font-size: 1.05rem; font-weight: 700; margin: 4px 0 10px; color: #1f2328; }
+    .prompt { font-size: 0.95rem; color: #24292f; margin-bottom: 12px; }
+    button.reveal-btn { margin-top: 12px; margin-right: 8px; padding: 8px 18px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; border-radius: 6px; background: #bf4b00; color: #fff; transition: background 0.2s ease; }
+    button.reveal-btn:hover { background: #9e3e00; }
+    .solution { display: none; margin-top: 14px; border-top: 1px dashed #d0d7de; padding-top: 14px; }
+    .solution.visible { display: block; }
+    .why { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 12px 14px; margin-top: 12px; font-size: 0.9rem; color: #4d3800; line-height: 1.5; }
+    .why strong { color: #2e2200; }
+  </style>
+</head>
+<body>
+  <h1>C Programming & Memory Management — Interview Style Workbook 03</h1>
+  <div class="subtitle">Integrated EE & Audio DSP C Systems Challenges</div>
+  <div class="scope"><strong>Interview Scope:</strong> Comprehensive interview-style problem set synthesizing concepts across all 10 subjects. Designed for 4th-year EE students and Embedded Audio DSP Systems Engineers.</div>
+  <div class="section">
+    <h2>Integrated EE/DSP Memory Management Challenges</h2>
+
+    <div class="exercise">
+      <div><span class="diff interview">Interview Challenge 1</span></div>
+      <div class="ex-title">Lock-Free SPSC Single-Producer Single-Consumer Audio Frame Ring Buffer</div>
+      <div class="prompt">
+        Design a lock-free Single-Producer Single-Consumer (SPSC) circular audio buffer structure in C for transferring float PCM frames between an interrupt service routine (ISR) and a main processing thread. Ensure index wraparound calculations avoid modulo division and optimize for power-of-two buffer capacities.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_1')">Reveal code</button>
+      <div id="sol3_1" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stdbool.h&gt;
+
+typedef struct {
+    float* buffer;
+    uint32_t capacity_mask; /* capacity - 1, requires capacity to be power of 2 */
+    volatile uint32_t write_idx;
+    volatile uint32_t read_idx;
+} SpscAudioRing_t;
+
+bool spsc_push(SpscAudioRing_t* ring, float sample) {
+    uint32_t w = ring->write_idx;
+    uint32_t r = ring->read_idx;
+    
+    if (((w + 1) & ring->capacity_mask) == (r & ring->capacity_mask)) {
+        return false; /* Buffer full */
+    }
+    
+    ring->buffer[w & ring->capacity_mask] = sample;
+    ring->write_idx = w + 1;
+    return true;
+}
+
+bool spsc_pop(SpscAudioRing_t* ring, float* out_sample) {
+    uint32_t w = ring->write_idx;
+    uint32_t r = ring->read_idx;
+    
+    if ((r & ring->capacity_mask) == (w & ring->capacity_mask)) {
+        return false; /* Buffer empty */
+    }
+    
+    *out_sample = ring->buffer[r & ring->capacity_mask];
+    ring->read_idx = r + 1;
+    return true;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Uses bitwise AND masking (<code>idx & mask</code>) instead of costly division modulo operators. Employs <code>volatile</code> index qualifiers to prevent compiler store-reordering across concurrent threads.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff interview">Interview Challenge 2</span></div>
+      <div class="ex-title">Zero-Copy Packet Unpacker with Union Type Punning</div>
+      <div class="prompt">
+        Write a zero-copy packet parser function that casts a raw network byte array into a structured <code>AudioPacket_t</code> header without dynamic memory allocations or byte copying, verifying packet magic alignment and extracting 32-bit float payloads.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_2')">Reveal code</button>
+      <div id="sol3_2" class="solution">
+<pre><code>#include &lt;stdint.h&gt;
+#include &lt;stdbool.h&gt;
+
+#pragma pack(push, 1)
+typedef struct {
+    uint16_t magic_header; /* 0xACDC */
+    uint32_t sample_rate;
+    float    payload_float;
+} AudioPacket_t;
+#pragma pack(pop)
+
+bool parse_packet_zero_copy(const uint8_t* raw_bytes, size_t len, const AudioPacket_t** out_pkt) {
+    if (!raw_bytes || len &lt; sizeof(AudioPacket_t) || !out_pkt) return false;
+    
+    const AudioPacket_t* pkt = (const AudioPacket_t*)raw_bytes;
+    if (pkt->magic_header != 0xACDC) return false;
+    
+    *out_pkt = pkt;
+    return true;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Demonstrates zero-copy parsing using pointer reinterpretation and explicit struct packing (<code>#pragma pack(1)</code>) to match binary network wire protocols directly.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff interview">Interview Challenge 3</span></div>
+      <div class="ex-title">In-Place Audio Effect Pipeline with Generic Function Pointers</div>
+      <div class="prompt">
+        Construct a dynamic audio effect callback chain in C. Declare a function pointer type <code>typedef void (*AudioFxCallback)(float* buffer, size_t num_samples, void* user_data);</code> and write a pipeline processor <code>void run_dsp_chain(float* buf, size_t len, AudioFxCallback* fx_chain, void** user_data_arr, size_t num_fx)</code>.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_3')">Reveal code</button>
+      <div id="sol3_3" class="solution">
+<pre><code>#include &lt;stddef.h&gt;
+
+typedef void (*AudioFxCallback)(float* buffer, size_t num_samples, void* user_data);
+
+void run_dsp_chain(float* buf, size_t len, AudioFxCallback* fx_chain, void** user_data_arr, size_t num_fx) {
+    if (!buf || !fx_chain || num_fx == 0) return;
+    
+    for (size_t i = 0; i &lt; num_fx; i++) {
+        if (fx_chain[i] != NULL) {
+            void* ctx = (user_data_arr != NULL) ? user_data_arr[i] : NULL;
+            fx_chain[i](buf, len, ctx);
+        }
+    }
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Utilizes function pointers and generic <code>void*</code> user context pointers to implement polymorphic, pluggable audio processing pipelines in procedural C.
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div><span class="diff interview">Interview Challenge 4</span></div>
+      <div class="ex-title">Fixed-Size Block Real-Time Audio Memory Arena Allocator</div>
+      <div class="prompt">
+        Real-time audio processing threads cannot call <code>malloc()</code> due to non-deterministic OS allocation latency. Implement a fixed-size block pool arena allocator: <code>typedef struct PoolArena PoolArena_t;</code> with functions <code>PoolArena_t* pool_create(size_t block_size, size_t num_blocks);</code>, <code>void* pool_alloc(PoolArena_t* arena);</code>, and <code>void pool_free(PoolArena_t* arena, void* block);</code>.
+      </div>
+      <button type="button" class="reveal-btn" onclick="toggleSol('sol3_4')">Reveal code</button>
+      <div id="sol3_4" class="solution">
+<pre><code>#include &lt;stdlib.h&gt;
+#include &lt;stdint.h&gt;
+
+typedef struct Node {
+    struct Node* next;
+} Node_t;
+
+typedef struct {
+    uint8_t* raw_buffer;
+    Node_t* free_list;
+    size_t block_size;
+    size_t num_blocks;
+} PoolArena_t;
+
+PoolArena_t* pool_create(size_t block_size, size_t num_blocks) {
+    if (block_size &lt; sizeof(Node_t)) block_size = sizeof(Node_t);
+    
+    PoolArena_t* pool = (PoolArena_t*)malloc(sizeof(PoolArena_t));
+    if (!pool) return NULL;
+    
+    pool->raw_buffer = (uint8_t*)malloc(block_size * num_blocks);
+    if (!pool->raw_buffer) { free(pool); return NULL; }
+    
+    pool->block_size = block_size;
+    pool->num_blocks = num_blocks;
+    pool->free_list = (Node_t*)pool->raw_buffer;
+    
+    Node_t* curr = pool->free_list;
+    for (size_t i = 0; i &lt; num_blocks - 1; i++) {
+        uint8_t* next_addr = (uint8_t*)curr + block_size;
+        curr->next = (Node_t*)next_addr;
+        curr = curr->next;
+    }
+    curr->next = NULL;
+    return pool;
+}
+
+void* pool_alloc(PoolArena_t* arena) {
+    if (!arena || !arena->free_list) return NULL;
+    
+    Node_t* block = arena->free_list;
+    arena->free_list = block->next;
+    return (void*)block;
+}
+
+void pool_free(PoolArena_t* arena, void* ptr) {
+    if (!arena || !ptr) return;
+    
+    Node_t* block = (Node_t*)ptr;
+    block->next = arena->free_list;
+    arena->free_list = block;
+}
+</code></pre>
+        <div class="why">
+          <strong>Why this works & C concepts used:</strong> Implements an O(1) constant-time memory pool using an embedded free-list. Eliminates dynamic OS kernel allocator calls, rendering allocation suitable for hard real-time audio threads.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSol(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>

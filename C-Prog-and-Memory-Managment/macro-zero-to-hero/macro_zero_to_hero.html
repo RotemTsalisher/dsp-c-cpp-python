@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C/C++ Macro Zero to Hero</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:900px;margin:40px auto;padding:0 18px;background:#0b1220;color:#e8eef8;line-height:1.55}h1{color:#7dd3fc}.card{background:#111b2e;border:1px solid #30415d;border-radius:14px;padding:20px;margin:18px 0}pre{background:#050a13;color:#dce7f7;padding:14px;border-radius:9px;overflow:auto}code{font-family:Consolas,monospace}.level{color:#60a5fa;font-weight:bold}.solution{display:none;border-left:4px solid #22c55e;background:#0b2a1b;padding:14px;margin-top:14px;border-radius:7px}button{background:#2563eb;color:white;border:0;border-radius:8px;padding:9px 14px;font-weight:bold;cursor:pointer}li{margin:5px 0}
+</style>
+</head>
+<body>
+<h1>C/C++ Macro Training: Zero to Hero</h1>
+<p>These are hands-on coding exercises. Type each program yourself, compile it, observe what breaks, and only then reveal the solution. By Exercise 5, you will build the same <code>do { ... } while (0)</code> pattern used by real assertion macros.</p>
+
+<div class="card"><div class="level">Exercise 1 - Run exactly once</div><h2>Get your hands on do/while</h2><p>Write a <code>do/while</code> block that prints <code>Hello</code> exactly once and increments <code>counter</code> once. Do not use <code>break</code>.</p><pre>int main(void)
+{
+    int counter = 0;
+
+    // YOUR CODE
+
+    printf("counter = %d\n", counter);
+    return 0;
+}</pre><button onclick="toggle('s1',this)">Show solution</button><div id="s1" class="solution"><pre>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int counter = 0;
+    do {
+        printf("Hello\n");
+        counter++;
+    } while (0);
+
+    printf("counter = %d\n", counter);
+    return 0;
+}</pre><p>The body executes before the condition is tested. Then <code>0</code> is false, so there is no second iteration.</p></div></div>
+
+<div class="card"><div class="level">Exercise 2 - First multi-statement macro</div><h2>Create a macro that does two things</h2><p>Implement <code>PRINT_AND_DOUBLE(x)</code>. It must print the current value and then double it. Intentionally use two bare statements. Do not use <code>do/while</code> yet.</p><pre>#include &lt;stdio.h&gt;
+
+#define PRINT_AND_DOUBLE(x) /* YOUR CODE */
+
+int main(void)
+{
+    int x = 5;
+    PRINT_AND_DOUBLE(x);
+    printf("final x = %d\n", x);
+    return 0;
+}</pre><p>Target: <code>before = 5</code>, then <code>final x = 10</code>.</p><button onclick="toggle('s2',this)">Show solution</button><div id="s2" class="solution"><pre>#define PRINT_AND_DOUBLE(x) \
+    printf("before = %d\n", (x)); \
+    (x) *= 2</pre><p>This works here, but your macro expands into two separate C statements. Keep it exactly like this for Exercise 3.</p></div></div>
+
+<div class="card"><div class="level">Exercise 3 - Break the macro</div><h2>Use it inside an if</h2><p>Use your Exercise 2 macro below. Compile and run it. Explain why <code>x</code> becomes 10 even though <code>run == 0</code>. Then fix only the macro.</p><pre>int x = 5;
+int run = 0;
+
+if (run)
+    PRINT_AND_DOUBLE(x);
+
+printf("x = %d\n", x);</pre><p>Required final result: <code>x = 5</code>. Do not add braces to the caller's <code>if</code>.</p><button onclick="toggle('s3',this)">Show solution</button><div id="s3" class="solution"><p>The old macro effectively expands to:</p><pre>if (run)
+    printf("before = %d\n", x);
+(x) *= 2;</pre><p>Only the first statement belongs to the <code>if</code>. Fix it:</p><pre>#define PRINT_AND_DOUBLE(x)       \
+    do {                          \
+        printf("before = %d\n", (x)); \
+        (x) *= 2;                 \
+    } while (0)</pre></div></div>
+
+<div class="card"><div class="level">Exercise 4 - Why braces are not enough</div><h2>Survive if/else</h2><p>Replace the <code>do/while</code> with ordinary braces, then compile this code. Read the compiler error. After that, restore the safe version.</p><pre>#define PRINT_AND_DOUBLE(x) {     \
+    printf("before = %d\n", (x)); \
+    (x) *= 2;                     \
+}
+
+int x = 5;
+int run = 1;
+
+if (run)
+    PRINT_AND_DOUBLE(x);
+else
+    printf("not running\n");</pre><button onclick="toggle('s4',this)">Show solution</button><div id="s4" class="solution"><p>The caller's semicolon produces this:</p><pre>if (run)
+{
+    printf("before = %d\n", x);
+    x *= 2;
+};
+else
+    printf("not running\n");</pre><p>The semicolon finishes the <code>if</code>, leaving the <code>else</code> stranded. With <code>do { ... } while (0)</code>, that semicolon correctly terminates one normal statement.</p></div></div>
+
+<div class="card"><div class="level">Exercise 5 - Hero level</div><h2>Build a real assertion macro</h2><p>Write <code>ASSERT_INT_EQ(a,b)</code> from scratch.</p><ul><li>Evaluate <code>a</code> exactly once.</li><li>Evaluate <code>b</code> exactly once.</li><li>Store both in local temporary variables.</li><li>Print PASS if equal.</li><li>Print both values if unequal.</li><li>Work correctly inside <code>if/else</code>.</li><li>Do not leak temporary variables.</li></ul><pre>int main(void)
+{
+    int x = 4;
+    int y = 4;
+
+    ASSERT_INT_EQ(x, y);
+    ASSERT_INT_EQ(x, 20);
+
+    int i = 3;
+    ASSERT_INT_EQ(i++, 3);
+    printf("i = %d\n", i); // MUST be 4
+
+    if (x > 0)
+        ASSERT_INT_EQ(x, y);
+    else
+        printf("x is invalid\n");
+
+    return 0;
+}</pre><button onclick="toggle('s5',this)">Show solution</button><div id="s5" class="solution"><pre>#include &lt;stdio.h&gt;
+
+#define ASSERT_INT_EQ(a, b)                 \
+    do {                                    \
+        int tmp_a_ = (a);                   \
+        int tmp_b_ = (b);                   \
+        if (tmp_a_ == tmp_b_) {             \
+            printf("PASS\n");               \
+        } else {                            \
+            printf("FAIL: %d != %d\n",      \
+                   tmp_a_, tmp_b_);          \
+        }                                   \
+    } while (0)</pre><p>The temporaries prevent repeated evaluation. The block provides local scope. The <code>do/while(0)</code> makes the entire macro behave as one statement.</p></div></div>
+
+<div class="card"><h2>Final mental model</h2><pre>#define MY_MACRO(...) \
+    do {              \
+        /* many statements */ \
+    } while (0)</pre><p>Read this as: <strong>package all of these statements into one safe macro statement with local scope.</strong></p></div>
+<script>
+function toggle(id,btn){const e=document.getElementById(id);const open=e.style.display==='block';e.style.display=open?'none':'block';btn.textContent=open?'Show solution':'Hide solution';}
+</script>
+</body>
+</html>
