@@ -14,6 +14,7 @@ enum alloc_type {
 typedef enum alloc_type alloc_type_t;
 
 int dynamic_alloc(void** ptr, int size, alloc_type_t type);
+int free_alloc(void* ptr);
 
 int main() {
     int size = 4;
@@ -57,6 +58,11 @@ int main() {
             printf("double_ptr[%d] = %.2lf\n", i, double_ptr[i]);
         }
     }
+
+    free_alloc(int_ptr);
+    free_alloc(char_ptr);   
+    free_alloc(float_ptr);
+    free_alloc(double_ptr);
     return 0;
 };
 
@@ -77,3 +83,11 @@ int dynamic_alloc(void** ptr, int size, alloc_type_t type) {
 
     return 0;
 }
+
+int free_alloc(void* ptr) {
+    if(ptr != NULL) {
+        free(ptr);
+        return 0;
+    }
+    return -1;
+};

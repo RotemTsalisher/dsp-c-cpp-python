@@ -1,1 +1,1 @@
-stopped at 2:13:40 stack an heap function vars example
+stopped at 2:26:00 stack an heap function vars example
