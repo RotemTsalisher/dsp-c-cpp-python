@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C Memory & Endianness — Zero to Hero Workbook</title>
+<style>
+:root{--bg:#f5f7fb;--paper:#fff;--ink:#182230;--muted:#586779;--line:#dce3ec;--blue:#2457c5;--pale:#edf3ff;--green:#16734a;--amber:#8b5b00;--code:#111827}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#142b52,#2457c5);color:white;padding:42px 22px}
+.wrap{max-width:960px;margin:auto;padding:0 20px}header .wrap{padding:0 20px}
+.eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:.76rem;font-weight:700;opacity:.8}
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:.4rem 0 1rem}
+header p{max-width:720px;color:#e6edff;font-size:1.08rem;margin:0}
+main{padding:26px 0 70px}.panel,.lesson{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:24px;margin:18px 0;box-shadow:0 3px 12px #1c31500a}
+h2{font-size:1.55rem;margin:0 0 12px}h3{font-size:1.12rem;margin:22px 0 8px}p{margin:.55rem 0}
+.small,.hint{color:var(--muted);font-size:.93rem}.tag{display:inline-block;background:var(--pale);color:var(--blue);padding:3px 9px;border-radius:99px;font-size:.78rem;font-weight:700;margin-bottom:8px}
+.callout{border-left:4px solid var(--blue);background:var(--pale);padding:12px 15px;border-radius:7px;margin:14px 0}
+.warning{border-left-color:#d18a16;background:#fff7e8}
+code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+code{background:#eef1f5;padding:2px 5px;border-radius:4px}
+pre{background:var(--code);color:#e5edf8;padding:17px;border-radius:10px;overflow:auto;line-height:1.5;font-size:.91rem}
+pre code{background:none;padding:0;color:inherit}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.94rem}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left}th{background:#f0f4fa}
+.byte-row{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.byte{background:#eaf0fb;border:1px solid #c9d7f0;border-radius:8px;padding:9px 13px;font:700 1rem ui-monospace,monospace;text-align:center;min-width:64px}.byte small{display:block;color:var(--muted);font: .7rem system-ui}
+.exercise{border:1px solid var(--line);border-radius:11px;padding:16px;margin:13px 0}
+textarea{width:100%;min-height:90px;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font: .94rem ui-monospace,monospace;resize:vertical}
+input[type=text]{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px}
+button{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:650;cursor:pointer;margin:7px 5px 0 0}
+button.secondary{background:#e9eef6;color:#24364e}
+details{margin:12px 0;border:1px solid var(--line);border-radius:8px;padding:10px 13px}summary{cursor:pointer;font-weight:700}
+.progress{height:9px;background:#e5eaf1;border-radius:99px;overflow:hidden;margin:10px 0}.bar{height:100%;width:0;background:#26845b;transition:width .2s}
+.checklist label{display:block;margin:8px 0}.checklist input{margin-right:8px}
+footer{text-align:center;color:var(--muted);padding:25px}
+@media(max-width:650px){.panel,.lesson{padding:17px}table{font-size:.83rem}th,td{padding:7px}}
+@media print{body{background:white}.panel,.lesson{box-shadow:none;break-inside:avoid}button{display:none}textarea{min-height:60px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="eyebrow">C programming · systems fundamentals</div>
+<h1>C Memory &amp; Endianness<br>Zero to Hero Workbook</h1>
+<p>Two hands-on parts: endianness and portable binary data, then memory layout, addresses, pointers, alignment, padding, and compiler behavior.</p>
+</div></header>
+<main class="wrap">
+<section class="panel">
+<span class="tag">How to use this workbook</span>
+<h2>Your learning route</h2>
+<p>Work through the lessons in order. Write answers before opening the solutions, and compile every coding exercise yourself. The examples use standard C and can be built with GCC or Clang.</p>
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<p class="small" id="progressText">0 of 8 milestones checked</p>
+<div class="checklist" id="milestones">
+<label><input type="checkbox"> I understand bits, bytes, and multi-byte integers</label>
+<label><input type="checkbox"> I can explain little-endian and big-endian</label>
+<label><input type="checkbox"> I can predict the bytes of an integer</label>
+<label><input type="checkbox"> I can write a C program to inspect byte order</label>
+<label><input type="checkbox"> I understand why casts and unions can be risky</label>
+<label><input type="checkbox"> I can serialize and deserialize integers portably</label>
+<label><input type="checkbox"> I completed the coding challenges</label>
+<label><input type="checkbox"> I can explain endianness without notes</label>
+</div>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 1 · Foundations</span><h2>What exactly is stored in memory?</h2>
+<p>A computer's memory is a sequence of addressable locations. In C, a <strong>byte</strong> is the size of one addressable C memory unit (<code>sizeof(char)</code> is always 1). On virtually all modern systems, a byte contains 8 bits; the C standard does not require that, so technically a byte is <code>CHAR_BIT</code> bits.</p>
+<p>A bit is either 0 or 1. A byte made of 8 bits can represent 256 different patterns: <code>00000000</code> through <code>11111111</code>, or 0 through 255 when interpreted as an unsigned value.</p>
+<h3>One byte</h3><div class="byte-row"><div class="byte">00000000<small>0</small></div><div class="byte">00000001<small>1</small></div><div class="byte">11111111<small>255</small></div></div>
+<p>A value that needs more than one byte (for example, a 32-bit integer) occupies multiple consecutive memory bytes. The question endianness answers is: <em>which byte goes at the lowest memory address?</em></p>
+<div class="callout"><strong>Keep these ideas separate:</strong> a number's mathematical value, its bit representation, and the order in which its bytes are placed in memory are three different things.</div>
+<div class="exercise"><h3>Writing exercise 1</h3><p>In your own words, explain the difference between a bit, a byte, and a 32-bit integer. Why does a 32-bit integer usually occupy 4 bytes on an 8-bit-byte machine?</p><textarea placeholder="Write your explanation here..."></textarea></div>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 2 · The core concept</span><h2>Little-endian vs. big-endian</h2>
+<p>Consider the 32-bit hexadecimal value <code>0x12345678</code>. It consists of four bytes:</p>
+<div class="byte-row"><div class="byte">12<small>most significant</small></div><div class="byte">34<small></small></div><div class="byte">56<small></small></div><div class="byte">78<small>least significant</small></div></div>
+<p><strong>Big-endian:</strong> the most significant byte is stored at the lowest address.</p>
+<table><tr><th>Address</th><th>+0</th><th>+1</th><th>+2</th><th>+3</th></tr><tr><th>Big-endian</th><td><code>12</code></td><td><code>34</code></td><td><code>56</code></td><td><code>78</code></td></tr></table>
+<p><strong>Little-endian:</strong> the least significant byte is stored at the lowest address.</p>
+<table><tr><th>Address</th><th>+0</th><th>+1</th><th>+2</th><th>+3</th></tr><tr><th>Little-endian</th><td><code>78</code></td><td><code>56</code></td><td><code>34</code></td><td><code>12</code></td></tr></table>
+<div class="callout"><strong>Memory aid:</strong> “little” means the little-end (least significant byte) comes first in memory. “Big” means the big-end (most significant byte) comes first.</div>
+<h3>Important: endianness does not reverse bits</h3>
+<p>In the byte <code>0x12</code>, the bits are still <code>00010010</code>. Endianness changes the order of whole bytes in a multi-byte value, not the bit order inside each byte.</p>
+<div class="exercise"><h3>Writing exercise 2</h3><p>Explain the difference between little-endian and big-endian as if you were teaching another C programmer. Include the phrase “lowest memory address”.</p><textarea placeholder="Your explanation..."></textarea></div>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 3 · Predict memory</span><h2>Read a value as bytes</h2>
+<p>Suppose a machine uses 8-bit bytes and stores <code>uint32_t x = 0xA1B2C3D4</code>. The bytes are <code>A1</code>, <code>B2</code>, <code>C3</code>, and <code>D4</code>.</p>
+<table><tr><th>Byte position in value</th><td>Most significant</td><td></td><td></td><td>Least significant</td></tr><tr><th>Byte</th><td><code>A1</code></td><td><code>B2</code></td><td><code>C3</code></td><td><code>D4</code></td></tr><tr><th>Big-endian address order</th><td><code>A1</code></td><td><code>B2</code></td><td><code>C3</code></td><td><code>D4</code></td></tr><tr><th>Little-endian address order</th><td><code>D4</code></td><td><code>C3</code></td><td><code>B2</code></td><td><code>A1</code></td></tr></table>
+<div class="exercise"><h3>Knowledge check 1</h3><p>For <code>0xCAFEBABE</code>, write the four bytes in memory order.</p><label>Big-endian</label><input type="text" id="beAnswer" placeholder="e.g. 12 34 56 78"><label>Little-endian</label><input type="text" id="leAnswer" placeholder="e.g. 78 56 34 12"><button onclick="checkBytes()">Check my answer</button><p id="byteFeedback" aria-live="polite"></p></div>
+<details><summary>Show the answer and reasoning</summary><p>The value's bytes, from most to least significant, are <code>CA FE BA BE</code>. Big-endian memory order is <code>CA FE BA BE</code>. Little-endian memory order is <code>BE BA FE CA</code>.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 4 · C lab</span><h2>Detect the machine's byte order</h2>
+<p>In C, an object's bytes can be inspected through a character pointer. The C standard permits inspecting an object's representation through a pointer to a character type.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdint.h&gt;
+
+int main(void)
+{
+    uint32_t value = UINT32_C(0x12345678);
+    const unsigned char *bytes = (const unsigned char *)&amp;value;
+
+    for (size_t i = 0; i &lt; sizeof value; ++i) {
+        printf("byte %zu = 0x%02X\n", i, bytes[i]);
+    }
+
+    return 0;
+}</code></pre>
+<p>Compile and run:</p><pre><code>gcc -std=c11 -Wall -Wextra -Wpedantic endian.c -o endian
+./endian</code></pre>
+<p>If the output begins <code>78 56 34 12</code>, the machine stores this integer little-endian. If it begins <code>12 34 56 78</code>, it stores it big-endian.</p>
+<div class="callout warning"><strong>Do not assume the result in advance.</strong> Your program reports the byte order used for that object on the machine where it runs. Some architectures and data formats can have more complicated or context-dependent rules, so avoid assuming every platform is one of only two possibilities.</div>
+<div class="exercise"><h3>Coding exercise 1 · Your first detector</h3><p>Write the program above from memory. Then:</p><ol><li>Change the value to <code>0xAABBCCDD</code>.</li><li>Print each byte in decimal as well as hexadecimal.</li><li>Print the result as “little-endian”, “big-endian”, or “other/unknown”.</li></ol><textarea placeholder="Paste your C solution here..."></textarea></div>
+<details><summary>Hint: how can I identify the common cases?</summary><p>For a 32-bit value <code>0x12345678</code>, check whether the first byte is <code>0x78</code> or <code>0x12</code>. Also check <code>sizeof value == 4</code> before relying on four-byte expectations.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 5 · Common traps</span><h2>Pointer casts, unions, and portability</h2>
+<h3>1. A pointer cast does not convert the number</h3>
+<pre><code>uint32_t x = 0x12345678;
+unsigned char *p = (unsigned char *)&amp;x;</code></pre>
+<p>This does not change <code>x</code>. It gives you a way to look at the bytes that make up its in-memory representation. The order you observe depends on the platform's representation.</p>
+<h3>2. A union is not a portable file-format solution</h3>
+<pre><code>union Example {
+    uint32_t value;
+    unsigned char bytes[4];
+};</code></pre>
+<p>On common compilers, writing <code>value</code> and reading <code>bytes</code> is a familiar way to inspect representation, but it is not a portable way to define a network or file format. It also assumes the integer is exactly four bytes. Prefer the character-pointer inspection shown in Lesson 4 for this learning exercise, and explicit shifts/masks for portable encoding.</p>
+<h3>3. Integer width matters</h3>
+<p>Use exact-width types such as <code>uint32_t</code> when you specifically need 32 bits. These typedefs are provided when the implementation has a type with exactly that width. Plain <code>int</code> is not guaranteed to be 32 bits.</p>
+<h3>4. Endianness is not the same as signedness</h3>
+<p>Signed vs. unsigned determines how a bit pattern is interpreted as a numeric value. Endianness determines the order of bytes in memory. They answer different questions.</p>
+<div class="exercise"><h3>Writing exercise 3 · Spot the misconception</h3><p>For each statement, write “correct” or “incorrect” and explain why:</p><ol><li>“Casting an integer pointer to a byte pointer reverses the integer.”</li><li>“Little-endian means the least significant byte is at the lowest address.”</li><li>“A network packet should be sent by copying a native integer's memory bytes directly.”</li><li>“Endianness changes the order of bits inside each byte.”</li></ol><textarea placeholder="Your answers and explanations..."></textarea></div>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 6 · Real-world engineering</span><h2>Portable encoding and decoding</h2>
+<p>When writing a file, packet, or hardware protocol, define the byte order yourself. Do not rely on the host CPU's native byte order.</p>
+<h3>Encode a 32-bit value as big-endian bytes</h3>
+<pre><code>#include &lt;stdint.h&gt;
+
+void encode_u32_be(uint32_t value, uint8_t out[4])
+{
+    out[0] = (uint8_t)(value &gt;&gt; 24);
+    out[1] = (uint8_t)(value &gt;&gt; 16);
+    out[2] = (uint8_t)(value &gt;&gt; 8);
+    out[3] = (uint8_t)value;
+}</code></pre>
+<p>Shifting moves the desired byte into the lowest 8 bits; conversion to <code>uint8_t</code> keeps that byte. This produces the same byte sequence on little-endian and big-endian CPUs.</p>
+<h3>Decode four big-endian bytes</h3>
+<pre><code>uint32_t decode_u32_be(const uint8_t in[4])
+{
+    return ((uint32_t)in[0] &lt;&lt; 24) |
+           ((uint32_t)in[1] &lt;&lt; 16) |
+           ((uint32_t)in[2] &lt;&lt;  8) |
+           ((uint32_t)in[3]);
+}</code></pre>
+<p>The casts before shifting are important: they ensure the operation is performed using an unsigned 32-bit type rather than relying on signed integer behavior.</p>
+<div class="callout"><strong>Engineering rule:</strong> native memory representation is for working with local objects. A defined byte sequence is for communicating with files, networks, devices, and other machines.</div>
+<div class="exercise"><h3>Coding exercise 2 · Implement a serializer</h3><p>Implement both functions in a complete C program. Test with <code>0x12345678</code>. Your encoded array should contain <code>12 34 56 78</code>, and decoding it should recover the original value.</p><textarea placeholder="Write encode_u32_be(), decode_u32_be(), and main()..."></textarea></div>
+<div class="exercise"><h3>Coding exercise 3 · Little-endian format</h3><p>Write <code>encode_u32_le()</code> and <code>decode_u32_le()</code>. Test with <code>0xA1B2C3D4</code>. Expected encoded bytes: <code>D4 C3 B2 A1</code>.</p><textarea placeholder="Your implementation..."></textarea></div>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 7 · Embedded / systems practice</span><h2>Work with a register or byte buffer</h2>
+<p>Endianness often appears when firmware reads multi-byte values from a byte buffer, parses a protocol, or communicates with a peripheral. The peripheral or protocol specification defines the byte order; never guess it from the CPU.</p>
+<div class="exercise"><h3>Coding exercise 4 · Parse a sensor frame</h3><p>A sensor sends a 6-byte frame. Bytes 0–1 are a big-endian unsigned 16-bit temperature reading in tenths of a degree. Bytes 2–3 are a little-endian unsigned 16-bit pressure reading. Bytes 4–5 are reserved.</p><p>Given <code>{ 0x01, 0x2C, 0x10, 0x27, 0x00, 0x00 }</code>:</p><ol><li>Write a function that extracts temperature and pressure.</li><li>Calculate the decoded integer values.</li><li>Convert temperature to degrees by dividing by 10.0.</li><li>Explain why the two fields use different decoding logic.</li></ol><textarea placeholder="Code and calculations..."></textarea></div>
+<details><summary>Show expected decoded values</summary><p>Temperature: <code>0x012C</code> = 300, therefore 30.0 degrees. Pressure: little-endian bytes <code>10 27</code> represent <code>0x2710</code> = 10,000.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Lesson 8 · Final challenge</span><h2>Build a tiny binary protocol parser</h2>
+<p>Write a program that parses this 8-byte message format:</p>
+<table><tr><th>Byte offset</th><th>Meaning</th><th>Encoding</th></tr><tr><td>0</td><td>Message type</td><td>Single byte</td></tr><tr><td>1–2</td><td>Sequence number</td><td>Big-endian uint16</td></tr><tr><td>3–6</td><td>Payload length</td><td>Little-endian uint32</td></tr><tr><td>7</td><td>Flags</td><td>Single byte</td></tr></table>
+<p>Use this test message:</p><pre><code>0x42, 0x01, 0x02, 0x10, 0x00, 0x00, 0x00, 0xA5</code></pre>
+<div class="exercise"><h3>Final coding exercise</h3><ol><li>Write a function that accepts a pointer to the 8-byte buffer.</li><li>Decode each field according to the table.</li><li>Print the values clearly.</li><li>Validate the input pointer and length in your parser API.</li><li>Add at least three test cases, including a zero value and the largest 16-bit sequence number.</li></ol><textarea placeholder="Your parser implementation and tests..."></textarea></div>
+<details><summary>Check the expected result</summary><ul><li>Message type: <code>0x42</code> (66)</li><li>Sequence number: <code>0x0102</code> (258)</li><li>Payload length: <code>0x00000010</code> (16)</li><li>Flags: <code>0xA5</code> (165)</li></ul></details>
+</section>
+
+<section class="panel">
+<span class="tag">Reference sheet</span><h2>What you should remember</h2>
+<ul>
+<li>Endianness describes the order of bytes in a multi-byte object in memory.</li>
+<li>Little-endian: least significant byte at the lowest address.</li>
+<li>Big-endian: most significant byte at the lowest address.</li>
+<li>It does not reverse the bits inside a byte.</li>
+<li>Inspect native representation through an <code>unsigned char</code> pointer.</li>
+<li>Use explicit shifts and masks to define portable file/protocol formats.</li>
+<li>Use fixed-width integer types when the format requires a specific width.</li>
+<li>Follow the hardware or protocol documentation; do not assume its byte order.</li>
+</ul>
+<h3>Self-assessment</h3>
+<p>You are at “hero” level for this topic when you can do all of these without looking at the workbook:</p>
+<ul><li>Predict the byte order of a 32-bit value in either endian format.</li><li>Write a byte-order detector in C.</li><li>Explain why native-memory copying is unsafe for portable protocols.</li><li>Encode and decode 16-bit and 32-bit values explicitly.</li><li>Parse a mixed-endian byte buffer safely.</li></ul>
+</section>
+
+<section class="panel">
+<h2>Optional extra challenges</h2>
+<ol>
+<li>Implement big-endian and little-endian 16-bit encode/decode functions.</li>
+<li>Write unit tests that verify round-trip encoding for 0, 1, <code>0x12345678</code>, and <code>UINT32_MAX</code>.</li>
+<li>Read a binary file containing a sequence of big-endian 32-bit values and print them.</li>
+<li>Look up the endianness requirements for one real protocol or MCU peripheral you work with. Cite the relevant datasheet or specification section in your notes.</li>
+<li>Investigate whether your target CPU supports unaligned loads and why parsing a byte buffer by casting it to <code>uint32_t *</code> may be unsafe (alignment, aliasing, and endianness).</li>
+</ol>
+</section>
+
+<section class="panel" id="part2">
+<span class="tag">Part 2 · Memory layout and pointers</span>
+<h2>Investigate memory in C: addresses, alignment, and padding</h2>
+<p>This part follows the same lab method throughout: <strong>predict first → compile and run → compare → explain</strong>. The exact addresses will change between runs and machines. Your job is to understand the relationships and rules, not to guess a particular address.</p>
+<div class="callout warning"><strong>Important reality check:</strong> C does not promise that local variables are placed on the stack in declaration order, or even that every local variable has a memory address during optimized execution. Address-taking, compiler, optimization level, ABI, debugger, and runtime environment all matter.</div>
+<h3>Set up your lab</h3>
+<p>Save each exercise as a separate <code>.c</code> file. With GCC or Clang, start with a learning-friendly build:</p>
+<pre><code>gcc -std=c11 -Wall -Wextra -Wpedantic -O0 -g lab.c -o lab
+./lab</code></pre>
+<p>Then compare with optimization enabled:</p>
+<pre><code>gcc -std=c11 -Wall -Wextra -Wpedantic -O2 lab.c -o lab_opt
+./lab_opt</code></pre>
+<p>On Windows, run <code>lab.exe</code> / <code>lab_opt.exe</code>. For consistent experiments, use the same compiler and machine when comparing these two builds.</p>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 1 · Beginner</span>
+<h2>What is an address? What does %p print?</h2>
+<p>In C, <code>&amp;variable</code> means “the address of this variable”. The <code>%p</code> format specifier prints a pointer value. Pass a <code>void *</code> argument to <code>%p</code>, so cast object pointers as <code>(void *)&amp;variable</code>.</p>
+<div class="exercise">
+<h3>Predict before running</h3>
+<p>Without running the code, answer these:</p>
+<ol><li>Will <code>&amp;a</code> and <code>&amp;b</code> be equal?</li><li>Will <code>&amp;a</code> be numerically smaller than <code>&amp;b</code>?</li><li>Can you know the exact addresses before running the program?</li></ol>
+<textarea placeholder="My prediction and reasoning..."></textarea>
+</div>
+<h3>Run this code</h3>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int a = 10;
+    int b = 20;
+
+    printf("a: value=%d, address=%p\n", a, (void *)&amp;a);
+    printf("b: value=%d, address=%p\n", b, (void *)&amp;b);
+
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Record what happened</h3><p>Paste your output or write down the two addresses. Then calculate whether the address of <code>a</code> is above or below the address of <code>b</code>.</p><textarea placeholder="My output and observations..."></textarea></div>
+<details><summary>Detailed explanation</summary>
+<p>The two variables are distinct objects, so their storage does not overlap while both are alive. But C does not guarantee which one has the lower address. Compilers and ABIs choose a layout that suits their implementation. You should expect different addresses across runs, builds, machines, and debugging configurations.</p>
+<p>Also, do not assume the addresses are adjacent. The compiler may leave gaps, use different stack slots, or keep values in registers when their addresses are not needed.</p>
+</details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 2 · Beginner</span>
+<h2>sizeof(int) vs sizeof(pointer)</h2>
+<p><code>sizeof(int)</code> is the size of an <code>int</code> object. <code>sizeof(int *)</code> is the size of an object whose type is “pointer to int”. They are different types and can have different sizes.</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int value = 123;
+    int *ptr = &amp;value;
+
+    printf("sizeof(char)   = %zu\n", sizeof(char));
+    printf("sizeof(int)    = %zu\n", sizeof(int));
+    printf("sizeof(int *)  = %zu\n", sizeof(int *));
+    printf("sizeof(ptr)    = %zu\n", sizeof ptr);
+    printf("sizeof(*ptr)   = %zu\n", sizeof *ptr);
+
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><ol><li>What do you expect <code>sizeof(int)</code> to print?</li><li>What do you expect <code>sizeof(int *)</code> to print on a typical 32-bit system?</li><li>What do you expect it to print on a typical 64-bit system?</li><li>What is the difference between <code>sizeof ptr</code> and <code>sizeof *ptr</code>?</li></ol><textarea placeholder="Predictions..."></textarea></div>
+<details><summary>Detailed explanation</summary>
+<p>On many common systems, <code>sizeof(int)</code> is 4 bytes. On a typical ILP32 32-bit data model, pointers are 4 bytes. On a typical LP64 64-bit data model, pointers are 8 bytes while <code>int</code> remains 4 bytes.</p>
+<p>That is a common platform convention, not a universal C rule. C does not require <code>int</code> to be 4 bytes, nor does “64-bit CPU” alone fully specify every C type size. Use <code>sizeof</code> on the target you compile for.</p>
+<p><code>sizeof ptr</code> measures the pointer object. <code>sizeof *ptr</code> measures the pointed-to <code>int</code>. The expression inside <code>sizeof</code> is not evaluated here, so this particular use does not dereference the pointer at runtime.</p>
+</details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 3 · Beginner → Intermediate</span>
+<h2>Calculate byte distances correctly</h2>
+<p>Addresses are often displayed in hexadecimal. Hexadecimal is base 16: each digit represents 0–15. For example, <code>0x20 - 0x04 = 0x1C</code>, and <code>0x1C</code> is 28 in decimal.</p>
+<div class="callout"><strong>Do not subtract pointer values as integers in portable C.</strong> Pointer subtraction with <code>ptr1 - ptr2</code> is defined when both point into the same array object (or one past it), and the result is measured in elements, not bytes. For byte offsets inside an object's representation, use an <code>unsigned char *</code> pointer.</div>
+<div class="exercise"><h3>Prediction drill</h3><p>Calculate each distance before checking:</p><ol><li><code>0x08 - 0x04</code></li><li><code>0x20 - 0x08</code></li><li><code>0x100 - 0xF8</code></li><li><code>0x2C - 0x10</code></li></ol><textarea placeholder="Show your hexadecimal and decimal calculations..."></textarea></div>
+<h3>Run this byte-distance experiment</h3>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stddef.h&gt;
+
+int main(void)
+{
+    int values[4] = { 10, 20, 30, 40 };
+    int *first = &amp;values[0];
+    int *third = &amp;values[2];
+
+    ptrdiff_t element_distance = third - first;
+    const unsigned char *first_byte = (const unsigned char *)first;
+    const unsigned char *third_byte = (const unsigned char *)third;
+    ptrdiff_t byte_distance = third_byte - first_byte;
+
+    printf("sizeof(int)       = %zu\n", sizeof(int));
+    printf("element distance  = %td\n", element_distance);
+    printf("byte distance     = %td\n", byte_distance);
+
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><p>How many elements apart are <code>values[0]</code> and <code>values[2]</code>? How many bytes apart do you expect them to be if <code>sizeof(int)</code> is 4?</p><textarea placeholder="My prediction..."></textarea></div>
+<details><summary>Detailed explanation</summary><p>Both pointers point into the same array, so subtracting them is valid and gives 2 elements. The byte pointers also point into the same array object's byte representation, so their difference is the byte distance: <code>2 * sizeof(int)</code>. If <code>sizeof(int)</code> is 4, that is 8 bytes.</p><p>For unrelated local variables, do not use pointer subtraction to calculate their distance. C does not define subtraction for pointers to unrelated objects. You may inspect and print addresses for an experiment, but portable C does not provide a general-purpose “distance between arbitrary objects” operation.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 4 · Intermediate</span>
+<h2>Pointer alignment: why addresses have boundaries</h2>
+<p>Some types have alignment requirements. An object of a type must be placed at an address suitable for that type. Query the requirement with <code>_Alignof(type)</code> in C11.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdalign.h&gt;
+#include &lt;stdint.h&gt;
+
+int main(void)
+{
+    char c = 'X';
+    int i = 42;
+    double d = 3.14;
+    int *p = &amp;i;
+
+    printf("&amp;c = %p, _Alignof(char)   = %zu\n", (void *)&amp;c, _Alignof(char));
+    printf("&amp;i = %p, _Alignof(int)    = %zu\n", (void *)&amp;i, _Alignof(int));
+    printf("&amp;d = %p, _Alignof(double) = %zu\n", (void *)&amp;d, _Alignof(double));
+    printf("&amp;p = %p, _Alignof(int *)  = %zu\n", (void *)&amp;p, _Alignof(int *));
+
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><ol><li>Do you expect the address of <code>p</code> (the pointer variable itself) to be aligned for <code>int *</code>?</li><li>Does an 8-byte pointer necessarily have 8-byte alignment?</li><li>Does alignment mean every object of that type is exactly that many bytes long?</li></ol><textarea placeholder="Predictions..."></textarea></div>
+<details><summary>Detailed explanation</summary><p>Object addresses satisfy the alignment requirement of their type. On many common 64-bit systems, pointer objects are 8 bytes in size and have 8-byte alignment, so their addresses are multiples of 8. But size and alignment are separate properties: an 8-byte object is not guaranteed by C to require 8-byte alignment.</p><p>Alignment is about which addresses are valid or efficient for an object type. It is not a promise about the object's size. Use <code>sizeof</code> and <code>_Alignof</code> to measure both on your target.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 5 · Intermediate</span>
+<h2>Padding inside structs</h2>
+<p>The compiler may insert unused bytes between structure members, or after the final member, so each member is correctly aligned and arrays of the structure keep each element aligned.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stddef.h&gt;
+
+struct Example {
+    char c;
+    int i;
+    char d;
+};
+
+int main(void)
+{
+    printf("sizeof(struct Example) = %zu\n", sizeof(struct Example));
+    printf("_Alignof(struct Example) = %zu\n", _Alignof(struct Example));
+    printf("offset c = %zu\n", offsetof(struct Example, c));
+    printf("offset i = %zu\n", offsetof(struct Example, i));
+    printf("offset d = %zu\n", offsetof(struct Example, d));
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first — assume common alignment</h3><p>Assume <code>sizeof(char)=1</code>, <code>sizeof(int)=4</code>, and <code>_Alignof(int)=4</code>. Predict the offsets of <code>c</code>, <code>i</code>, and <code>d</code>, plus the total struct size.</p><textarea placeholder="Draw the bytes: offsets 0, 1, 2..."></textarea></div>
+<details><summary>Detailed explanation for the common layout</summary>
+<p>A typical layout is:</p>
+<table><tr><th>Byte offset</th><th>Contents</th></tr><tr><td>0</td><td><code>c</code></td></tr><tr><td>1–3</td><td>Padding before <code>i</code></td></tr><tr><td>4–7</td><td><code>i</code></td></tr><tr><td>8</td><td><code>d</code></td></tr><tr><td>9–11</td><td>Tail padding</td></tr></table>
+<p>That gives offsets 0, 4, and 8, and a total size of 12 bytes on this common ABI. The C standard permits implementation-defined padding; confirm using <code>offsetof</code> and <code>sizeof</code> on your compiler.</p>
+</details>
+<h3>Now investigate member order</h3>
+<pre><code>struct Reordered {
+    int i;
+    char c;
+    char d;
+};</code></pre>
+<div class="exercise"><p>Predict the likely size of <code>struct Reordered</code> under the same assumptions. Then add it to your program and compare. Why can reordering fields reduce padding?</p><textarea placeholder="Prediction and explanation..."></textarea></div>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 6 · Intermediate</span>
+<h2>Local variables, stack layout, and declaration order</h2>
+<p>The supplied diagram shows local variables and pointer relationships as a conceptual memory map. It is useful for learning, but treat the exact addresses and order as one possible illustrative layout—not a rule of C.</p>
+<div class="callout"><strong>Key distinction:</strong> “local variable” describes scope and lifetime, not a guaranteed physical location. Many implementations place locals in a stack frame, but optimized code may keep values in registers, reuse stack slots, or remove objects whose addresses are never needed.</div>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int v1 = 1;
+    int v2 = 2;
+    int checkpoint = 0;
+
+    printf("&amp;v1         = %p\n", (void *)&amp;v1);
+    printf("&amp;v2         = %p\n", (void *)&amp;v2);
+    printf("&amp;checkpoint= %p\n", (void *)&amp;checkpoint);
+
+    printf("distance v1-v2 is NOT portably computed by pointer subtraction\n");
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><ol><li>Will <code>v1</code> necessarily have a lower address than <code>v2</code> because it was declared first?</li><li>Will <code>checkpoint</code> necessarily follow <code>v2</code> in memory?</li><li>Would you expect the output to be identical under <code>-O0</code> and <code>-O2</code>?</li></ol><textarea placeholder="Predictions..."></textarea></div>
+<details><summary>Detailed explanation</summary><p>No declaration-order guarantee exists for local variable addresses. The compiler and ABI decide the stack-frame layout. On some systems the stack grows toward lower addresses, but that does not mean local declarations map directly in reverse order. Padding, saved registers, spills, stack alignment, and optimization can all affect the frame.</p><p>Compare the same program built with <code>-O0</code> and <code>-O2</code>. Taking each variable's address and printing it makes the addresses observable, so the compiler must provide addressable storage for those objects in this program. Even then, their relative ordering is not specified by C.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 7 · Intermediate</span>
+<h2>Pointer, pointer value, and pointed-to value</h2>
+<p>This is the most important mental model in the supplied example. There are three distinct things:</p>
+<table><tr><th>Expression</th><th>Meaning</th></tr><tr><td><code>ptr</code></td><td>The value stored inside the pointer variable: an address</td></tr><tr><td><code>&amp;ptr</code></td><td>The address where the pointer variable itself is stored</td></tr><tr><td><code>*ptr</code></td><td>The object/value at the address stored in <code>ptr</code></td></tr></table>
+<h3>Run the pointer-to-pointer example</h3>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    int v1 = 1;
+    int v2 = 2;
+    int checkpoint = 0;
+
+    int *ptr = &amp;v1;
+    int **ptr_ptr = &amp;ptr;
+
+    checkpoint = **ptr_ptr;
+
+    printf("v1 address       &amp;v1       = %p\n", (void *)&amp;v1);
+    printf("ptr value        ptr       = %p\n", (void *)ptr);
+    printf("ptr address      &amp;ptr      = %p\n", (void *)&amp;ptr);
+    printf("ptr_ptr value    ptr_ptr   = %p\n", (void *)ptr_ptr);
+    printf("ptr_ptr address  &amp;ptr_ptr = %p\n", (void *)&amp;ptr_ptr);
+    printf("*ptr             = %d\n", *ptr);
+    printf("**ptr_ptr        = %d\n", **ptr_ptr);
+    printf("checkpoint       = %d\n", checkpoint);
+
+    ptr = &amp;v2;
+    checkpoint = **ptr_ptr;
+
+    printf("\nAfter ptr = &amp;v2:\n");
+    printf("ptr value        = %p\n", (void *)ptr);
+    printf("*ptr             = %d\n", *ptr);
+    printf("**ptr_ptr        = %d\n", **ptr_ptr);
+    printf("checkpoint       = %d\n", checkpoint);
+
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict the relationships before running</h3><ol><li>Is <code>ptr</code> equal to <code>&amp;v1</code> initially?</li><li>Is <code>ptr_ptr</code> equal to <code>&amp;ptr</code>?</li><li>What does <code>**ptr_ptr</code> evaluate to initially?</li><li>After <code>ptr = &amp;v2</code>, does <code>ptr_ptr</code> change?</li><li>After that assignment, what does <code>**ptr_ptr</code> evaluate to?</li></ol><textarea placeholder="Draw the arrows and write the predicted values..."></textarea></div>
+<details><summary>Detailed explanation — follow the arrows</summary>
+<p>Initially, <code>ptr</code> stores the address of <code>v1</code>. The pointer variable <code>ptr</code> itself lives somewhere else, and <code>&amp;ptr</code> is that location. <code>ptr_ptr</code> stores <code>&amp;ptr</code>.</p>
+<pre><code>ptr_ptr  ──points to──&gt;  ptr  ──points to──&gt;  v1
+  int **                 int *                 int</code></pre>
+<p>Therefore <code>*ptr_ptr</code> means “read the pointer value stored in <code>ptr</code>”, which is the address of <code>v1</code>. Then <code>**ptr_ptr</code> follows that address and reads the integer value 1.</p>
+<p>When you execute <code>ptr = &amp;v2</code>, you change the value stored in <code>ptr</code>. You do not change the address of the pointer variable itself, so <code>ptr_ptr</code> still points to <code>ptr</code>. Now <code>**ptr_ptr</code> reads 2.</p>
+</details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 8 · Advanced</span>
+<h2>Observe padding and alignment with a pointer member</h2>
+<p>This lab combines a pointer, an integer, a character, member offsets, structure alignment, and total size. Do not assume a particular 32-bit or 64-bit layout: measure it.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stddef.h&gt;
+
+struct Record {
+    char tag;
+    int count;
+    void *data;
+    char status;
+};
+
+int main(void)
+{
+    printf("sizeof(void *)       = %zu\n", sizeof(void *));
+    printf("_Alignof(void *)     = %zu\n", _Alignof(void *));
+    printf("sizeof(struct Record)= %zu\n", sizeof(struct Record));
+    printf("_Alignof(Record)     = %zu\n", _Alignof(struct Record));
+    printf("tag offset            = %zu\n", offsetof(struct Record, tag));
+    printf("count offset          = %zu\n", offsetof(struct Record, count));
+    printf("data offset           = %zu\n", offsetof(struct Record, data));
+    printf("status offset         = %zu\n", offsetof(struct Record, status));
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><p>On a common 64-bit system where <code>int</code> is 4 bytes and pointers are 8 bytes, sketch the likely offsets. Mark every padding byte. Then run the program and compare.</p><textarea placeholder="Your byte-by-byte layout..."></textarea></div>
+<details><summary>Detailed explanation — common 64-bit layout</summary>
+<p>A common LP64 layout is:</p>
+<table><tr><th>Offset</th><th>Member / padding</th><th>Typical bytes</th></tr><tr><td>0</td><td><code>tag</code></td><td>1</td></tr><tr><td>1–3</td><td>Padding before <code>count</code></td><td>3</td></tr><tr><td>4–7</td><td><code>count</code></td><td>4</td></tr><tr><td>8–15</td><td><code>data</code></td><td>8</td></tr><tr><td>16</td><td><code>status</code></td><td>1</td></tr><tr><td>17–23</td><td>Tail padding</td><td>7</td></tr></table>
+<p>In that common case, the structure is 24 bytes and has 8-byte alignment. This is an example, not a universal layout. The compiler's reported offsets and size are authoritative for your build.</p>
+</details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 9 · Advanced</span>
+<h2>Alignment by experiment with _Alignas</h2>
+<p>C11 lets you request stricter alignment using <code>_Alignas</code>, subject to implementation support and the type's alignment constraints.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdalign.h&gt;
+
+int main(void)
+{
+    _Alignas(16) int special = 7;
+    int ordinary = 8;
+
+    printf("&amp;special = %p\n", (void *)&amp;special);
+    printf("&amp;ordinary= %p\n", (void *)&amp;ordinary);
+    printf("_Alignof(int) = %zu\n", _Alignof(int));
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><p>Will the address of <code>special</code> be divisible by 16 when interpreted as an address? Will <code>ordinary</code> also be 16-byte aligned? Explain what you expect, then run it.</p><textarea placeholder="Prediction..."></textarea></div>
+<details><summary>Detailed explanation</summary><p><code>_Alignas(16)</code> requests at least 16-byte alignment for <code>special</code>. It does not require the next local variable to have the same alignment. The compiler may happen to align more objects, but only the requested and type-required constraints are relevant. This example is useful for observing alignment, not for inferring stack direction or declaration order.</p></details>
+</section>
+
+<section class="lesson">
+<span class="tag">Part 2 · Exercise 10 · Advanced</span>
+<h2>Optimization: stack slot, register, or no object?</h2>
+<p>Compare these two functions. The first never exposes the address of its local variable. The second prints its address.</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+int compute_without_address(void)
+{
+    int local = 123;
+    return local + 1;
+}
+
+int compute_with_address(void)
+{
+    int local = 123;
+    printf("local address = %p\n", (void *)&amp;local);
+    return local + 1;
+}
+
+int main(void)
+{
+    printf("result 1 = %d\n", compute_without_address());
+    printf("result 2 = %d\n", compute_with_address());
+    return 0;
+}</code></pre>
+<div class="exercise"><h3>Predict first</h3><ol><li>Does the first function need to put <code>local</code> in memory at all?</li><li>Does the second function need an addressable object for <code>local</code>?</li><li>Will the two functions necessarily have the same machine-code implementation under <code>-O2</code>?</li></ol><textarea placeholder="My prediction..."></textarea></div>
+<details><summary>Detailed explanation</summary><p>The first function's result can be computed without creating a stack slot for <code>local</code>; the compiler may constant-fold the result. In the second function, the program prints the object's address, so an addressable object must exist for the duration of that use. The compiler can still optimize surrounding code.</p><p>To go further, compile to assembly with <code>gcc -O0 -S lab.c</code> and <code>gcc -O2 -S lab.c</code>. Inspect the function bodies. Assembly is compiler- and target-specific, so use it to understand your current build rather than as a universal C rule.</p></details>
+</section>
+
+<section class="panel">
+<span class="tag">Part 2 · Final investigation</span>
+<h2>Recreate the memory map from the reference image</h2>
+<p>Use the pointer-to-pointer program from Exercise 7. Build a table with these columns: <strong>Name</strong>, <strong>Address</strong>, <strong>Value stored</strong>, and <strong>What it points to</strong>.</p>
+<table><tr><th>Name</th><th>Address expression</th><th>Value / relationship</th></tr><tr><td><code>v1</code></td><td><code>&amp;v1</code></td><td>integer 1</td></tr><tr><td><code>v2</code></td><td><code>&amp;v2</code></td><td>integer 2</td></tr><tr><td><code>ptr</code></td><td><code>&amp;ptr</code></td><td>stores <code>&amp;v1</code>, later <code>&amp;v2</code></td></tr><tr><td><code>ptr_ptr</code></td><td><code>&amp;ptr_ptr</code></td><td>stores <code>&amp;ptr</code></td></tr></table>
+<div class="exercise"><h3>Your final task</h3><ol><li>Run Exercise 7 and record all five relevant addresses: <code>&amp;v1</code>, <code>&amp;v2</code>, <code>&amp;ptr</code>, <code>ptr</code>, and <code>&amp;ptr_ptr</code>.</li><li>Explain why <code>ptr</code> and <code>&amp;ptr</code> are not the same thing.</li><li>Explain why changing <code>ptr</code> does not change <code>ptr_ptr</code>.</li><li>Run with <code>-O0</code> and <code>-O2</code>. Record any changes without assuming either layout is guaranteed.</li><li>Draw the pointer arrows and annotate each object's address separately from the value it stores.</li></ol><textarea placeholder="My memory map, observations, and explanation..."></textarea></div>
+</section>
+
+<section class="panel">
+<h2>Part 2 · Quick reference</h2>
+<table><tr><th>Expression / tool</th><th>What it tells you</th></tr>
+<tr><td><code>&amp;x</code></td><td>Address of object <code>x</code></td></tr>
+<tr><td><code>p</code></td><td>Address value stored in pointer variable <code>p</code></td></tr>
+<tr><td><code>&amp;p</code></td><td>Address of the pointer variable itself</td></tr>
+<tr><td><code>*p</code></td><td>Object/value pointed to by <code>p</code></td></tr>
+<tr><td><code>sizeof p</code></td><td>Size of the pointer object</td></tr>
+<tr><td><code>sizeof *p</code></td><td>Size of the pointed-to type</td></tr>
+<tr><td><code>_Alignof(T)</code></td><td>Alignment requirement of type <code>T</code></td></tr>
+<tr><td><code>offsetof(S, member)</code></td><td>Byte offset of a struct member</td></tr>
+<tr><td><code>sizeof(struct S)</code></td><td>Total struct size, including padding</td></tr>
+<tr><td><code>%p</code></td><td>Print a pointer; pass <code>(void *)pointer</code></td></tr>
+</table>
+<div class="callout warning"><strong>Safety rules to keep:</strong> only dereference valid pointers; only do pointer arithmetic within an array object (or one past it); only subtract pointers into the same array; don't assume local-variable order; don't assume a fixed struct layout across ABIs; and don't use pointer casts to bypass alignment or aliasing requirements.</div>
+</section>
+
+<footer>C Memory &amp; Endianness · Two-part workbook · Predict, compile, inspect, and explain.</footer>
+</main>
+<script>
+const boxes=[...document.querySelectorAll('#milestones input')];
+function update(){const n=boxes.filter(x=>x.checked).length;document.getElementById('progressBar').style.width=(n/boxes.length*100)+'%';document.getElementById('progressText').textContent=n+' of '+boxes.length+' milestones checked';}
+boxes.forEach(x=>x.addEventListener('change',update));
+function norm(s){return s.toUpperCase().replace(/0X/g,'').replace(/[^0-9A-F]/g,'');}
+function checkBytes(){
+ const be=norm(document.getElementById('beAnswer').value), le=norm(document.getElementById('leAnswer').value);
+ const ok=be==='CAFEBABE'&&le==='BEBAFECA';
+ document.getElementById('byteFeedback').textContent=ok?'Correct — you have it!':'Not quite. Expected big-endian: CA FE BA BE; little-endian: BE BA FE CA. Try again.';
+ document.getElementById('byteFeedback').style.color=ok?'#16734a':'#9b3b25';
+}
+</script>
+</body></html>
