@@ -84,4 +84,47 @@ snek_object_t* new_snek_array(int size) {
     };
 
     return new;
-}
+};
+
+int snek_array_set(snek_object_t* obj, int index, snek_object_t* value) {
+    
+    if( (!(obj) | (!value)) ) {
+        return -1;
+    };
+
+    if(obj->type != ARRAY) {
+        return -1;
+    };
+
+    if(!(index < obj->data.array_v.size)) {
+        return -1;
+    };
+
+    obj->data.array_v.arr[index] = value;
+    return 0;
+};
+
+snek_object_t* snek_array_get(snek_object_t* obj, int index) {
+    
+    if( (!(obj)) | (obj->type != ARRAY) | (!(index < obj->data.array_v.size)) ) {
+        return NULL;
+    };
+
+    return obj->data.array_v.arr[index];
+};
+
+int snek_length(snek_object_t* obj) {
+
+    if(!(obj)) {
+        return -1;
+    };
+
+    switch(obj->type) {
+        case INT:    return 1;
+        case FLOAT:  return 1;
+        case STR:    return strlen(obj->data.string_v);
+        case VECTOR: return 3;
+        case ARRAY:  return obj->data.array_v.size;
+        default:     return -1;
+    };
+};

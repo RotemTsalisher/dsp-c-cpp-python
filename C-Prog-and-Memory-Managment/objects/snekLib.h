@@ -53,3 +53,4 @@ snek_object_t* new_snek_float(const float value);
 snek_object_t* new_snek_string(const char* value);
 snek_object_t* new_snek_vector(snek_object_t* x_, snek_object_t* y_, snek_object_t* z_);
 snek_object_t* new_snek_array(int size);
+int snek_array_set(snek_object_t* obj, int index, snek_object_t* value);
