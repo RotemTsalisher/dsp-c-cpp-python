@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C Static Libraries — From Scratch to Hero</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--panel2:#17223b;--text:#e8edf8;--muted:#aab6cf;--accent:#7dd3fc;--green:#86efac;--yellow:#fcd34d;--line:#2a3858;--code:#080d18}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:56px 22px 42px;background:linear-gradient(135deg,#142342,#0b1020 70%);border-bottom:1px solid var(--line)}
+.wrap{max-width:1050px;margin:auto;padding:0 22px}h1{font-size:clamp(2.1rem,5vw,3.6rem);line-height:1.08;margin:0 0 16px}h2{font-size:1.8rem;margin:0 0 14px}h3{font-size:1.2rem;margin:24px 0 8px;color:#c6eaff}p{margin:10px 0}.lead{font-size:1.15rem;color:var(--muted);max-width:800px}.tag{display:inline-block;border:1px solid #426080;color:var(--accent);border-radius:999px;padding:4px 11px;font-size:.8rem;margin:0 6px 10px 0}
+nav{position:sticky;top:0;background:#0d1425ed;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:5;padding:10px 0}
+nav .wrap{display:flex;gap:8px;overflow:auto;white-space:nowrap}nav a{color:var(--muted);text-decoration:none;font-size:.9rem;padding:5px 9px;border-radius:7px}nav a:hover{background:var(--panel2);color:white}
+main{padding:28px 0 80px}.module{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;margin:22px 0;scroll-margin-top:70px}.module .meta{color:var(--accent);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.callout{background:var(--panel2);border-left:3px solid var(--accent);padding:13px 16px;border-radius:8px;margin:16px 0}.warn{border-left-color:var(--yellow)}.good{border-left-color:var(--green)}
+pre{background:var(--code);border:1px solid #26334e;border-radius:10px;padding:16px;overflow:auto;color:#d9e7ff;font: .9rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#b9e6ff}.inline{background:#202c46;padding:2px 5px;border-radius:5px}
+button{background:#1e3a5f;color:#eaf6ff;border:1px solid #47739d;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:650;margin:8px 0}button:hover{background:#28527e}.solution{display:none;background:#0d1628;border:1px solid #31506d;border-radius:10px;padding:16px;margin-top:10px}.solution.show{display:block}.exercise{border:1px dashed #456080;padding:16px;border-radius:10px;margin:18px 0}.small{color:var(--muted);font-size:.92rem}.checklist li{margin:6px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.tile{background:var(--panel2);padding:14px;border-radius:10px;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;margin:14px 0}td,th{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:#c6eaff}.progress{height:8px;background:#25314a;border-radius:99px;overflow:hidden;margin:14px 0}.progress span{display:block;height:100%;width:0;background:var(--green);transition:width .2s}footer{color:var(--muted);padding:30px 0;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="tag">C • GCC / Clang • Hands-on course</div><div class="tag">Beginner → Hero</div>
+<h1>Static Libraries in C</h1>
+<p class="lead">A practical course that takes you from “what is a library?” to building, packaging, linking, debugging and maintaining a reusable C static library in a completely separate project.</p>
+<p class="small">Assumption: you already write C comfortably, but have no library/build-system experience. Examples use GCC or Clang and work conceptually on Linux, macOS and Windows with MinGW. Windows/MSVC notes are included where useful.</p>
+<div class="progress"><span id="progressBar"></span></div><p class="small" id="progressText">0 of 12 modules marked complete</p>
+</div></header>
+<nav><div class="wrap">
+<a href="#map">Roadmap</a><a href="#m1">1. Big picture</a><a href="#m2">2. Compile</a><a href="#m3">3. Archive</a><a href="#m4">4. Link</a><a href="#m5">5. API</a><a href="#m6">6. Separate project</a><a href="#m7">7. Debug</a><a href="#m8">8. Make</a><a href="#m9">9. CMake</a><a href="#m10">10. Portability</a><a href="#m11">11. Hero</a><a href="#capstone">Capstone</a>
+</div></nav>
+<main class="wrap">
+<section class="module" id="map"><div class="meta">Start here</div><h2>How the course works</h2>
+<p>Each module has a teaching section, a practical task, and a <b>Show solution</b> button. Try the task first; then reveal the solution and compare it with your own work. Mark modules complete as you go.</p>
+<div class="grid">
+<div class="tile"><b>Stage 1 — Understand</b><p class="small">Source files, object files, archives, headers and the linker.</p></div>
+<div class="tile"><b>Stage 2 — Build</b><p class="small">Create <code>.o</code> files, package them into <code>.a</code>, link a client.</p></div>
+<div class="tile"><b>Stage 3 — Reuse</b><p class="small">Install-like folder layout, independent consumer project, include/library paths.</p></div>
+<div class="tile"><b>Stage 4 — Engineer</b><p class="small">ABI/API, symbols, dependencies, build automation, CMake and release hygiene.</p></div>
+</div>
+<h3>Prerequisites and tools</h3>
+<ul><li>A C compiler: GCC or Clang. Check with <code>gcc --version</code> or <code>clang --version</code>.</li><li>An archiver: usually <code>ar</code>, shipped with GNU binutils.</li><li>A terminal. On Windows, use MSYS2/MinGW-w64 or an equivalent GCC toolchain.</li></ul>
+<div class="callout"><b>Important distinction:</b> a static library is not a magical executable and does not run by itself. It is an archive of object files. The linker copies the needed machine-code sections from that archive into the final executable (or another library).</div>
+</section>
+
+<section class="module" id="m1"><div class="meta">Module 01 • Concepts</div><h2>What exactly is a static library?</h2>
+<p>A C program usually moves through these stages:</p>
+<pre>source code (.c)
+     │  compiler: preprocess + compile
+     ▼
+object file (.o / .obj)
+     │  linker + other objects/libraries
+     ▼
+executable (program)</pre>
+<p>A static library groups one or more object files into an archive, commonly named <code>libNAME.a</code> on Unix-like systems. It lets another project reuse compiled code without recompiling the library's source files every time.</p>
+<table><tr><th>File</th><th>What it contains / does</th></tr>
+<tr><td><code>math.c</code></td><td>Function implementations.</td></tr><tr><td><code>math.h</code></td><td>Public declarations clients compile against.</td></tr>
+<tr><td><code>math.o</code></td><td>Compiled machine code plus symbol/relocation information.</td></tr><tr><td><code>libmathkit.a</code></td><td>Archive containing object files.</td></tr><tr><td><code>main</code> / <code>app.exe</code></td><td>Final linked executable.</td></tr></table>
+<h3>Static vs shared library</h3>
+<ul><li><b>Static:</b> selected object code is incorporated into the executable at link time. The resulting executable generally does not need the library file at runtime.</li><li><b>Shared/dynamic:</b> code remains in a separate shared object/DLL and is loaded at runtime. This course focuses on static libraries.</li></ul>
+<div class="callout warn"><b>Do not confuse static linking with “all code is always copied”.</b> Traditional archive linking normally extracts archive members to satisfy unresolved symbols. Linker options, whole-archive behavior, LTO and section garbage collection can change details.</div>
+<div class="exercise"><b>Exercise 1 — Explain it in your own words</b><p>What is the difference between a <code>.c</code>, <code>.o</code>, <code>.a</code> and executable? Why does a consumer still need the header?</p><button onclick="toggle('s1')">Show solution</button><div class="solution" id="s1">A <code>.c</code> is source code; a <code>.o</code> is compiled object code; a <code>.a</code> is an archive of object files; an executable is the final linked program. The header gives the compiler declarations and types while compiling the consumer. The archive supplies the compiled definitions later, during linking.</div></div>
+<button onclick="done(1)">Mark module complete ✓</button></section>
+
+<section class="module" id="m2"><div class="meta">Module 02 • First compilation</div><h2>Compile C into object files</h2>
+<p>Before creating a library, compile a tiny function into an object file. Create this folder:</p>
+<pre>static-lib-course/
+├── calc.c
+└── calc.h</pre>
+<p><code>calc.h</code>:</p><pre>#ifndef CALC_H
+#define CALC_H
+
+int add(int a, int b);
+
+#endif</pre>
+<p><code>calc.c</code>:</p><pre>#include "calc.h"
+
+int add(int a, int b)
+{
+    return a + b;
+}</pre>
+<p>Compile only; do not link an executable yet:</p><pre>gcc -Wall -Wextra -Wpedantic -std=c11 -c calc.c -o calc.o</pre>
+<p>Read the command: <code>-c</code> means “compile/assemble, but do not link”. <code>-o calc.o</code> chooses the output filename. Warnings help catch mistakes early.</p>
+<h3>Inspect the object</h3><pre>file calc.o
+nm calc.o</pre>
+<p><code>nm</code> lists symbols. You should see <code>add</code> as a defined text symbol (often marked <code>T</code>). Exact output varies by platform.</p>
+<div class="exercise"><b>Exercise 2 — Make an object file</b><p>Create <code>calc.c</code> and <code>calc.h</code>, compile with the command above, and confirm <code>calc.o</code> exists. Then deliberately misspell the function name in the declaration and observe what does (and does not) happen during compilation.</p><button onclick="toggle('s2')">Show solution</button><div class="solution" id="s2">The compile command creates <code>calc.o</code>. A declaration spelling mismatch may not stop compilation of <code>calc.c</code> if that file does not use the declaration in a conflicting way. The mismatch usually becomes a linker error when a consumer calls the declared name but the object defines a different name. This illustrates why headers and definitions must agree.</div></div>
+<button onclick="done(2)">Mark module complete ✓</button></section>
+
+<section class="module" id="m3"><div class="meta">Module 03 • Build the archive</div><h2>Create your first static library</h2>
+<p>Now package the object file using <code>ar</code> (the archiver):</p><pre>ar rcs libcalc.a calc.o</pre>
+<ul><li><code>r</code>: insert/replace members in the archive.</li><li><code>c</code>: create the archive if it does not exist.</li><li><code>s</code>: write/update the symbol index (often called the archive index).</li></ul>
+<p>Inspect it:</p><pre>ar t libcalc.a
+nm -s libcalc.a</pre>
+<p><code>ar t</code> lists archive members; it should list <code>calc.o</code>. <code>nm</code> can show symbols in the archive.</p>
+<div class="callout good">The library is now built. It is named <code>libcalc.a</code> because many Unix-like linkers search for a library named <code>calc</code> when passed <code>-lcalc</code>.</div>
+<div class="exercise"><b>Exercise 3 — Add a second source file</b><p>Create <code>subtract.c</code> and <code>subtract.h</code> (or put both declarations in <code>calc.h</code>). Compile it to <code>subtract.o</code> and rebuild the archive so it contains both object files.</p><button onclick="toggle('s3')">Show solution</button><div class="solution" id="s3"><pre>/* subtract.c */
+int subtract(int a, int b)
+{
+    return a - b;
+}
+
+/* commands */
+gcc -Wall -Wextra -Wpedantic -std=c11 -c subtract.c -o subtract.o
+ar rcs libcalc.a calc.o subtract.o
+ar t libcalc.a</pre>Run <code>ar t</code> and verify both members are listed. Re-running <code>ar rcs</code> updates/replaces members with matching names; it does not automatically remove old members whose names are no longer supplied.</div></div>
+<button onclick="done(3)">Mark module complete ✓</button></section>
+
+<section class="module" id="m4"><div class="meta">Module 04 • Linking</div><h2>Use the library in an executable</h2>
+<p>Create <code>main.c</code>:</p><pre>#include <stdio.h>
+#include "calc.h"
+
+int add(int a, int b); /* remove this if calc.h already declares it */
+
+int main(void)
+{
+    printf("2 + 3 = %d\\n", add(2, 3));
+    return 0;
+}</pre>
+<p>Link the object and archive directly:</p><pre>gcc -Wall -Wextra -Wpedantic -std=c11 main.c ./libcalc.a -o demo</pre>
+<p>Or use the conventional library search syntax:</p><pre>gcc -Wall -Wextra -Wpedantic -std=c11 -I. -L. main.c -lcalc -o demo</pre>
+<ul><li><code>-I.</code> adds the current directory to the header search path.</li><li><code>-L.</code> adds the current directory to the library search path.</li><li><code>-lcalc</code> asks the linker to find <code>libcalc.a</code> (or a shared-library alternative, depending on platform and linker settings).</li></ul>
+<p>Run it: <code>./demo</code> on Linux/macOS, or <code>.\demo.exe</code> in PowerShell if built as <code>demo.exe</code>.</p>
+<div class="callout warn"><b>Link order matters with many Unix linkers.</b> Put objects that reference symbols before the libraries that provide them: <code>main.o -lcalc</code>, not usually <code>-lcalc main.o</code>. Static archives are searched to resolve symbols encountered so far.</div>
+<div class="exercise"><b>Exercise 4 — Break the link on purpose</b><p>Try compiling <code>main.c</code> without <code>libcalc.a</code>. Then try with the wrong library name (<code>-lcal</code>). Read the errors and explain which stage failed.</p><button onclick="toggle('s4')">Show solution</button><div class="solution" id="s4">Without the archive, compilation of <code>main.c</code> can succeed because the header declares <code>add</code>, but linking fails with an “undefined reference” / unresolved external symbol. With <code>-lcal</code>, the linker cannot find a matching library. Header inclusion is a compile-time operation; finding function implementations is a link-time operation.</div></div>
+<button onclick="done(4)">Mark module complete ✓</button></section>
+
+<section class="module" id="m5"><div class="meta">Module 05 • Public API design</div><h2>Design a library like a professional</h2>
+<p>A good library separates its public interface from private implementation details.</p>
+<pre>calc-library/
+├── include/
+│   └── calc/
+│       └── calc.h       # public header
+├── src/
+│   ├── calc.c           # implementation
+│   └── internal.h       # private header, if needed
+└── build/               # generated files</pre>
+<p>Public header example:</p><pre>#ifndef CALC_CALC_H
+#define CALC_CALC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
+    int value;
+} CalcResult;
+
+/* Returns 0 on success; writes the result to out_result. */
+int calc_add(int a, int b, CalcResult *out_result);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif</pre>
+<p>Implementation:</p><pre>#include "calc/calc.h"
+
+int calc_add(int a, int b, CalcResult *out_result)
+{
+    if (out_result == 0) {
+        return -1;
+    }
+
+    out_result->value = a + b;
+    return 0;
+}</pre>
+<h3>API rules worth adopting</h3>
+<ul><li>Use include guards in every public header.</li><li>Document ownership, valid inputs, return values and error behavior.</li><li>Do not expose private structs or implementation-only declarations unless needed.</li><li>Prefix public symbols (e.g. <code>calc_</code>) to reduce name collisions.</li><li>Avoid defining non-<code>static</code> functions or global variables in headers.</li><li>Use <code>static</code> for file-private helper functions.</li><li>Be cautious changing public struct layouts or function signatures: consumers must be rebuilt and the API may break.</li></ul>
+<div class="exercise"><b>Exercise 5 — Make the API safer</b><p>Change <code>calc_add</code> so it returns an error if <code>out_result</code> is null. Add a test in the consumer project for the null case.</p><button onclick="toggle('s5')">Show solution</button><div class="solution" id="s5">The implementation above already checks for a null pointer and returns <code>-1</code>. In the client: <pre>if (calc_add(2, 3, NULL) != -1) {
+    puts("null-input test failed");
+    return 1;
+}</pre>Include <code>&lt;stddef.h&gt;</code> if you want to use <code>NULL</code> portably.</div></div>
+<button onclick="done(5)">Mark module complete ✓</button></section>
+
+<section class="module" id="m6"><div class="meta">Module 06 • Separate consumer project</div><h2>Package the library and use it elsewhere</h2>
+<p>This is the central real-world skill: the application should not need the library's <code>.c</code> source files. It needs only the public headers and the compiled archive.</p>
+<h3>Library project</h3><pre>calc-library/
+├── include/calc/calc.h
+├── src/calc.c
+└── build/libcalc.a</pre>
+<p>Build from the library root:</p><pre>mkdir -p build
+gcc -std=c11 -Wall -Wextra -Wpedantic -Iinclude -c src/calc.c -o build/calc.o
+ar rcs build/libcalc.a build/calc.o</pre>
+<h3>Consumer project — a separate directory</h3><pre>calculator-app/
+├── src/main.c
+└── (no calc.c here!)</pre>
+<p>Copy or install the public include directory and archive into a package location, for example:</p><pre>third_party/calc/
+├── include/calc/calc.h
+└── lib/libcalc.a</pre>
+<p>Compile the app from its own directory:</p><pre>gcc -std=c11 -Wall -Wextra -Wpedantic \\
+    -Ithird_party/calc/include \\
+    src/main.c \\
+    -Lthird_party/calc/lib -lcalc \\
+    -o calculator</pre>
+<p>On Windows PowerShell, put the command on one line or use PowerShell's backtick for line continuation. With MinGW, the archive is commonly still <code>libcalc.a</code>.</p>
+<div class="callout good"><b>Proof of separation:</b> temporarily rename or move <code>calc-library/src/calc.c</code>. The consumer should still build using the packaged header and archive. If it cannot, you are probably compiling library source as part of the app instead of consuming the library artifact.</div>
+<div class="exercise"><b>Exercise 6 — The two-project test</b><p>Create the two directories exactly as shown. Build the archive in the library project, copy only the public header and <code>.a</code> into the consumer, then build the consumer. Do not add <code>calc.c</code> to the consumer's compile command.</p><button onclick="toggle('s6')">Show solution</button><div class="solution" id="s6">The key is that the client command names only <code>src/main.c</code>, the include directory, and the library directory/name. Example: <pre>gcc -Ithird_party/calc/include src/main.c -Lthird_party/calc/lib -lcalc -o calculator</pre>The compiler reads the copied header. The linker extracts the required object member from <code>libcalc.a</code>. The original source file is not required for this build.</div></div>
+<button onclick="done(6)">Mark module complete ✓</button></section>
+
+<section class="module" id="m7"><div class="meta">Module 07 • Debugging</div><h2>Understand linker errors and inspect symbols</h2>
+<table><tr><th>Symptom</th><th>Likely cause</th><th>Check</th></tr>
+<tr><td><code>undefined reference</code></td><td>Implementation absent, wrong link order, wrong library, or symbol name mismatch.</td><td><code>nm libcalc.a</code>; inspect link command.</td></tr>
+<tr><td><code>cannot find -lcalc</code></td><td>Library path/name incorrect.</td><td>Check <code>-L</code>, filename and architecture.</td></tr>
+<tr><td>Header not found</td><td>Include path incorrect or header not packaged.</td><td>Check <code>-I</code> and folder layout.</td></tr>
+<tr><td>Multiple definition</td><td>Same global symbol defined in multiple objects; often function bodies in headers.</td><td>Use declarations in headers, definitions in one <code>.c</code>.</td></tr>
+<tr><td>Incompatible architecture / format</td><td>Library built for another target, object format or ABI.</td><td>Use matching compiler/toolchain/target.</td></tr></table>
+<h3>Useful inspection commands</h3><pre>ar t libcalc.a          # archive members
+nm libcalc.a            # symbols
+nm -A libcalc.a         # symbols with archive member names
+objdump -f calc.o       # object format / architecture (GNU)
+objdump -t calc.o       # symbol table
+size calc.o             # section sizes (if supported)</pre>
+<p>Symbol convention: uppercase <code>T</code> commonly means a global function in a code section; lowercase <code>t</code> commonly means a local function. <code>U</code> means an undefined symbol that this object expects another object/library to provide. Output differs across platforms.</p>
+<div class="exercise"><b>Exercise 7 — Diagnose an undefined reference</b><p>Your header declares <code>int calc_multiply(int, int);</code>, but the archive contains only <code>calc.o</code> with <code>calc_add</code>. Your app calls <code>calc_multiply</code>. What will happen, and how do you verify it?</p><button onclick="toggle('s7')">Show solution</button><div class="solution" id="s7">The compiler accepts the call because the declaration exists. The linker fails because no linked object defines <code>calc_multiply</code>. Run <code>nm -A libcalc.a</code>; you will not find a defined <code>calc_multiply</code> symbol. Implement it, compile the new object, and rebuild the archive.</div></div>
+<button onclick="done(7)">Mark module complete ✓</button></section>
+
+<section class="module" id="m8"><div class="meta">Module 08 • Automation</div><h2>Build reliably with Make</h2>
+<p>Typing commands manually is useful for learning, but repeatable builds should be automated. Create a <code>Makefile</code> in the library project:</p><pre>CC      := gcc
+AR      := ar
+CFLAGS  := -std=c11 -Wall -Wextra -Wpedantic -O2
+CPPFLAGS := -Iinclude
+
+BUILD   := build
+LIB     := $(BUILD)/libcalc.a
+OBJ     := $(BUILD)/calc.o
+
+.PHONY: all clean
+
+all: $(LIB)
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(BUILD)/calc.o: src/calc.c include/calc/calc.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@
+
+$(LIB): $(OBJ)
+	$(AR) rcs $@ $^
+
+clean:
+	rm -rf $(BUILD)</pre>
+<p>Run <code>make</code> to build and <code>make clean</code> to remove generated output. Make uses tabs (not spaces) at the start of recipe lines. The vertical bar introduces an order-only prerequisite: the build directory must exist, but its timestamp alone should not force recompilation.</p>
+<div class="callout">For a multi-source library, define one object per source and make the archive depend on all objects. When headers change, list the relevant headers as prerequisites. Larger projects often generate header dependencies automatically using compiler flags such as <code>-MMD -MP</code>.</div>
+<div class="exercise"><b>Exercise 8 — Add a source file to Make</b><p>Add <code>src/calc_subtract.c</code>. Update the Makefile so it compiles the new source and packages both objects into the archive. Verify that touching the source rebuilds the right object and archive.</p><button onclick="toggle('s8')">Show solution</button><div class="solution" id="s8">Use: <pre>OBJ := $(BUILD)/calc.o $(BUILD)/calc_subtract.o
+
+$(BUILD)/calc_subtract.o: src/calc_subtract.c include/calc/calc.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@
+
+$(LIB): $(OBJ)
+	$(AR) rcs $@ $^</pre>Ensure the recipe lines begin with literal tab characters. Add the public header dependency if the source includes it.</div></div>
+<button onclick="done(8)">Mark module complete ✓</button></section>
+
+<section class="module" id="m9"><div class="meta">Module 09 • Modern build systems</div><h2>Build and consume the library with CMake</h2>
+<p>CMake describes targets and their relationships, then generates build files for a chosen backend. It is not itself the compiler.</p>
+<h3>Library <code>CMakeLists.txt</code></h3><pre>cmake_minimum_required(VERSION 3.16)
+project(calc VERSION 1.0.0 LANGUAGES C)
+
+add_library(calc STATIC
+    src/calc.c
+)
+
+target_include_directories(calc
+    PUBLIC
+        $&lt;BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include&gt;
+        $&lt;INSTALL_INTERFACE:include&gt;
+)
+
+target_compile_features(calc PUBLIC c_std_11)</pre>
+<p>Build:</p><pre>cmake -S . -B build
+cmake --build build</pre>
+<p>The <code>PUBLIC</code> include directory is propagated to targets that link against <code>calc</code>. This is a major advantage over manually repeating include and library paths.</p>
+<h3>Consumer project</h3><pre>cmake_minimum_required(VERSION 3.16)
+project(calculator_app LANGUAGES C)
+
+add_subdirectory(third_party/calc)
+
+add_executable(calculator src/main.c)
+target_link_libraries(calculator PRIVATE calc)</pre>
+<p>Here <code>third_party/calc</code> contains the library's CMake project. Build the consumer with <code>cmake -S . -B build</code> then <code>cmake --build build</code>.</p>
+<div class="callout warn">For a truly prebuilt third-party archive, you can define an <code>IMPORTED</code> target and set its archive location and interface include directory. Do not use <code>add_subdirectory</code> if you intentionally want to consume only a prebuilt binary package.</div>
+<div class="exercise"><b>Exercise 9 — Make a target-based consumer</b><p>Build the library with CMake, then make a separate app that links to it. Confirm you do not need to manually write <code>-I</code> and <code>-L</code> flags in the app target.</p><button onclick="toggle('s9')">Show solution</button><div class="solution" id="s9">Use <code>target_include_directories(calc PUBLIC ...)</code> in the library and <code>target_link_libraries(calculator PRIVATE calc)</code> in the app. CMake propagates the public usage requirements from the library target to the consumer.</div></div>
+<button onclick="done(9)">Mark module complete ✓</button></section>
+
+<section class="module" id="m10"><div class="meta">Module 10 • Platform and architecture</div><h2>Portability, compiler flags and binary compatibility</h2>
+<p>A static library is not universally interchangeable. Its object files are built for a specific target and toolchain environment.</p>
+<ul><li><b>Architecture:</b> x86-64 objects cannot normally be linked into an ARM executable, and vice versa.</li><li><b>ABI:</b> calling convention, data layout, alignment and symbol naming must agree.</li><li><b>Compiler/runtime:</b> mixing toolchains can cause incompatible object formats or runtime assumptions.</li><li><b>Debug/release:</b> debug symbols and optimization levels can differ; keep build configurations intentional.</li><li><b>32-bit vs 64-bit:</b> pointer sizes and data models differ. Build the library for the same target as the app.</li></ul>
+<h3>Common naming differences</h3>
+<table><tr><th>Environment</th><th>Typical static archive</th><th>Object file</th></tr><tr><td>GCC / Linux</td><td><code>libcalc.a</code></td><td><code>.o</code></td></tr><tr><td>Clang / macOS</td><td><code>libcalc.a</code></td><td><code>.o</code></td></tr><tr><td>MSVC</td><td><code>calc.lib</code></td><td><code>.obj</code></td></tr><tr><td>MinGW GCC</td><td>usually <code>libcalc.a</code></td><td><code>.o</code></td></tr></table>
+<p>For MSVC, the broad process is analogous: compile source to <code>.obj</code> using <code>cl /c</code>, create a <code>.lib</code> archive with <code>lib</code>, then link the client with the archive and include path. Do not assume a GCC-built <code>.a</code> can be linked by MSVC.</p>
+<h3>Reproducible builds</h3>
+<p>Record compiler version, target architecture, relevant flags, library version and dependencies. Avoid compiling a library with machine-specific flags such as <code>-march=native</code> if you intend to distribute it to unknown machines.</p>
+<div class="exercise"><b>Exercise 10 — Think like a release engineer</b><p>You built <code>libcalc.a</code> on an x86-64 Linux machine. A colleague tries to link it into an ARM embedded target and gets a file-format/architecture error. Is this a missing-header problem? What should you do?</p><button onclick="toggle('s10')">Show solution</button><div class="solution" id="s10">No. The archive contains object code for the wrong target. Rebuild the library with the embedded target's cross-compiler and matching flags/sysroot/ABI, then link that target-specific archive into the embedded application. The public API may be portable, but the compiled binary is target-specific.</div></div>
+<button onclick="done(10)">Mark module complete ✓</button></section>
+
+<section class="module" id="m11"><div class="meta">Module 11 • Advanced engineering</div><h2>Dependencies, symbol visibility and release quality</h2>
+<h3>Static library dependencies</h3>
+<p>Suppose <code>libsignal.a</code> calls functions from <code>libmathkit.a</code>. The final application must link both libraries, generally in dependency order:</p><pre>gcc main.o -lsignal -lmathkit -o app</pre>
+<p>If archives depend on each other cyclically, linkers may need a group/repeated libraries, or the dependency structure should be redesigned. Prefer an acyclic dependency graph.</p>
+<h3>Do not put implementation bodies in public headers casually</h3>
+<p>A normal external function defined in a header included by several translation units can cause multiple-definition errors. For small header-only utilities, use <code>static inline</code> deliberately. For a traditional static library, put implementation in <code>.c</code> files.</p>
+<h3>Versioning and compatibility</h3>
+<ul><li>Use semantic versioning as a communication convention: major for incompatible API changes, minor for backward-compatible features, patch for fixes.</li><li>Keep a changelog and document supported compiler/target combinations.</li><li>Ship headers, archive(s), license, README, build instructions and preferably tests.</li><li>Build and test the library independently, then test it from a clean consumer project.</li></ul>
+<h3>Testing the library</h3>
+<p>Test public behavior through the public header, not by reaching into private implementation details. Run tests with warnings enabled and, where available, AddressSanitizer/UndefinedBehaviorSanitizer:</p><pre>gcc -std=c11 -Wall -Wextra -Wpedantic -g \\
+    -fsanitize=address,undefined \\
+    test_calc.c src/calc.c -o test_calc</pre>
+<p>For a test of the compiled archive itself, link <code>test_calc.c</code> against <code>libcalc.a</code> rather than compiling the library source into the test executable.</p>
+<div class="exercise"><b>Exercise 11 — Design a release package</b><p>List the files you would give another team so they can use version 1.0 of your library without your source tree. Include the information needed to avoid wrong-architecture and wrong-compiler problems.</p><button onclick="toggle('s11')">Show solution</button><div class="solution" id="s11">A reasonable package contains <code>include/</code> public headers, <code>lib/</code> target-specific archive(s), README with exact compile/link or CMake usage, version and changelog, license, supported OS/architecture/compiler/ABI details, required dependent libraries and flags, and optionally tests/examples plus debug symbols. Separate builds by target/configuration, e.g. <code>lib/linux-x86_64/</code> and <code>lib/arm-none-eabi/</code>.</div></div>
+<button onclick="done(11)">Mark module complete ✓</button></section>
+
+<section class="module" id="m12"><div class="meta">Module 12 • Mastery checkpoint</div><h2>Rapid-fire knowledge check</h2>
+<div class="exercise"><b>Q1.</b> Does <code>ar rcs libx.a x.o</code> link an executable?<br><button onclick="toggle('q1')">Reveal answer</button><div class="solution" id="q1">No. It creates/updates an archive. The final executable is produced by the linker in a separate command.</div></div>
+<div class="exercise"><b>Q2.</b> Does the consumer need the library's <code>.c</code> source at build time?<br><button onclick="toggle('q2')">Reveal answer</button><div class="solution" id="q2">No, not when consuming the prebuilt archive. It needs public headers for compilation and the archive for linking.</div></div>
+<div class="exercise"><b>Q3.</b> What does <code>-Lvendor/lib</code> do? What does <code>-Ivendor/include</code> do?<br><button onclick="toggle('q3')">Reveal answer</button><div class="solution" id="q3"><code>-L</code> adds a linker library search directory. <code>-I</code> adds a compiler header search directory.</div></div>
+<div class="exercise"><b>Q4.</b> Why might <code>-lcalc</code> fail even though <code>libcalc.a</code> exists?<br><button onclick="toggle('q4')">Reveal answer</button><div class="solution" id="q4">The directory may not be in the linker's search path, the filename may not match platform conventions, the archive may be for the wrong target, or the command may use the wrong toolchain.</div></div>
+<div class="exercise"><b>Q5.</b> Why should a public header contain declarations rather than ordinary non-static function definitions?<br><button onclick="toggle('q5')">Reveal answer</button><div class="solution" id="q5">Because many source files may include it. Repeating external function definitions across translation units can create duplicate symbols. Put ordinary definitions in one implementation file.</div></div>
+<button onclick="done(12)">Mark module complete ✓</button></section>
+
+<section class="module" id="capstone"><div class="meta">Final project • Hero challenge</div><h2>Build a reusable DSP utility library</h2>
+<p>Build a small library that could realistically be reused in a C audio/DSP project. It should be compiled independently and consumed from a fresh application directory.</p>
+<h3>Requirements</h3>
+<ol>
+<li>Create a library called <code>libdsp_utils.a</code>.</li>
+<li>Public headers under <code>include/dsp/</code>; implementation under <code>src/</code>.</li>
+<li>Implement at least: saturating conversion from <code>int32_t</code> to <code>int16_t</code>, RMS calculation for a float buffer, and a helper that applies gain to a float buffer.</li>
+<li>Define behavior for null pointers, zero-length buffers and invalid arguments.</li>
+<li>Build with <code>-std=c11 -Wall -Wextra -Wpedantic</code>.</li>
+<li>Provide a Makefile or CMake project.</li>
+<li>Package only headers + archive + README into a separate consumer project.</li>
+<li>Write consumer tests that link against the archive, not the library source.</li>
+<li>Inspect the archive with <code>ar t</code> and <code>nm</code>.</li>
+<li>Demonstrate that the consumer builds after the original source folder is unavailable.</li>
+</ol>
+<h3>Suggested API (you implement it)</h3><pre>/* include/dsp/dsp_utils.h */
+#ifndef DSP_UTILS_H
+#define DSP_UTILS_H
+
+#include &lt;stddef.h&gt;
+#include &lt;stdint.h&gt;
+
+int16_t dsp_saturate_i32_to_i16(int32_t input);
+int dsp_rms_f32(const float *samples, size_t count, float *out_rms);
+int dsp_apply_gain_f32(float *samples, size_t count, float gain);
+
+#endif</pre>
+<div class="callout warn"><b>Design decision:</b> document whether zero samples is an error or produces RMS = 0. Either can be defensible; consistency and clear documentation matter. Avoid silently accepting invalid pointers.</div>
+<div class="exercise"><b>Capstone review checklist</b><ul class="checklist">
+<li>Can a clean client include <code>&lt;dsp/dsp_utils.h&gt;</code>?</li><li>Does the client link without any library <code>.c</code> files?</li><li>Are all required symbols present in <code>libdsp_utils.a</code>?</li><li>Do errors explain missing headers vs missing symbols vs wrong architecture?</li><li>Can another developer reproduce the build from the README?</li><li>Have you tested edge cases and documented API behavior?</li></ul></div>
+<button onclick="toggle('capSolution')">Show reference implementation</button>
+<div class="solution" id="capSolution"><p>This is one valid implementation. It rejects null pointers when a non-zero count requires data, and treats zero-length RMS as an error.</p><pre>/* src/dsp_utils.c */
+#include "dsp/dsp_utils.h"
+#include &lt;math.h&gt;
+
+int16_t dsp_saturate_i32_to_i16(int32_t x)
+{
+    if (x &gt; INT16_MAX) return INT16_MAX;
+    if (x &lt; INT16_MIN) return INT16_MIN;
+    return (int16_t)x;
+}
+
+int dsp_rms_f32(const float *samples, size_t count, float *out_rms)
+{
+    if (samples == NULL || out_rms == NULL || count == 0) return -1;
+
+    double sum = 0.0;
+    for (size_t i = 0; i &lt; count; ++i) {
+        double x = samples[i];
+        sum += x * x;
+    }
+    *out_rms = (float)sqrt(sum / (double)count);
+    return 0;
+}
+
+int dsp_apply_gain_f32(float *samples, size_t count, float gain)
+{
+    if (samples == NULL &amp;&amp; count != 0) return -1;
+    for (size_t i = 0; i &lt; count; ++i) samples[i] *= gain;
+    return 0;
+}</pre><p>Build command (add <code>-lm</code> when linking on platforms where <code>sqrt</code> is in libm):</p><pre>gcc -std=c11 -Wall -Wextra -Wpedantic -Iinclude -c src/dsp_utils.c -o dsp_utils.o
+ar rcs libdsp_utils.a dsp_utils.o</pre><p>Consumer link example:</p><pre>gcc -std=c11 -Wall -Wextra -Wpedantic \\
+    -Ithird_party/dsp_utils/include app.c \\
+    -Lthird_party/dsp_utils/lib -ldsp_utils -lm -o app</pre><p>For a production implementation, consider finite-value policy, overflow/precision behavior, alignment/vectorization expectations and whether the API should return a richer error enum.</p></div>
+</section>
+
+<section class="module"><div class="meta">Cheat sheet</div><h2>The essential command sequence</h2>
+<pre># 1. Compile source into object code
+gcc -std=c11 -Wall -Wextra -Wpedantic -Iinclude -c src/calc.c -o build/calc.o
+
+# 2. Package object(s) into a static archive
+ar rcs build/libcalc.a build/calc.o
+
+# 3. Inspect the archive
+ar t build/libcalc.a
+nm -A build/libcalc.a
+
+# 4. Build a separate consumer
+gcc -std=c11 -Wall -Wextra -Wpedantic \\
+    -Ithird_party/calc/include \\
+    src/main.c -Lthird_party/calc/lib -lcalc -o app
+
+# 5. Run
+./app</pre>
+<h3>What you should be able to explain now</h3>
+<ul class="checklist"><li>Why headers are needed even when the archive contains compiled code.</li><li>What compilation, archiving and linking each do.</li><li>How <code>-I</code>, <code>-L</code> and <code>-l</code> differ.</li><li>Why library order can matter.</li><li>How to inspect archive members and symbols.</li><li>How to package and consume a library from a separate project.</li><li>Why target architecture and ABI must match.</li></ul>
+</section>
+<footer><div class="wrap"><p><b>Course complete.</b> The real mastery test is not making <code>.a</code> once — it is delivering a clean package that another project can build against reproducibly, without access to your library source tree.</p><p class="small">Tip: keep the library and consumer as separate folders throughout the capstone. That catches accidental dependencies on source files and local include paths.</p></div></footer>
+</main>
+<script>
+function toggle(id){const e=document.getElementById(id);e.classList.toggle('show')}
+const completed=new Set();
+function done(n){if(completed.has(n))completed.delete(n);else completed.add(n);const p=Math.round(completed.size/12*100);document.getElementById('progressBar').style.width=p+'%';document.getElementById('progressText').textContent=completed.size+' of 12 modules marked complete';}
+</script>
+</body></html>
