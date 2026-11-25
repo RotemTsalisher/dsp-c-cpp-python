@@ -1,4 +1,5 @@
-#include ".\snekLib.h"
+#include "snekLib.h"
+#include <stdlib.h>
 #include <string.h>
 
 snek_object_t* new_snek_int(const int value) {
@@ -38,6 +39,7 @@ snek_object_t* new_snek_string(const char* value) {
     new->data.string_v = (char*)malloc(sizeof(char) * (strlen(value) + 1));
 
     if(!(new->data.string_v)) {
+        free(new);
         return NULL;
     };
 
@@ -46,7 +48,7 @@ snek_object_t* new_snek_string(const char* value) {
     return new;
 };
 
-snek_object_t* new_snek_vector(snek_object_t* x_, snek_object_t* y_, snek_vector_t* z_) {
+snek_object_t* new_snek_vector(snek_object_t* x_, snek_object_t* y_, snek_object_t* z_) {
 
     snek_object_t* new = (snek_object_t*)malloc(sizeof(snek_object_t));
     
@@ -62,7 +64,7 @@ snek_object_t* new_snek_vector(snek_object_t* x_, snek_object_t* y_, snek_vector
 
 snek_object_t* new_snek_array(int size) {
 
-    snek_object_t* new = (snek_object_t*)maloc(sizeof(snek_object_t));
+    snek_object_t* new = (snek_object_t*)malloc(sizeof(snek_object_t));
 
     if(!(new)) {
         return NULL;
@@ -73,9 +75,10 @@ snek_object_t* new_snek_array(int size) {
     new->data.array_v.arr = (snek_object_t**)malloc(sizeof(snek_object_t*)*size);
 
     if(!(new->data.array_v.arr)) {
+        free(new);
         return NULL;
     };
-    
+
     for(int i = 0; i < size; ++i) {
         new->data.array_v.arr[i] = NULL;
     };
