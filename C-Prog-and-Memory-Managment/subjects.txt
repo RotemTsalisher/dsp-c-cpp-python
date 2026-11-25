@@ -1,1 +1,1 @@
-stopped at 3:09:31 objects
+stopped at 3:29:31 set and get from array
