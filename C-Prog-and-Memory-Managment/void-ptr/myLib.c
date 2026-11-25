@@ -96,5 +96,18 @@ void get_value(void *data, snek_obj_kind_t type, void* val) {
     }
 }
 
+void swap_structs(void* a, void* b, int size) {
+    void* tmp = malloc(size);
+    
+    memcpy(tmp, a, size);
+    memcpy(a, b, size);
+    memcpy(b, tmp, size);
+}
+
+void swap_strings(char** str1, char** str2) {
+    char* tmp = *str1;
+    *str1 = *str2;
+    *str2 = tmp;
+}
 
 
