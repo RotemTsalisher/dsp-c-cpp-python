@@ -43,6 +43,7 @@ union snek_data {
 };
 
 struct snek_object {
+    int refcount;
     enum snek_kind type;
     union snek_data data;
 };
@@ -61,6 +62,9 @@ int snek_array_set(snek_object_t* obj, int index, snek_object_t* value);
 snek_object_t* snek_array_get(const snek_object_t* obj, int index);
 
 int snek_length(snek_object_t* obj);
+void refcount_inc(snek_object_t* obj);
+void refcount_dec(snek_object_t* obj);
+void snek_object_free(snek_object_t* obj);
 
 snek_object_t* snek_add(const snek_object_t* a, const snek_object_t* b);
 static inline snek_object_t* add_snek_int(const snek_object_t* a, const snek_object_t* b) {
