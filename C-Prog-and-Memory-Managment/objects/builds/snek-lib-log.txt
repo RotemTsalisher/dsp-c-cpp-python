@@ -1,0 +1,87 @@
+=== SNEK LIBRARY TEST LOG ===
+
+[CONSTRUCTORS]
+new_snek_int: INT(42)
+new_snek_float: FLOAT(-3.25)
+new_snek_string: STR("snek") length=4
+new_snek_string(empty): STR("") length=0
+new_snek_string(NULL): NULL
+new_snek_array(0): ARRAY size=0 [] length=0
+new_snek_array(-3): NULL
+new_snek_vector: VECTOR(INT(1), FLOAT(2.5), INT(3)) length=3
+new_snek_vector(NULLs): VECTOR(NULL, NULL, NULL) length=-1
+
+[LENGTH]
+INT length=1
+FLOAT length=1
+STRING length=4
+EMPTY STRING length=0
+VECTOR length=3
+ARRAY length=4
+NULL length=-1
+
+[ADDITION - SCALARS]
+[ADD] INT + INT: INT(42)
+[ADD] INT + FLOAT: FLOAT(21.5)
+[ADD] FLOAT + INT: FLOAT(23.5)
+[ADD] FLOAT + FLOAT: FLOAT(3.75)
+[ADD] INT + STRING: NULL
+[ADD] STRING + INT: NULL
+[ADD] FLOAT + STRING: NULL
+[ADD] STRING + FLOAT: NULL
+[ADD] NULL + INT: NULL
+[ADD] INT + NULL: NULL
+[ADD] NULL + NULL: NULL
+
+[ADDITION - STRINGS]
+[ADD] STRING + STRING: STR("hello snek")
+[ADD] EMPTY + STRING: STR("snek")
+[ADD] STRING + EMPTY: STR("snek")
+[ADD] EMPTY + EMPTY: STR("")
+
+[ADDITION - VECTORS]
+[ADD] VECTOR + VECTOR: 
+result: VECTOR(INT(5), FLOAT(8), INT(9)) length=3
+[ADD] VECTOR + STRING: NULL
+[ADD] NULL VECTOR + VECTOR: 
+result: VECTOR(NULL, NULL, NULL) length=-1
+[ADD] VECTOR + VECTOR(MIXED TYPES): 
+result: VECTOR(FLOAT(1.5), FLOAT(12.5), FLOAT(1.5)) length=3
+
+[ARRAY SET/GET]
+set arrayA[0]=INT(10): 0
+set arrayA[1]=FLOAT(20.5): 0
+set arrayA[2]=STRING(third): 0
+set arrayA[3]=INT(40): 0
+set negative index: -1
+set out-of-range index: -1
+set NULL array: -1
+set NULL value: -1
+set on negative array: -1
+arrayA: ARRAY size=4 [INT(10), FLOAT(20.5), STR("third"), INT(40)] length=4
+get arrayA[0]: item: INT(10)
+get arrayA[3]: item: INT(40)
+get negative index: item: NULL
+get out-of-range index: item: NULL
+get from NULL array: item: NULL
+get from NULL backing array: item: NULL
+
+[ARRAY ADDITION]
+arrayB: ARRAY size=3 [INT(50), FLOAT(60.5), STR("sixth")] length=3
+[ADD] ARRAY + ARRAY: 
+result: ARRAY size=7 [INT(10), FLOAT(20.5), STR("third"), INT(40), INT(50), FLOAT(60.5), STR("sixth")] length=7
+[ADD] ARRAY + INT: NULL
+[ADD] INT + ARRAY: NULL
+[ADD] EMPTY ARRAY + ARRAY: 
+result: ARRAY size=3 [INT(50), FLOAT(60.5), STR("sixth")] length=3
+[ADD] ARRAY + EMPTY ARRAY: 
+result: ARRAY size=4 [INT(10), FLOAT(20.5), STR("third"), INT(40)] length=4
+[ADD] NEGATIVE ARRAY + ARRAY: NULL
+[ADD] NULL ARRAY + ARRAY: NULL
+
+[CROSS-TYPE ADDITION]
+[ADD] ARRAY + STRING: NULL
+[ADD] STRING + VECTOR: NULL
+[ADD] VECTOR + FLOAT: NULL
+
+=== END SNEK LIBRARY TEST LOG ===

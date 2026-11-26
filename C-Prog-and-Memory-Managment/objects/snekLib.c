@@ -1,6 +1,4 @@
 #include "snekLib.h"
-#include <stdlib.h>
-#include <string.h>
 
 snek_object_t* new_snek_int(const int value) {
     
@@ -29,6 +27,8 @@ snek_object_t* new_snek_float(const float value) {
 };
 
 snek_object_t* new_snek_string(const char* value) {
+
+    if(!(value)) return NULL;
 
     snek_object_t* new = (snek_object_t*)malloc(sizeof(snek_object_t));
 
@@ -64,6 +64,8 @@ snek_object_t* new_snek_vector(snek_object_t* x_, snek_object_t* y_, snek_object
 
 snek_object_t* new_snek_array(int size) {
 
+    if(size < 0) return NULL;
+
     snek_object_t* new = (snek_object_t*)malloc(sizeof(snek_object_t));
 
     if(!(new)) {
@@ -96,7 +98,7 @@ int snek_array_set(snek_object_t* obj, int index, snek_object_t* value) {
         return -1;
     };
 
-    if(!(index < obj->data.array_v.size)) {
+    if(!(index < obj->data.array_v.size) || index < 0) {
         return -1;
     };
 
@@ -104,9 +106,9 @@ int snek_array_set(snek_object_t* obj, int index, snek_object_t* value) {
     return 0;
 };
 
-snek_object_t* snek_array_get(snek_object_t* obj, int index) {
+snek_object_t* snek_array_get(const snek_object_t* obj, int index) {
     
-    if( (!(obj)) | (obj->type != ARRAY) | (!(index < obj->data.array_v.size)) ) {
+    if( (!(obj)) || (obj->type != ARRAY) || (!(index < obj->data.array_v.size)) || (!(obj->data.array_v.arr)) || (index < 0) ) {
         return NULL;
     };
 
@@ -122,9 +124,50 @@ int snek_length(snek_object_t* obj) {
     switch(obj->type) {
         case INT:    return 1;
         case FLOAT:  return 1;
-        case STR:    return strlen(obj->data.string_v);
-        case VECTOR: return 3;
-        case ARRAY:  return obj->data.array_v.size;
+        case STR:    
+            if(!(obj->data.string_v)) return -1;
+            return strlen(obj->data.string_v);
+        case VECTOR: 
+            if(!(obj->data.vector_v.x) || !(obj->data.vector_v.y) || !(obj->data.vector_v.z)) return -1;
+            return 3;
+        case ARRAY:  
+            if(!(obj->data.array_v.arr)) return -1;
+            return obj->data.array_v.size;
         default:     return -1;
     };
 };
+
+snek_object_t* snek_add(const snek_object_t* a, const snek_object_t* b) {
+    
+    if(!(a) || !(b)) {
+        return NULL;
+    };
+
+    switch(a->type) {
+
+        case INT:
+            switch(b->type) {
+                case INT:    return add_snek_int(a, b);
+                case FLOAT:  return new_snek_float((float)a->data.int_v + b->data.float_v);
+                default: return NULL;
+            };
+        case FLOAT:
+            switch(b->type) {
+                case INT:    return new_snek_float(a->data.float_v + (float)b->data.int_v);
+                case FLOAT:  return add_snek_float(a, b);
+                default: return NULL;
+            };
+        case STR:
+            if(b->type != STR) return NULL;
+            return add_snek_string(a, b);
+        case VECTOR:
+            if(b->type != VECTOR) return NULL;
+            return add_snek_vector(a, b);
+        case ARRAY:
+            if(b->type != ARRAY) return NULL;
+            return add_snek_array(a, b);
+    };
+
+    return NULL;
+}
+
