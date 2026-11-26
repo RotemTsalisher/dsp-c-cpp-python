@@ -1,0 +1,24 @@
+[PASS] new_node_int returns a node
+[PASS] new_node_float returns a node
+[PASS] new nodes start with refcount 1
+[PASS] NULL refcount is 0
+[PASS] get_node_data reads INT
+[PASS] get_node_data reads FLOAT
+[PASS] set_node_data updates INT
+[PASS] set_node_data updates FLOAT
+[PASS] set_node_data rejects NULL node
+[PASS] set_node_data rejects NULL data
+[PASS] get_node_data rejects NULL node
+[PASS] get_node_data rejects NULL data
+[PASS] set_node_data rejects unsupported type
+[PASS] get_node_data rejects unsupported type
+[PASS] ref_to returns the same node
+[PASS] ref_to increments refcount to 2
+[PASS] ref_to rejects NULL
+[PASS] deref_node(NULL) leaves count unchanged
+[PASS] deref_node decrements count to 1
+[PASS] free_node(NULL) reports failure
+[PASS] free_node releases a node
+[INFO] Final dereference called; node should now be released.
+
+Results: 21 passed, 0 failed
