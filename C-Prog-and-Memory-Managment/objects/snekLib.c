@@ -114,9 +114,13 @@ int snek_array_set(snek_object_t* obj, int index, snek_object_t* value) {
         return -1;
     };
 
-    obj->data.array_v.arr[index] = value;
+    snek_object_t *old_val = obj->data.array_v.arr[index];
+
+    if(old_val == value) return 0;
+    
     refcount_inc(value);
-    if(obj->data.array_v.arr[index]) refcount_dec(obj->data.array_v.arr[index]);
+    obj->data.array_v.arr[index] = value;
+    refcount_dec(old_val);
 
     return 0;
 };
@@ -226,7 +230,8 @@ void snek_object_free(snek_object_t* obj) {
 };
 
 void refcount_dec(snek_object_t* obj) {
-    if(!(obj)) return ;
+    
+    if(!(obj) || (obj->refcount < 0)) return ;
 
     obj->refcount--;
     if(obj->refcount == 0) snek_object_free(obj);

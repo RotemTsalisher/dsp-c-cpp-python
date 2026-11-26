@@ -85,6 +85,134 @@ static void test_add(const char *label,
     } else {
         printf("UNKNOWN TYPE(%d)\n", result->type);
     }
+
+    refcount_dec(result);
+}
+
+static int check_refcount(const char *label,
+                          const snek_object_t *obj,
+                          int expected) {
+    int actual = obj != NULL ? obj->refcount : -1;
+    int passed = obj != NULL && actual == expected;
+
+    printf("[REFCOUNT] %s: %s (expected %d, got %d)\n",
+           label,
+           passed ? "PASS" : "FAIL",
+           expected,
+           actual);
+    return passed ? 0 : 1;
+}
+
+static int test_refcount_gc(void) {
+    int failures = 0;
+    printf("\n[REFCOUNT / GARBAGE COLLECTION]\n");
+
+    snek_object_t *scalar = new_snek_int(7);
+    if (scalar == NULL) {
+        printf("[REFCOUNT] scalar allocation: FAIL\n");
+        return 1;
+    }
+
+    failures += check_refcount("new scalar starts at 1", scalar, 1);
+    refcount_inc(scalar);
+    failures += check_refcount("increment raises count to 2", scalar, 2);
+    refcount_dec(scalar);
+    failures += check_refcount("decrement lowers count to 1", scalar, 1);
+    refcount_dec(scalar);
+
+    snek_object_t *array = new_snek_array(1);
+    snek_object_t *old_value = new_snek_int(10);
+    snek_object_t *new_value = new_snek_int(20);
+    if (array == NULL || old_value == NULL || new_value == NULL) {
+        printf("[REFCOUNT] array test allocation: FAIL\n");
+        refcount_dec(array);
+        refcount_dec(old_value);
+        refcount_dec(new_value);
+        return failures + 1;
+    }
+
+    failures += check_refcount("new array starts at 1", array, 1);
+    if (snek_array_set(array, 0, old_value) != 0) {
+        printf("[REFCOUNT] storing first array value: FAIL\n");
+        refcount_dec(array);
+        refcount_dec(old_value);
+        refcount_dec(new_value);
+        return failures + 1;
+    }
+    failures += check_refcount("array retains stored value", old_value, 2);
+
+    if (snek_array_set(array, 0, new_value) != 0) {
+        printf("[REFCOUNT] replacing array value: FAIL\n");
+        refcount_dec(array);
+        refcount_dec(old_value);
+        refcount_dec(new_value);
+        return failures + 1;
+    }
+    failures += check_refcount("replacement releases old array reference",
+                               old_value,
+                               1);
+    failures += check_refcount("replacement is retained by array",
+                               new_value,
+                               2);
+    refcount_dec(old_value);
+    old_value = NULL;
+
+    refcount_dec(new_value);
+    new_value = NULL;
+    snek_object_t *borrowed_value = snek_array_get(array, 0);
+    if (snek_array_set(array, 0, borrowed_value) != 0) {
+        printf("[REFCOUNT] self-assignment of borrowed value: FAIL\n");
+        refcount_dec(array);
+        return failures + 1;
+    }
+    failures += check_refcount("self-assignment preserves array-only reference",
+                               borrowed_value,
+                               1);
+
+    refcount_inc(borrowed_value);
+    refcount_dec(array);
+    array = NULL;
+    failures += check_refcount("freeing array releases its value",
+                               borrowed_value,
+                               1);
+    refcount_dec(borrowed_value);
+    borrowed_value = NULL;
+
+    snek_object_t *x = new_snek_int(1);
+    snek_object_t *y = new_snek_float(2.0f);
+    snek_object_t *z = new_snek_int(3);
+    if (x == NULL || y == NULL || z == NULL) {
+        printf("[REFCOUNT] vector component allocation: FAIL\n");
+        refcount_dec(x);
+        refcount_dec(y);
+        refcount_dec(z);
+        return failures + 1;
+    }
+
+    snek_object_t *vector = new_snek_vector(x, y, z);
+    if (vector == NULL) {
+        printf("[REFCOUNT] vector allocation: FAIL\n");
+        refcount_dec(x);
+        refcount_dec(y);
+        refcount_dec(z);
+        return failures + 1;
+    }
+
+    failures += check_refcount("vector retains x", x, 2);
+    failures += check_refcount("vector retains y", y, 2);
+    failures += check_refcount("vector retains z", z, 2);
+    refcount_dec(vector);
+    failures += check_refcount("freeing vector releases x", x, 1);
+    failures += check_refcount("freeing vector releases y", y, 1);
+    failures += check_refcount("freeing vector releases z", z, 1);
+    refcount_dec(x);
+    refcount_dec(y);
+    refcount_dec(z);
+
+    printf("[REFCOUNT] Summary: %s (%d failure(s))\n",
+           failures == 0 ? "PASS" : "FAIL",
+           failures);
+    return failures;
 }
 
 int main(void) {
@@ -242,6 +370,8 @@ int main(void) {
     test_add("STRING + VECTOR", string_a, vector_a);
     test_add("VECTOR + FLOAT", vector_a, float_a);
 
+    int refcount_failures = test_refcount_gc();
+
     printf("\n=== END SNEK LIBRARY TEST LOG ===\n");
-    return 0;
+    return refcount_failures == 0 ? 0 : 1;
 }
