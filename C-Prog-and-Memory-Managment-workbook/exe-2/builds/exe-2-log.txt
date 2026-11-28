@@ -1,0 +1,60 @@
+=== DSPUtils header: repeated inclusion test ===
+DSPUtils.h compiled successfully when included twice.
+
+=== Exercise 1.2: FIR initialization ===
+coeffs[0] = 0.250 || coeffs[1] = 0.500 || coeffs[2] = 0.250 || 
+
+=== Exercise 2.2 equivalent: Biquad state/reset ===
+Initial state:
+biquad->a[0] = 1.00
+biquad->b[0] = 0.50
+biquad->x[0] = 0.00
+biquad->y[0] = 0.00
+biquad->a[1] = -0.25
+biquad->b[1] = 0.25
+biquad->x[1] = 0.00
+biquad->y[1] = 0.00
+biquad->a[2] = 0.12
+biquad->b[2] = 0.12
+biquad->x[2] = 0.00
+biquad->y[2] = 0.00
+State after assigning test delay values:
+biquad->a[0] = 1.00
+biquad->b[0] = 0.50
+biquad->x[0] = 1.00
+biquad->y[0] = 0.75
+biquad->a[1] = -0.25
+biquad->b[1] = 0.25
+biquad->x[1] = 0.50
+biquad->y[1] = -0.25
+biquad->a[2] = 0.12
+biquad->b[2] = 0.12
+biquad->x[2] = 0.00
+biquad->y[2] = 0.00
+State after biquad_reset():
+biquad->a[0] = 1.00
+biquad->b[0] = 0.50
+biquad->x[0] = 0.00
+biquad->y[0] = 0.00
+biquad->a[1] = -0.25
+biquad->b[1] = 0.25
+biquad->x[1] = 0.00
+biquad->y[1] = 0.00
+biquad->a[2] = 0.12
+biquad->b[2] = 0.12
+biquad->x[2] = 0.00
+biquad->y[2] = 0.00
+Biquad reset result: PASS (delay states zero, coefficients unchanged)
+
+=== Exercise 1.1: 16-bit normalization ===
+Raw: -32768  Normalized: -1.000000
+Raw: -16384  Normalized: -0.500000
+Raw:  -8192  Normalized: -0.250000
+Raw:  -4096  Normalized: -0.125000
+Raw:     -1  Normalized: -0.000031
+Raw:      0  Normalized:  0.000000
+Raw:      1  Normalized:  0.000031
+Raw:   4096  Normalized:  0.125000
+Raw:   8192  Normalized:  0.250000
+Raw:  16384  Normalized:  0.500000
+Raw:  32767  Normalized:  0.999969

@@ -25,16 +25,16 @@ int main(void)
     };
 
     size_t num_taps = sizeof(coefficients) / sizeof(coefficients[0]);
-
+    fir_filter_t fir_filter;
     printf("Calling fir_init with %zu taps at address %p\n",
            num_taps,
            (const void *)coefficients);
-    fir_init(coefficients, (uint32_t)num_taps);
+    fir_init(coefficients, (uint32_t)num_taps, &fir_filter);
     printf("fir_init call completed.\n");
 
 #ifdef MODE_DEBUG
     printf("Stored FIR coefficients: ");
-    print_fir_taps();
+    print_fir_taps(&fir_filter);
     printf("\n");
 #endif
 
