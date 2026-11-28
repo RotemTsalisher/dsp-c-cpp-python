@@ -57,4 +57,11 @@ void print_biquad(biquad_filter_t* biquad) {
         printf("biquad->y[%d] = %4.2f\n", i, biquad->y_[i]);
     }
 };
+
+void print_diff_in_size() {
+    int size_audio_frame_header = sizeof(audio_frame_header_t);
+
+    printf("audio frame header size: %d\n", size_audio_frame_header);
+    printf("size diff is %d bytes\n", size_audio_frame_header - AUDIO_HEADER_SIZE);
+};
 #endif

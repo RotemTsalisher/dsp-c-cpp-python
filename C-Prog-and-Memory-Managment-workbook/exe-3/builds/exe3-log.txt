@@ -1,0 +1,37 @@
+=== Padding probe ===
+sizeof(struct pad_test): 4 bytes
+offsetof(byte):          0
+offsetof(two_bytes):     2
+internal padding:        1 bytes
+tail padding:            0 bytes
+
+=== Audio frame header ===
+sizeof(AudioFrameHeader): 24 bytes
+sync_byte offset:         0
+timestamp_ns offset:      8
+sample_rate offset:       16
+channel_count offset:     18
+frame_index offset:       20
+audio frame header size: 24
+size diff is -104 bytes
+
+=== Buffer metadata optimization ===
+Unoptimized size: 40 bytes
+Optimized size:   32 bytes
+Reduction:        8 bytes
+
+Unoptimized offsets:
+  valid:          0
+  max_amplitude:  8
+  num_channls:    16
+  peak_frequency: 20
+  muted:          24
+  frame_id:       32
+
+Optimized offsets:
+  max_amplitude:  0
+  frame_id:       8
+  num_channls:    16
+  peak_frequency: 20
+  valid:          24
+  muted:          25
